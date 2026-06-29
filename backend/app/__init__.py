@@ -1,0 +1,2 @@
+"""Trenzy FastAPI backend package."""
+

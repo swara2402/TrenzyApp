@@ -1,0 +1,12 @@
+from .auth import router as auth_router
+from .suggestions import router as suggestions_router
+from .decisions import router as decisions_router
+from .groups import router as groups_router
+from .products import router as products_router
+from .wishlist import router as wishlist_router
+from .users import router as users_router
+from .friends import router as friends_router
+from .invitations import router as invitations_router
+from .messages import router as messages_router
+from .notifications import router as notifications_router
+from .trends import router as trends_router

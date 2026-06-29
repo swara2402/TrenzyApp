@@ -1,0 +1,5 @@
+-keep class com.google.firebase.crashlytics.** { *; }
+-dontwarn com.google.firebase.crashlytics.**
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+-keepattributes *Annotation*
