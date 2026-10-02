@@ -64,6 +64,27 @@ jobs:
           "${PYTHON_BIN}" -m pip install --upgrade pip
           "${PYTHON_BIN}" -m pip install -r requirements.txt
 
+      - name: Diagnose migration state
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          echo "=== Migration files ==="
+          find migrations/versions -maxdepth 1 -type f -print | sort
+          echo "=== Alembic heads ==="
+          "${PYTHON_BIN}" -m alembic -c alembic.ini heads || true
+          echo "=== Alembic history ==="
+          "${PYTHON_BIN}" -m alembic -c alembic.ini history || true
+          echo "=== Database Alembic revision ==="
+          PGPASSWORD="${POSTGRES_PASSWORD}" /opt/homebrew/bin/psql \
+            -h "${DB_HOST}" -p "${DB_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+            -v ON_ERROR_STOP=1 \
+            -c "SELECT version_num FROM alembic_version ORDER BY version_num;"
+          echo "=== Products columns ==="
+          PGPASSWORD="${POSTGRES_PASSWORD}" /opt/homebrew/bin/psql \
+            -h "${DB_HOST}" -p "${DB_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+            -v ON_ERROR_STOP=1 \
+            -c "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='products' ORDER BY ordinal_position;"
+
       - name: Apply database migrations
         working-directory: backend
         run: |
