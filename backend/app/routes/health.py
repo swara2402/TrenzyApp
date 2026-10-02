@@ -74,22 +74,34 @@ def _check_catalog(session: Session) -> dict[str, Any]:
 
 
 def _check_embeddings(session: Session) -> dict[str, Any]:
-    """Return embedding health: how many ProductEmbedding rows exist."""
+    """Return health for the canonical Product embedding vectors used by search."""
     try:
-        from ..ai.models_ai import ProductEmbedding  # type: ignore
-
-        count = (
-            session.query(func.count(ProductEmbedding.id))
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
+        image_count = (
+            session.query(func.count(Product.id))
+            .filter(Product.image_embedding_vector.isnot(None))
             .scalar()
             or 0
         )
+        text_count = (
+            session.query(func.count(Product.id))
+            .filter(Product.text_embedding_vector.isnot(None))
+            .scalar()
+            or 0
+        )
+        ready = min(image_count, text_count) >= _MIN_EMBEDDINGS
         return {
-            "embeddings": "ready" if count >= _MIN_EMBEDDINGS else "not_generated",
-            "embedding_count": count,
+            "embeddings": "ready" if ready else "not_generated",
+            "embedding_count": min(image_count, text_count),
+            "image_embedding_count": image_count,
+            "text_embedding_count": text_count,
         }
     except Exception as exc:
-        return {"embeddings": f"error: {str(exc)[:80]}", "embedding_count": 0}
+        return {
+            "embeddings": f"error: {str(exc)[:80]}",
+            "embedding_count": 0,
+            "image_embedding_count": 0,
+            "text_embedding_count": 0,
+        }
 
 
 def _check_migrations() -> dict[str, str]:
@@ -196,7 +208,7 @@ async def readiness_check(session: Session = Depends(get_session)) -> dict[str, 
       2. Redis present (required in production)
       3. Firebase configured (project ID or Admin SDK)
       4. Catalog has ≥ 1 product with an image_url
-      5. Embeddings generated (≥ 1 ProductEmbedding row) — production only
+      5. Both canonical image and text embeddings generated (≥ 1 each) — production only
       6. Alembic migrations are at HEAD
     """
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -242,18 +254,22 @@ async def readiness_check(session: Session = Depends(get_session)) -> dict[str, 
     # 5. Embeddings (production only — dev can run without ML weights)
     if IS_PRODUCTION:
         try:
-            from ..ai.models_ai import ProductEmbedding  # type: ignore
-
-            emb_count = (
-                session.query(func.count(ProductEmbedding.id))
-                .filter(ProductEmbedding.combined_embedding.isnot(None))
+            image_count = (
+                session.query(func.count(Product.id))
+                .filter(Product.image_embedding_vector.isnot(None))
                 .scalar()
                 or 0
             )
-            if emb_count < _MIN_EMBEDDINGS:
+            text_count = (
+                session.query(func.count(Product.id))
+                .filter(Product.text_embedding_vector.isnot(None))
+                .scalar()
+                or 0
+            )
+            if image_count < _MIN_EMBEDDINGS or text_count < _MIN_EMBEDDINGS:
                 failures.append(
-                    f"embeddings: {emb_count} valid embeddings found "
-                    f"(need ≥ {_MIN_EMBEDDINGS}). Run the embedding pipeline."
+                    f"embeddings: image={image_count}, text={text_count} valid canonical "
+                    f"embeddings found (need ≥ {_MIN_EMBEDDINGS} each). Run the embedding pipeline."
                 )
         except Exception as exc:
             failures.append(f"embeddings: {str(exc)[:80]}")
