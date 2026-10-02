@@ -252,13 +252,46 @@ alembic upgrade head
 ```
 
 **Load Product Catalog:**
-```bash
-cd backend
-python -m app.scripts.import_image_catalog
-python -m app.scripts.import_image_catalog --embed
+
+Keep the supplied dataset outside Git and mount it into the runtime, for example:
+
+```text
+/data/trenzy/catalog.csv
+/data/trenzy/images/TRZ-0001.jpg
+...
+/data/trenzy/images/TRZ-2000.jpg
 ```
 
-The image directory is intentionally not committed to Git. Mount/copy the 2,000-image dataset into backend/uploads/product-images/images/ at runtime. The importer validates images, creates stable content-derived product IDs, and serves catalog assets from /product-images/.
+Run the validation-only smoke check first:
+
+```bash
+cd backend
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv \
+  --dry-run
+```
+
+Then import the 2,000 products:
+
+```bash
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv
+```
+
+Finally generate/resume FashionCLIP embeddings:
+
+```bash
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv \
+  --embed
+```
+
+For a small runtime smoke test, add `--limit 10`. Use `--batch-size 16` or `--batch-size 32` depending on available RAM/VRAM. The embedding job is resumable: completed vectors for the current model/version are skipped, failed products are retried, and a changed source image resets its embedding status. A non-zero exit code means the catalog is not fully indexed.
+
+The image directory is intentionally not committed to Git. Catalog assets are served from `/product-images/`; user uploads remain private behind authenticated routes. Product IDs come directly from the catalog (`TRZ-0001` through `TRZ-2000`) and image hashes are recorded for provenance/change detection.
 
 **Inspect Schema:**
 ```bash
