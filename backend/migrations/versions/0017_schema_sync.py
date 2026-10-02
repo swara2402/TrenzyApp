@@ -53,7 +53,11 @@ def upgrade() -> None:
             if not col.nullable:
                 # Backfill existing rows before enforcing NOT NULL.
                 if col.default is not None and col.default.is_scalar:
-                    server_default = col.default.arg
+                    default_arg = col.default.arg
+                    if isinstance(default_arg, bool):
+                        server_default = "true" if default_arg else "false"
+                    elif default_arg is not None:
+                        server_default = str(default_arg)
                 elif col.server_default is not None:
                     arg = getattr(col.server_default, "arg", None)
                     server_default = arg if isinstance(arg, str) else None
