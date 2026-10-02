@@ -315,34 +315,28 @@ async def semantic_search(
             detail="Semantic search is temporarily unavailable.",
         )
 
-    # Nearest-neighbour scan via ProductEmbedding (text or combined vector)
+    # Scan the canonical text vectors stored on catalog products. For a
+    # 2,000-item catalog this is predictable and avoids the legacy embedding
+    # table's incompatible FK type.
     try:
-        from ..ai.models_ai import ProductEmbedding
         import numpy as np
+        products = db.query(Product).filter(
+            Product.is_archived.is_(False),
+            Product.text_embedding_vector.isnot(None),
+        ).all()
+        if not products:
+            raise HTTPException(status_code=503, detail="No product text embeddings found. Run the catalog embedding import first.")
 
-        embeddings = (
-            db.query(ProductEmbedding)
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
-            .all()
-        )
-        if not embeddings:
-            raise HTTPException(
-                status_code=503,
-                detail="No product embeddings found. Run the embedding pipeline first.",
-            )
-
-        scored: list[tuple[Product, float]] = []
-        for emb in embeddings:
-            arr = np.array(emb.combined_embedding, dtype=np.float32)
-            norm_q = query_vector / (np.linalg.norm(query_vector) + 1e-8)
-            norm_p = arr / (np.linalg.norm(arr) + 1e-8)
-            score = float(np.dot(norm_q, norm_p))
+        query_norm = query_vector / (np.linalg.norm(query_vector) + 1e-8)
+        scored = []
+        for product in products:
+            arr = np.asarray(product.text_embedding_vector, dtype=np.float32)
+            if arr.shape != query_norm.shape:
+                continue
+            score = float(np.dot(query_norm, arr / (np.linalg.norm(arr) + 1e-8)))
             if score >= min_similarity:
-                product = db.get(Product, emb.product_id)
-                if product and not product.is_archived:
-                    scored.append((product, score))
-
-        scored.sort(key=lambda x: x[1], reverse=True)
+                scored.append((product, score))
+        scored.sort(key=lambda item: item[1], reverse=True)
         return _format_products(scored[:limit])
 
     except HTTPException:
