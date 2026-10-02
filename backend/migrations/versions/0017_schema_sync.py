@@ -59,15 +59,17 @@ def upgrade() -> None:
                     server_default = arg if isinstance(arg, str) else None
                 if server_default is None:
                     ddl_type = col.type.compile(bind.dialect)
-                    if "bool" in ddl_type:
+                    if "bool" in ddl_type.lower():
                         server_default = "false"
                     elif any(
                         t in ddl_type.upper()
                         for t in ("INT", "NUM", "FLOAT", "DECIMAL")
                     ):
                         server_default = "0"
+                    elif "timestamp" in ddl_type.lower() or "date" in ddl_type.lower():
+                        server_default = "now()"
                     else:
-                        server_default = ""
+                        server_default = "''"
             with op.batch_alter_table(table.name) as batch_op:
                 batch_op.add_column(
                     sa.Column(
