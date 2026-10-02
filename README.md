@@ -251,11 +251,14 @@ export DATABASE_URL="postgresql://postgres:password@localhost:5432/trenzy"
 alembic upgrade head
 ```
 
-**Load Sample Data:**
+**Load Product Catalog:**
 ```bash
 cd backend
-python -m app.scripts.load_products  # Load sample product catalog
+python -m app.scripts.import_image_catalog
+python -m app.scripts.import_image_catalog --embed
 ```
+
+The image directory is intentionally not committed to Git. Mount/copy the 2,000-image dataset into backend/uploads/product-images/images/ at runtime. The importer validates images, creates stable content-derived product IDs, and serves catalog assets from /product-images/.
 
 **Inspect Schema:**
 ```bash
@@ -512,4 +515,4 @@ For issues, questions, or feature requests, open a GitHub issue or contact the T
 
 **Version**: 1.0.0-beta  
 **Last Updated**: 2024  
-**Status**: Production-ready
+**Status**: Beta / pre-production — run the security and catalog checks before production deployment.
