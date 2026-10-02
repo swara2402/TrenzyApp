@@ -111,7 +111,7 @@ trenzy/
 
 ### AI/ML Fashion Intelligence & Recommendation Pipeline
 
-Trenzy features a production multimodal recommendation and visual search pipeline powered by FashionCLIP embeddings and pgvector ANN retrieval.
+Trenzy features a multimodal recommendation and visual search pipeline powered by FashionCLIP embeddings. The current catalog search path uses the canonical Product vectors with a NumPy cosine scan; pgvector remains an optional future acceleration path.
 
 **Documentation & Contracts:**
 - [Model Card (MODEL_CARD.md)](MODEL_CARD.md): Model architectures, evaluation metrics, and operational boundaries.
@@ -289,7 +289,7 @@ python -m app.scripts.import_image_catalog \
   --embed
 ```
 
-For a small runtime smoke test, add `--limit 10`. Use `--batch-size 16` or `--batch-size 32` depending on available RAM/VRAM. The embedding job is resumable: completed vectors for the current model/version are skipped, failed products are retried, and a changed source image resets its embedding status. A non-zero exit code means the catalog is not fully indexed.
+For a small runtime smoke test, add `--limit 10`. Use `--batch-size 16` or `--batch-size 32` to control checkpoint/commit size. The embedding job is resumable: completed vectors for the current model/version are skipped, failed products are retried, and a changed source image resets its embedding status. A non-zero exit code means the catalog is not fully indexed.
 
 The image directory is intentionally not committed to Git. Catalog assets are served from `/product-images/`; user uploads remain private behind authenticated routes. Product IDs come directly from the catalog (`TRZ-0001` through `TRZ-2000`) and image hashes are recorded for provenance/change detection.
 
