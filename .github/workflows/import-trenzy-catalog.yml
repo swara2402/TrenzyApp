@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       image_dir:
-        description: "Absolute path to the mounted Trenzy image directory on the runner"
+        description: "Absolute path to the Trenzy image directory on the self-hosted Mac runner"
         required: true
-        default: "/data/trenzy/images"
+        default: "/Users/sam/trenzy-data/Trenzy/images"
       catalog_file:
-        description: "Absolute path to catalog.csv on the runner"
+        description: "Absolute path to catalog.csv on the self-hosted Mac runner"
         required: true
-        default: "/data/trenzy/catalog.csv"
+        default: "/Users/sam/trenzy-data/Trenzy/catalog.csv"
       embed:
         description: "Generate FashionCLIP embeddings"
         required: true
@@ -26,9 +26,6 @@ permissions:
 
 jobs:
   import:
-    # This job intentionally uses a self-hosted runner because the 2,000-image
-    # dataset is not stored in Git and FashionCLIP inference benefits from the
-    # runner having local dataset storage (and optionally a GPU).
     runs-on: self-hosted
 
     env:
@@ -38,6 +35,7 @@ jobs:
       POSTGRES_USER: ${{ secrets.TRENZY_POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.TRENZY_POSTGRES_PASSWORD }}
       APP_ENV: development
+      PYTHON_BIN: /opt/homebrew/bin/python3.11
 
     steps:
       - name: Check out repository
@@ -46,8 +44,9 @@ jobs:
       - name: Verify Python 3.11
         run: |
           set -euo pipefail
-          command -v python3.11
-          python3.11 --version
+          test -x "${PYTHON_BIN}" || { echo "::error::Python 3.11 not found at ${PYTHON_BIN}"; exit 1; }
+          "${PYTHON_BIN}" --version
+
       - name: Verify dataset and database configuration
         env:
           IMAGE_DIR: ${{ inputs.image_dir }}
@@ -61,7 +60,9 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: backend
-        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+        run: |
+          "${PYTHON_BIN}" -m pip install --upgrade pip
+          "${PYTHON_BIN}" -m pip install -r requirements.txt
 
       - name: Validate catalog (no database writes)
         working-directory: backend
@@ -69,7 +70,7 @@ jobs:
           IMAGE_DIR: ${{ inputs.image_dir }}
           CATALOG_FILE: ${{ inputs.catalog_file }}
         run: |
-          python -m app.scripts.import_image_catalog \
+          "${PYTHON_BIN}" -m app.scripts.import_image_catalog \
             --image-dir "${IMAGE_DIR}" \
             --catalog-file "${CATALOG_FILE}" \
             --dry-run
@@ -82,7 +83,7 @@ jobs:
           CATALOG_FILE: ${{ inputs.catalog_file }}
           BATCH_SIZE: ${{ inputs.batch_size }}
         run: |
-          python -m app.scripts.import_image_catalog \
+          "${PYTHON_BIN}" -m app.scripts.import_image_catalog \
             --image-dir "${IMAGE_DIR}" \
             --catalog-file "${CATALOG_FILE}" \
             --embed \
@@ -95,6 +96,6 @@ jobs:
           IMAGE_DIR: ${{ inputs.image_dir }}
           CATALOG_FILE: ${{ inputs.catalog_file }}
         run: |
-          python -m app.scripts.import_image_catalog \
+          "${PYTHON_BIN}" -m app.scripts.import_image_catalog \
             --image-dir "${IMAGE_DIR}" \
             --catalog-file "${CATALOG_FILE}"
