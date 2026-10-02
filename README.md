@@ -293,6 +293,17 @@ For a small runtime smoke test, add `--limit 10`. Use `--batch-size 16` or `--ba
 
 The image directory is intentionally not committed to Git. Catalog assets are served from `/product-images/`; user uploads remain private behind authenticated routes. Product IDs come directly from the catalog (`TRZ-0001` through `TRZ-2000`) and image hashes are recorded for provenance/change detection.
 
+**Run the import from GitHub Actions:** The repository includes `.github/workflows/import-trenzy-catalog.yml`. It is a manual workflow that runs on a **self-hosted GitHub Actions runner**, because the 2,000-image dataset is deliberately kept outside Git and FashionCLIP inference may benefit from local/GPU hardware.
+
+Before running it:
+1. Register a self-hosted runner for this repository.
+2. Put the dataset on that runner, for example at `/data/trenzy/catalog.csv` and `/data/trenzy/images/`.
+3. Add repository Actions secrets named `TRENZY_DB_HOST`, `TRENZY_DB_PORT`, `TRENZY_POSTGRES_DB`, `TRENZY_POSTGRES_USER`, and `TRENZY_POSTGRES_PASSWORD`.
+4. Open **GitHub → Actions → Import Trenzy catalog → Run workflow**.
+5. Keep **Generate FashionCLIP embeddings** enabled to import the catalog and generate/resume embeddings.
+
+The workflow first performs the same zero-write dataset validation as `--dry-run`, then runs the idempotent importer. It fails rather than silently proceeding when the dataset is missing or invalid.
+
 **Inspect Schema:**
 ```bash
 psql trenzy
