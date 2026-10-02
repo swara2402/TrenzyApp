@@ -1,0 +1,9 @@
+# Data loading / catalog ingestion tools.
+# These are NOT production dependencies — do NOT add these to requirements.txt.
+#
+# Usage:
+#   pip install -r requirements-data.txt
+#   python backend/app/scripts/load_products.py
+#
+datasets>=2.18.0
+huggingface-hub>=0.23.0

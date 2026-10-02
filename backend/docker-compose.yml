@@ -1,0 +1,92 @@
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: backend-db-1
+    environment:
+      # Read from .env (gitignored). Never commit real passwords.
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required — set it in backend/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-trenzy}
+    ports:
+      - "5433:5432"
+    volumes:
+      - trenzy_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # P3: Redis for multi-instance Socket.IO + shared rate limiting + presence tracking
+  redis:
+    image: redis:7-alpine
+    container_name: backend-redis-1
+    ports:
+      - "6379:6379"
+    volumes:
+      - trenzy_redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  backend:
+    build: .
+    container_name: backend-backend-1
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Pass DB credentials securely to the application
+      DB_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-trenzy}
+
+      # P3: Redis URL for multi-instance support
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY:?FIREBASE_API_KEY is required}
+      # Dev defaults are explicit localhost origins — never '*'. Production
+      # MUST use docker-compose.prod.yml (requires explicit origins).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8090,http://127.0.0.1:8090}
+      SOCKET_ALLOWED_ORIGINS: ${SOCKET_ALLOWED_ORIGINS:-http://localhost:8090,http://127.0.0.1:8090}
+      # Firebase Admin credentials — load as raw JSON or from a file.
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      FIREBASE_SERVICE_ACCOUNT_FILE: ${FIREBASE_SERVICE_ACCOUNT_FILE:-}
+      DEV_AUTH_BYPASS: ${DEV_AUTH_BYPASS:-false}
+      DEV_AUTH_UID: ${DEV_AUTH_UID:-dev-user-123}
+      DEV_AUTH_SECRET: ${DEV_AUTH_SECRET:?DEV_AUTH_SECRET must be set in .env when DEV_AUTH_BYPASS=true}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Run migrations, load products, then start API — sequentially, so the
+    # API never comes up against an unseeded database.
+    command: >
+      /bin/sh -c "
+        alembic upgrade head &&
+        python -m app.scripts.load_products &&
+        exec uvicorn app.main:api --host 0.0.0.0 --port 8000
+      "
+    volumes:
+      # Persist uploaded avatars between restarts.
+      - avatars:/app/uploads/avatars
+      # Firebase Admin service account (required for real user auth).
+      # Download from Firebase Console → Project settings → Service accounts
+      # → Generate new private key, save as backend/firebase_service_account.json,
+      # then uncomment this mount:
+      # - ./firebase_service_account.json:/run/secrets/firebase_service_account.json:ro
+    restart: unless-stopped
+
+volumes:
+  trenzy_db_data:
+  trenzy_redis_data:
+  avatars:

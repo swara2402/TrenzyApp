@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Trenzy - your AI fashion discovery app.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="trenzy">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>trenzy</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    #loader-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: radial-gradient(circle at 30% 20%, #1e1a10 0%, #0b0b0f 70%);
+      color: #f2ca50;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: opacity 0.4s ease;
+    }
+    #loader-splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #loader-splash .logo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f2ca50, #ff8a5c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      font-weight: 800;
+      color: #0b0b0f;
+      letter-spacing: -2px;
+      box-shadow: 0 0 60px rgba(242, 202, 80, 0.35);
+    }
+    #loader-splash .name {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+    #loader-splash .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid rgba(242, 202, 80, 0.25);
+      border-top-color: #f2ca50;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    #loader-splash .status {
+      font-size: 13px;
+      letter-spacing: 1px;
+      opacity: 0.7;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    #loader-error {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: #0b0b0f;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+    #loader-error h1 {
+      font-size: 22px;
+      margin: 0;
+      color: #f2ca50;
+    }
+    #loader-error p {
+      font-size: 14px;
+      max-width: 420px;
+      margin: 0;
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+    #loader-error button {
+      margin-top: 8px;
+      padding: 12px 28px;
+      background: #f2ca50;
+      border: none;
+      border-radius: 999px;
+      color: #0b0b0f;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #loader-error button:hover {
+      background: #ffd866;
+    }
+  </style>
+</head>
+<body>
+  <div id="loader-splash">
+    <div class="logo">T</div>
+    <div class="name">Trenzy</div>
+    <div class="spinner"></div>
+    <div class="status">Loading the experience&hellip;</div>
+  </div>
+
+  <div id="loader-error">
+    <h1>Unable to load Trenzy</h1>
+    <p id="loader-error-detail">Please check your connection and try again.</p>
+    <button onclick="location.reload()">Reload Page</button>
+  </div>
+
+  <script src="flutter.js" async></script>
+  <script>
+    (function () {
+      // Mirrors the build config normally written by flutter_bootstrap.js.
+      // canvasKitBaseUrl is forced below so CanvasKit ships from this server
+      // instead of the gstatic CDN (avoids a blank screen in offline demos).
+      window._flutter = window._flutter || {};
+      window._flutter.buildConfig = {
+        "engineRevision": "0cd610717bde95fd88343c64f81c11ba4e5c0010",
+        "builds": [{"compileTarget": "dart2js", "renderer": "canvaskit", "mainJsPath": "main.dart.js"}, {}]
+      };
+
+      var splash = document.getElementById('loader-splash');
+      var errorBox = document.getElementById('loader-error');
+      var errorDetail = document.getElementById('loader-error-detail');
+      var statusEl = document.querySelector('#loader-splash .status');
+      var timedOut = false;
+
+      function showError(message) {
+        errorDetail.textContent = message || 'Please check your connection and try again.';
+        errorBox.style.display = 'flex';
+      }
+
+      function setStatus(text) {
+        if (statusEl) statusEl.innerHTML = text;
+      }
+
+      // If the boot sequence takes too long, surface a reload so the kiosk
+      // never sits on a blank screen.
+      var timeoutHandle = setTimeout(function () {
+        timedOut = true;
+        showError('The app took too long to start. Please reload and try again.');
+      }, 30000);
+
+      function start() {
+        if (!window._flutter || !window._flutter.loader) {
+          if (timedOut) return;
+          setTimeout(start, 100);
+          return;
+        }
+        window._flutter.loader.load({
+          config: { canvasKitBaseUrl: "canvaskit/" },
+          onEntrypointLoaded: async function (engineInitializer) {
+            clearTimeout(timeoutHandle);
+            try {
+              setStatus('Warming up the engine&hellip;');
+              var engine = await engineInitializer.initializeEngine();
+              await engine.runApp();
+              if (splash) splash.classList.add('hidden');
+            } catch (e) {
+              console.error('Trenzy failed to start:', e);
+              showError('We could not start the experience. Please reload and try again.');
+            }
+          }
+        }).catch(function (e) {
+          clearTimeout(timeoutHandle);
+          if (timedOut) return;
+          console.error('Trenzy loader failed:', e);
+          showError('We could not load the experience. Please reload and try again.');
+        });
+      }
+      start();
+    })();
+  </script>
+</body>
+</html>

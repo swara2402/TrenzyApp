@@ -1,0 +1,101 @@
+{
+  "total_read": 22,
+  "total_valid": 0,
+  "total_skipped": 22,
+  "total_failed": 0,
+  "total_imported": 0,
+  "errors": [],
+  "warnings": [
+    {
+      "product_id": "prod_001",
+      "reason": "Product already exists in DB: prod_001"
+    },
+    {
+      "product_id": "prod_002",
+      "reason": "Product already exists in DB: prod_002"
+    },
+    {
+      "product_id": "prod_003",
+      "reason": "Product already exists in DB: prod_003"
+    },
+    {
+      "product_id": "prod_004",
+      "reason": "Product already exists in DB: prod_004"
+    },
+    {
+      "product_id": "prod_005",
+      "reason": "Product already exists in DB: prod_005"
+    },
+    {
+      "product_id": "prod_006",
+      "reason": "Product already exists in DB: prod_006"
+    },
+    {
+      "product_id": "prod_007",
+      "reason": "Product already exists in DB: prod_007"
+    },
+    {
+      "product_id": "prod_008",
+      "reason": "Product already exists in DB: prod_008"
+    },
+    {
+      "product_id": "prod_009",
+      "reason": "Product already exists in DB: prod_009"
+    },
+    {
+      "product_id": "prod_010",
+      "reason": "Product already exists in DB: prod_010"
+    },
+    {
+      "product_id": "prod_011",
+      "reason": "Product already exists in DB: prod_011"
+    },
+    {
+      "product_id": "prod_012",
+      "reason": "Product already exists in DB: prod_012"
+    },
+    {
+      "product_id": "prod_013",
+      "reason": "Product already exists in DB: prod_013"
+    },
+    {
+      "product_id": "prod_014",
+      "reason": "Product already exists in DB: prod_014"
+    },
+    {
+      "product_id": "prod_015",
+      "reason": "Product already exists in DB: prod_015"
+    },
+    {
+      "product_id": "prod_016",
+      "reason": "Product already exists in DB: prod_016"
+    },
+    {
+      "product_id": "prod_017",
+      "reason": "Product already exists in DB: prod_017"
+    },
+    {
+      "product_id": "prod_018",
+      "reason": "Product already exists in DB: prod_018"
+    },
+    {
+      "product_id": "prod_019",
+      "reason": "Product already exists in DB: prod_019"
+    },
+    {
+      "product_id": "prod_020",
+      "reason": "Product already exists in DB: prod_020"
+    },
+    {
+      "product_id": "prod_021",
+      "reason": "Product already exists in DB: prod_021"
+    },
+    {
+      "product_id": "prod_022",
+      "reason": "Product already exists in DB: prod_022"
+    }
+  ],
+  "seen_product_ids": "{'prod_009', 'prod_015', 'prod_011', 'prod_012', 'prod_014', 'prod_019', 'prod_001', 'prod_020', 'prod_018', 'prod_013', 'prod_004', 'prod_005', 'prod_016', 'prod_002', 'prod_006', 'prod_007', 'prod_021', 'prod_022', 'prod_017', 'prod_003', 'prod_010', 'prod_008'}",
+  "brands_created": 0,
+  "categories_created": 0
+}

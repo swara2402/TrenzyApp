@@ -1,0 +1,68 @@
+# Production overlay for the Trenzy backend.
+#
+# Usage (from backend/):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Security properties of this overlay:
+#   - APP_ENV=production: dev auth bypass refused, simulation payments refused,
+#     wildcard CORS/SOCKET origins refused (config.py + main.py fail closed).
+#   - PostgreSQL (db) and Redis ports are private to the internal container network
+#     and NOT published/exposed to the host/Internet.
+#   - CORS/SOCKET origins are REQUIRED (no defaults, no wildcards).
+#   - No bind-mount of host source into the container; only the built image
+#     plus a read-only credentials secret mount run in production.
+#   - DEV_AUTH_BYPASS is forced off.
+#   - PAYMENTS_MODE=razorpay and RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET are REQUIRED.
+version: '3.8'
+
+services:
+  # Database is strictly private within internal container network in production
+  db:
+    ports: []
+    restart: always
+
+  # Redis is strictly private within internal container network in production
+  redis:
+    ports: []
+    restart: always
+
+  backend:
+    environment:
+      APP_ENV: production
+      DEV_AUTH_BYPASS: "false"
+      DEV_AUTH_UID: ""
+      DEV_AUTH_SECRET: ""
+
+      # Trust X-Forwarded-For ONLY because the production deployment sits behind
+      # a trusted reverse proxy / load balancer that OVERWRITES the header for
+      # every request. Without this, every client appears as the proxy IP and
+      # the whole API shares a single per-IP rate-limit budget (global 429s).
+      TRUST_X_FORWARDED_FOR: ${TRUST_X_FORWARDED_FOR:-true}
+
+      # Explicit origins required — startup refuses empty or '*'.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required in production (comma-separated, no wildcards)}
+      SOCKET_ALLOWED_ORIGINS: ${SOCKET_ALLOWED_ORIGINS:?SOCKET_ALLOWED_ORIGINS is required in production (comma-separated, no wildcards)}
+
+      # Payments: real gateway with mandatory key secret and webhook secret.
+      PAYMENTS_MODE: ${PAYMENTS_MODE:-razorpay}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:?RAZORPAY_KEY_ID is required in production}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:?RAZORPAY_KEY_SECRET is required in production}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:?RAZORPAY_WEBHOOK_SECRET is required in production}
+
+      # Redis URL is required in production for shared rate limiting and socket clustering
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+
+      # Firebase Admin credentials via read-only secret file mount.
+      FIREBASE_SERVICE_ACCOUNT_FILE: /run/secrets/firebase_service_account.json
+      FIREBASE_SERVICE_ACCOUNT_JSON: ""
+      # Project ID used to validate token aud/iss claims.
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?FIREBASE_PROJECT_ID is required in production}
+    volumes:
+      # Read-only credential mount — never baked into the image.
+      - ${FIREBASE_SERVICE_ACCOUNT_FILE:?Set FIREBASE_SERVICE_ACCOUNT_FILE to the service account JSON path on the host}:/run/secrets/firebase_service_account.json:ro
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1g
