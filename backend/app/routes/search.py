@@ -156,8 +156,8 @@ async def visual_search(
     allowed arbitrary server-side URL fetching and created an SSRF risk.
 
     The image is encoded with FashionCLIP. Nearest neighbours are found via
-    pgvector when available, otherwise via a NumPy in-memory scan of
-    ``ProductEmbedding`` rows.
+    the canonical Product image vectors. The catalog is intentionally small enough
+    for a predictable NumPy scan when pgvector is unavailable.
 
     Returns HTTP 503 when the ML stack is not loaded (e.g. dev/test without
     model weights), so callers can show a clear degraded-mode message rather
@@ -165,7 +165,6 @@ async def visual_search(
     """
     try:
         from ..ai.vision.embedding_service import get_embedding_service
-        from ..ai.vision.vector_search import VectorSearch
     except ImportError as exc:
         logger.warning("ML stack not available for visual search: %s", exc)
         raise HTTPException(
@@ -239,42 +238,6 @@ async def visual_search(
     except Exception as exc:
         logger.error("Visual search failed: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Visual search error.")
-    # Fallback: raw pgvector / NumPy scan via ProductEmbedding table
-    try:
-        from ..ai.models_ai import ProductEmbedding
-        import numpy as np
-
-        embeddings = (
-            db.query(ProductEmbedding)
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
-            .all()
-        )
-        if not embeddings:
-            raise HTTPException(
-                status_code=503,
-                detail="No product embeddings found. Run the embedding pipeline first.",
-            )
-
-        scored: list[tuple[Product, float]] = []
-        for emb in embeddings:
-            arr = np.array(emb.combined_embedding, dtype=np.float32)
-            norm_q = query_vector / (np.linalg.norm(query_vector) + 1e-8)
-            norm_p = arr / (np.linalg.norm(arr) + 1e-8)
-            score = float(np.dot(norm_q, norm_p))
-            if score >= min_similarity:
-                product = db.get(Product, emb.product_id)
-                if product and not product.is_archived:
-                    scored.append((product, score))
-
-        scored.sort(key=lambda x: x[1], reverse=True)
-        return _format_products(scored[:limit])
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("NumPy fallback visual search failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Visual search error.")
-
 
 # ---------------------------------------------------------------------------
 # GET /api/search/semantic_search  — text query to products via FashionCLIP
@@ -290,8 +253,8 @@ async def semantic_search(
 ):
     """Semantic search: find products matching a natural-language description.
 
-    The query is encoded with FashionCLIP's text encoder.  Nearest neighbours
-    are found via pgvector or a NumPy scan of ``ProductEmbedding`` rows.
+    The query is encoded with FashionCLIP's text encoder and ranked against the
+    canonical Product text vectors stored by the catalog importer.
 
     Returns HTTP 503 when the ML stack is not loaded.
     """
