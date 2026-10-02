@@ -95,6 +95,10 @@ def main() -> int:
                     emb = service.model.encode_image(str(image_path))
                     product.image_embedding_vector = emb.tolist()
                     product.image_embedding_status = "completed"
+                    # Text vectors make natural-language search use the same catalog.
+                    text = service._build_product_text(product)
+                    product.text_embedding_vector = service.model.encode_text(text).tolist()
+                    product.text_embedding_status = "completed"
                     product.image_embedding_model = service.model_name
                 db.commit()
                 logger.info("Embedded %d/%d products", min(start + 32, len(products)), len(products))
