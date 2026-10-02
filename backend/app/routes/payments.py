@@ -35,6 +35,7 @@ import hmac
 import json
 import logging
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -305,7 +306,7 @@ def _cart_total_and_snapshot(
         product = products_map.get(ci.product_id)
         product_name = product.name if product else ci.product_id
         if product and product.price is not None:
-            price_paise = int(float(product.price) * 100)
+            price_paise = int((Decimal(str(product.price)) * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         else:
             price_paise = 0
 
