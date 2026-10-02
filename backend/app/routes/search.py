@@ -211,24 +211,34 @@ async def visual_search(
             detail="Visual search is temporarily unavailable.",
         )
 
-    # Nearest-neighbour search
+    # Search the catalog's canonical image vectors directly. This keeps visual
+    # search aligned with the imported 2,000-image catalog and avoids the legacy
+    # ProductEmbedding integer/string FK mismatch.
     try:
-        searcher = VectorSearch()
-        results = searcher.find_similar_by_image_vector(
-            db=db,
-            image_vector=query_vector,
-            limit=limit,
-            min_similarity=min_similarity,
-        )
-        return _format_products(results)
-    except AttributeError:
-        # VectorSearch may not have find_similar_by_image_vector on older code;
-        # fall through to the pgvector_search path.
-        pass
-    except Exception as exc:
-        logger.error("Vector search failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Vector search error.")
+        import numpy as np
+        products = db.query(Product).filter(
+            Product.is_archived.is_(False),
+            Product.image_embedding_vector.isnot(None),
+        ).all()
+        if not products:
+            raise HTTPException(status_code=503, detail="No product image embeddings found. Run the catalog embedding import first.")
 
+        query_norm = query_vector / (np.linalg.norm(query_vector) + 1e-8)
+        scored = []
+        for product in products:
+            arr = np.asarray(product.image_embedding_vector, dtype=np.float32)
+            if arr.shape != query_norm.shape:
+                continue
+            score = float(np.dot(query_norm, arr / (np.linalg.norm(arr) + 1e-8)))
+            if score >= min_similarity:
+                scored.append((product, score))
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return _format_products(scored[:limit])
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Visual search failed: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Visual search error.")
     # Fallback: raw pgvector / NumPy scan via ProductEmbedding table
     try:
         from ..ai.models_ai import ProductEmbedding
