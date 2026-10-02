@@ -111,7 +111,7 @@ trenzy/
 
 ### AI/ML Fashion Intelligence & Recommendation Pipeline
 
-Trenzy features a production multimodal recommendation and visual search pipeline powered by FashionCLIP embeddings and pgvector ANN retrieval.
+Trenzy features a multimodal recommendation and visual search pipeline powered by FashionCLIP embeddings. The current catalog search path uses the canonical Product vectors with a NumPy cosine scan; pgvector remains an optional future acceleration path.
 
 **Documentation & Contracts:**
 - [Model Card (MODEL_CARD.md)](MODEL_CARD.md): Model architectures, evaluation metrics, and operational boundaries.
@@ -251,11 +251,58 @@ export DATABASE_URL="postgresql://postgres:password@localhost:5432/trenzy"
 alembic upgrade head
 ```
 
-**Load Sample Data:**
+**Load Product Catalog:**
+
+Keep the supplied dataset outside Git and mount it into the runtime, for example:
+
+```text
+/data/trenzy/catalog.csv
+/data/trenzy/images/TRZ-0001.jpg
+...
+/data/trenzy/images/TRZ-2000.jpg
+```
+
+Run the validation-only smoke check first:
+
 ```bash
 cd backend
-python -m app.scripts.load_products  # Load sample product catalog
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv \
+  --dry-run
 ```
+
+Then import the 2,000 products:
+
+```bash
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv
+```
+
+Finally generate/resume FashionCLIP embeddings:
+
+```bash
+python -m app.scripts.import_image_catalog \
+  --image-dir /data/trenzy/images \
+  --catalog-file /data/trenzy/catalog.csv \
+  --embed
+```
+
+For a small runtime smoke test, add `--limit 10`. Use `--batch-size 16` or `--batch-size 32` to control checkpoint/commit size. The embedding job is resumable: completed vectors for the current model/version are skipped, failed products are retried, and a changed source image resets its embedding status. A non-zero exit code means the catalog is not fully indexed.
+
+The image directory is intentionally not committed to Git. Catalog assets are served from `/product-images/`; user uploads remain private behind authenticated routes. Product IDs come directly from the catalog (`TRZ-0001` through `TRZ-2000`) and image hashes are recorded for provenance/change detection.
+
+**Run the import from GitHub Actions:** The repository includes `.github/workflows/import-trenzy-catalog.yml`. It is a manual workflow that runs on a **self-hosted GitHub Actions runner**, because the 2,000-image dataset is deliberately kept outside Git and FashionCLIP inference may benefit from local/GPU hardware.
+
+Before running it:
+1. Register a self-hosted runner for this repository.
+2. Put the dataset on that runner, for example at `/data/trenzy/catalog.csv` and `/data/trenzy/images/`.
+3. Add repository Actions secrets named `TRENZY_DB_HOST`, `TRENZY_DB_PORT`, `TRENZY_POSTGRES_DB`, `TRENZY_POSTGRES_USER`, and `TRENZY_POSTGRES_PASSWORD`.
+4. Open **GitHub → Actions → Import Trenzy catalog → Run workflow**.
+5. Keep **Generate FashionCLIP embeddings** enabled to import the catalog and generate/resume embeddings.
+
+The workflow first performs the same zero-write dataset validation as `--dry-run`, then runs the idempotent importer. It fails rather than silently proceeding when the dataset is missing or invalid.
 
 **Inspect Schema:**
 ```bash
@@ -512,4 +559,4 @@ For issues, questions, or feature requests, open a GitHub issue or contact the T
 
 **Version**: 1.0.0-beta  
 **Last Updated**: 2024  
-**Status**: Production-ready
+**Status**: Beta / pre-production — run the security and catalog checks before production deployment.

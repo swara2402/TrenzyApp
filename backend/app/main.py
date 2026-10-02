@@ -512,7 +512,11 @@ app.include_router(persona.router)
 app.include_router(posts.router)
 # Serve uploaded files
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# Only catalog assets are public. User uploads (avatars/wardrobe/post images)
+# are served through authenticated routes in routes/uploads.py.
+_PRODUCT_IMAGE_DIR = os.path.join(UPLOAD_DIR, "product-images", "images")
+if os.path.isdir(_PRODUCT_IMAGE_DIR):
+    app.mount("/product-images", StaticFiles(directory=_PRODUCT_IMAGE_DIR), name="product-images")
 
 app.include_router(blends.router)
 app.include_router(blend_features.router)

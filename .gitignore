@@ -44,7 +44,9 @@ reports/
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
-pubspec.lock
+# Commit Flutter dependency resolution for reproducible builds
+# pubspec.lock is intentionally tracked
+
 ios/Pods/
 ios/.symlinks/
 android/.gradle/

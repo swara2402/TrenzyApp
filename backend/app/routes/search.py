@@ -18,11 +18,12 @@ from __future__ import annotations
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
 
 from ..db import get_session
+from ..auth_deps import get_current_user
 from ..models import Product
 from ..ai.ml_config import EMBEDDING_DIM
 
@@ -141,18 +142,22 @@ async def search_products(
 # GET /api/search/visual_search  — image-to-products via FashionCLIP
 # ---------------------------------------------------------------------------
 
-@router.get("/visual_search")
+@router.post("/visual_search")
 async def visual_search(
-    image_url: str = Query(..., description="Publicly accessible image URL"),
+    file: UploadFile = File(..., description="Fashion image to search"),
+    user: dict = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
     min_similarity: float = Query(0.0, ge=0.0, le=1.0, description="Minimum cosine similarity"),
     db: Session = Depends(get_session),
 ):
-    """Visual search: find products similar to the supplied image.
+    """Visual search: find products similar to an uploaded image.
 
-    The image is encoded with FashionCLIP.  Nearest neighbours are found via
-    pgvector when available, otherwise via a NumPy in-memory scan of
-    ``ProductEmbedding`` rows.
+    Remote URLs are deliberately not accepted. The previous implementation
+    allowed arbitrary server-side URL fetching and created an SSRF risk.
+
+    The image is encoded with FashionCLIP. Nearest neighbours are found via
+    the canonical Product image vectors. The catalog is intentionally small enough
+    for a predictable NumPy scan when pgvector is unavailable.
 
     Returns HTTP 503 when the ML stack is not loaded (e.g. dev/test without
     model weights), so callers can show a clear degraded-mode message rather
@@ -160,7 +165,6 @@ async def visual_search(
     """
     try:
         from ..ai.vision.embedding_service import get_embedding_service
-        from ..ai.vision.vector_search import VectorSearch
     except ImportError as exc:
         logger.warning("ML stack not available for visual search: %s", exc)
         raise HTTPException(
@@ -168,72 +172,72 @@ async def visual_search(
             detail="Visual search is temporarily unavailable (ML stack not loaded).",
         )
 
-    # Encode the query image
+    # Read and validate the image before passing it to the ML model.
+    # This removes arbitrary remote URL fetching and bounds decompression work.
     try:
-        embedding_service = get_embedding_service()
-        # encode_image accepts a URL string — fashionclip downloads it internally
-        query_vector = embedding_service.model.encode_image(image_url)
-    except Exception as exc:
-        logger.error("Failed to encode query image '%s': %s", image_url, exc)
-        raise HTTPException(
-            status_code=422,
-            detail=f"Could not encode the supplied image: {exc}",
-        )
+        import io
+        from PIL import Image, UnidentifiedImageError
 
-    # Nearest-neighbour search
-    try:
-        searcher = VectorSearch()
-        results = searcher.find_similar_by_image_vector(
-            db=db,
-            image_vector=query_vector,
-            limit=limit,
-            min_similarity=min_similarity,
-        )
-        return _format_products(results)
-    except AttributeError:
-        # VectorSearch may not have find_similar_by_image_vector on older code;
-        # fall through to the pgvector_search path.
-        pass
-    except Exception as exc:
-        logger.error("Vector search failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Vector search error.")
+        raw = await file.read(5 * 1024 * 1024 + 1)
+        if not raw:
+            raise HTTPException(status_code=400, detail="Uploaded image is empty.")
+        if len(raw) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Image is too large (max 5MB).")
 
-    # Fallback: raw pgvector / NumPy scan via ProductEmbedding table
-    try:
-        from ..ai.models_ai import ProductEmbedding
-        import numpy as np
+        try:
+            image = Image.open(io.BytesIO(raw))
+            image.verify()
+            image = Image.open(io.BytesIO(raw)).convert("RGB")
+        except (UnidentifiedImageError, OSError):
+            raise HTTPException(status_code=400, detail="Invalid image file.")
 
-        embeddings = (
-            db.query(ProductEmbedding)
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
-            .all()
-        )
-        if not embeddings:
-            raise HTTPException(
-                status_code=503,
-                detail="No product embeddings found. Run the embedding pipeline first.",
-            )
-
-        scored: list[tuple[Product, float]] = []
-        for emb in embeddings:
-            arr = np.array(emb.combined_embedding, dtype=np.float32)
-            norm_q = query_vector / (np.linalg.norm(query_vector) + 1e-8)
-            norm_p = arr / (np.linalg.norm(arr) + 1e-8)
-            score = float(np.dot(norm_q, norm_p))
-            if score >= min_similarity:
-                product = db.get(Product, emb.product_id)
-                if product and not product.is_archived:
-                    scored.append((product, score))
-
-        scored.sort(key=lambda x: x[1], reverse=True)
-        return _format_products(scored[:limit])
-
+        width, height = image.size
+        if width < 64 or height < 64 or width > 4096 or height > 4096:
+            raise HTTPException(status_code=400, detail="Image dimensions must be between 64x64 and 4096x4096.")
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error("NumPy fallback visual search failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Visual search error.")
+        logger.error("Failed to validate visual-search image: %s", exc, exc_info=True)
+        raise HTTPException(status_code=400, detail="Invalid image upload.")
 
+    try:
+        embedding_service = get_embedding_service()
+        query_vector = embedding_service.model.encode_image(image)
+    except Exception as exc:
+        logger.error("Failed to encode visual-search image: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=503,
+            detail="Visual search is temporarily unavailable.",
+        )
+
+    # Search the catalog's canonical image vectors directly. This keeps visual
+    # search aligned with the imported 2,000-image catalog and avoids the legacy
+    # ProductEmbedding integer/string FK mismatch.
+    try:
+        import numpy as np
+        products = db.query(Product).filter(
+            Product.is_archived.is_(False),
+            Product.image_embedding_vector.isnot(None),
+        ).all()
+        if not products:
+            raise HTTPException(status_code=503, detail="No product image embeddings found. Run the catalog embedding import first.")
+
+        query_norm = query_vector / (np.linalg.norm(query_vector) + 1e-8)
+        scored = []
+        for product in products:
+            arr = np.asarray(product.image_embedding_vector, dtype=np.float32)
+            if arr.shape != query_norm.shape:
+                continue
+            score = float(np.dot(query_norm, arr / (np.linalg.norm(arr) + 1e-8)))
+            if score >= min_similarity:
+                scored.append((product, score))
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return _format_products(scored[:limit])
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Visual search failed: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Visual search error.")
 
 # ---------------------------------------------------------------------------
 # GET /api/search/semantic_search  — text query to products via FashionCLIP
@@ -241,15 +245,16 @@ async def visual_search(
 
 @router.get("/semantic_search")
 async def semantic_search(
-    query: str = Query(..., description="Natural-language fashion query"),
+    query: str = Query(..., min_length=1, max_length=500, description="Natural-language fashion query"),
+    user: dict = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
     min_similarity: float = Query(0.0, ge=0.0, le=1.0, description="Minimum cosine similarity"),
     db: Session = Depends(get_session),
 ):
     """Semantic search: find products matching a natural-language description.
 
-    The query is encoded with FashionCLIP's text encoder.  Nearest neighbours
-    are found via pgvector or a NumPy scan of ``ProductEmbedding`` rows.
+    The query is encoded with FashionCLIP's text encoder and ranked against the
+    canonical Product text vectors stored by the catalog importer.
 
     Returns HTTP 503 when the ML stack is not loaded.
     """
@@ -269,38 +274,32 @@ async def semantic_search(
     except Exception as exc:
         logger.error("Failed to encode query text '%s': %s", query, exc)
         raise HTTPException(
-            status_code=422,
-            detail=f"Could not encode the supplied query: {exc}",
+            status_code=503,
+            detail="Semantic search is temporarily unavailable.",
         )
 
-    # Nearest-neighbour scan via ProductEmbedding (text or combined vector)
+    # Scan the canonical text vectors stored on catalog products. For a
+    # 2,000-item catalog this is predictable and avoids the legacy embedding
+    # table's incompatible FK type.
     try:
-        from ..ai.models_ai import ProductEmbedding
         import numpy as np
+        products = db.query(Product).filter(
+            Product.is_archived.is_(False),
+            Product.text_embedding_vector.isnot(None),
+        ).all()
+        if not products:
+            raise HTTPException(status_code=503, detail="No product text embeddings found. Run the catalog embedding import first.")
 
-        embeddings = (
-            db.query(ProductEmbedding)
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
-            .all()
-        )
-        if not embeddings:
-            raise HTTPException(
-                status_code=503,
-                detail="No product embeddings found. Run the embedding pipeline first.",
-            )
-
-        scored: list[tuple[Product, float]] = []
-        for emb in embeddings:
-            arr = np.array(emb.combined_embedding, dtype=np.float32)
-            norm_q = query_vector / (np.linalg.norm(query_vector) + 1e-8)
-            norm_p = arr / (np.linalg.norm(arr) + 1e-8)
-            score = float(np.dot(norm_q, norm_p))
+        query_norm = query_vector / (np.linalg.norm(query_vector) + 1e-8)
+        scored = []
+        for product in products:
+            arr = np.asarray(product.text_embedding_vector, dtype=np.float32)
+            if arr.shape != query_norm.shape:
+                continue
+            score = float(np.dot(query_norm, arr / (np.linalg.norm(arr) + 1e-8)))
             if score >= min_similarity:
-                product = db.get(Product, emb.product_id)
-                if product and not product.is_archived:
-                    scored.append((product, score))
-
-        scored.sort(key=lambda x: x[1], reverse=True)
+                scored.append((product, score))
+        scored.sort(key=lambda item: item[1], reverse=True)
         return _format_products(scored[:limit])
 
     except HTTPException:
