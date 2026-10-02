@@ -64,6 +64,11 @@ jobs:
           "${PYTHON_BIN}" -m pip install --upgrade pip
           "${PYTHON_BIN}" -m pip install -r requirements.txt
 
+      - name: Apply database migrations
+        working-directory: backend
+        run: |
+          "${PYTHON_BIN}" -m alembic -c alembic.ini upgrade head
+
       - name: Validate catalog (no database writes)
         working-directory: backend
         env:
