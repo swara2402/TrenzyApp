@@ -1,0 +1,102 @@
+name: Import Trenzy catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_dir:
+        description: "Absolute path to the mounted Trenzy image directory on the runner"
+        required: true
+        default: "/data/trenzy/images"
+      catalog_file:
+        description: "Absolute path to catalog.csv on the runner"
+        required: true
+        default: "/data/trenzy/catalog.csv"
+      embed:
+        description: "Generate FashionCLIP embeddings"
+        required: true
+        type: boolean
+        default: true
+      batch_size:
+        description: "Database/checkpoint batch size"
+        required: true
+        default: "16"
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    # This job intentionally uses a self-hosted runner because the 2,000-image
+    # dataset is not stored in Git and FashionCLIP inference benefits from the
+    # runner having local dataset storage (and optionally a GPU).
+    runs-on: self-hosted
+
+    env:
+      DB_HOST: ${{ secrets.TRENZY_DB_HOST }}
+      DB_PORT: ${{ secrets.TRENZY_DB_PORT }}
+      POSTGRES_DB: ${{ secrets.TRENZY_POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.TRENZY_POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.TRENZY_POSTGRES_PASSWORD }}
+      APP_ENV: development
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Verify dataset and database configuration
+        env:
+          IMAGE_DIR: ${{ inputs.image_dir }}
+          CATALOG_FILE: ${{ inputs.catalog_file }}
+        run: |
+          set -euo pipefail
+          test -n "${POSTGRES_PASSWORD}" || { echo "::error::TRENZY_POSTGRES_PASSWORD is not configured."; exit 1; }
+          test -d "${IMAGE_DIR}" || { echo "::error::Image directory does not exist: ${IMAGE_DIR}"; exit 1; }
+          test -f "${CATALOG_FILE}" || { echo "::error::Catalog file does not exist: ${CATALOG_FILE}"; exit 1; }
+          echo "Dataset and database configuration found."
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Validate catalog (no database writes)
+        working-directory: backend
+        env:
+          IMAGE_DIR: ${{ inputs.image_dir }}
+          CATALOG_FILE: ${{ inputs.catalog_file }}
+        run: |
+          python -m app.scripts.import_image_catalog \
+            --image-dir "${IMAGE_DIR}" \
+            --catalog-file "${CATALOG_FILE}" \
+            --dry-run
+
+      - name: Import catalog and generate embeddings
+        if: ${{ inputs.embed }}
+        working-directory: backend
+        env:
+          IMAGE_DIR: ${{ inputs.image_dir }}
+          CATALOG_FILE: ${{ inputs.catalog_file }}
+          BATCH_SIZE: ${{ inputs.batch_size }}
+        run: |
+          python -m app.scripts.import_image_catalog \
+            --image-dir "${IMAGE_DIR}" \
+            --catalog-file "${CATALOG_FILE}" \
+            --embed \
+            --batch-size "${BATCH_SIZE}"
+
+      - name: Import catalog without embeddings
+        if: ${{ !inputs.embed }}
+        working-directory: backend
+        env:
+          IMAGE_DIR: ${{ inputs.image_dir }}
+          CATALOG_FILE: ${{ inputs.catalog_file }}
+        run: |
+          python -m app.scripts.import_image_catalog \
+            --image-dir "${IMAGE_DIR}" \
+            --catalog-file "${CATALOG_FILE}"
