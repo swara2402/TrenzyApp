@@ -25,53 +25,8 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
-    name: Diagnose migration state
-    runs-on: self-hosted
-    env:
-      DB_HOST: ${{ secrets.TRENZY_DB_HOST }}
-      DB_PORT: ${{ secrets.TRENZY_DB_PORT }}
-      POSTGRES_DB: ${{ secrets.TRENZY_POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.TRENZY_POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.TRENZY_POSTGRES_PASSWORD }}
-      APP_ENV: development
-      PYTHON_BIN: /opt/homebrew/bin/python3.11
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Verify Python 3.11
-        run: |
-          set -euo pipefail
-          test -x "${PYTHON_BIN}" || { echo "::error::Python 3.11 not found at ${PYTHON_BIN}"; exit 1; }
-          "${PYTHON_BIN}" --version
-
-
-        working-directory: backend/
-        run: |
-          set -euo pipefail
-          echo "=== Migration files ==="
-          find migrations/versions -maxdepth 1 -type f -print | sort
-          echo "=== Alembic heads ==="
-          "${PYTHON_BIN}" -m alembic -c alembic.ini heads || true
-          echo "=== Alembic history ==="
-          "${PYTHON_BIN}" -m alembic -c alembic.ini history || true
-          echo "=== Database Alembic revision ==="
-          PGPASSWORD="${POSTGRES_PASSWORD}" /opt/homebrew/bin/psql \
-            -h "${DB_HOST}" -p "${DB_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
-            -v ON_ERROR_STOP=1 \
-            -c "SELECT version_num FROM alembic_version ORDER BY version_num;"
-          echo "=== Products columns ==="
-          PGPASSWORD="${POSTGRES_PASSWORD}" /opt/homebrew/bin/psql \
-            -h "${DB_HOST}" -p "${DB_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
-            -v ON_ERROR_STOP=1 \
-            -c "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='products' ORDER BY ordinal_position;"
-
-
   import:
-    needs: diagnose
     runs-on: self-hosted
-
     env:
       DB_HOST: ${{ secrets.TRENZY_DB_HOST }}
       DB_PORT: ${{ secrets.TRENZY_DB_PORT }}
