@@ -97,13 +97,18 @@ jobs:
 
           echo "Current database revision: ${CURRENT_REVISION}"
 
-          # The database was stamped at 0012 by an older migration chain that
-          # is no longer present in this repository. The current chain resumes
-          # at 0004, and 0004 is idempotent for the existing schema. Re-anchor
-          # the version table there, then let Alembic apply 0016 and 0017.
+          # The database was stamped at 0012 by an older migration chain
+          # that is no longer present in this repository. Alembic cannot even
+          # run "stamp" while the version table points at an unknown revision,
+          # so repair the version row directly with PostgreSQL. This does not
+          # alter application tables. We then let the current chain apply the
+          # remaining migrations, including the additive 0017 schema sync.
           if [ "${CURRENT_REVISION}" = "0012" ]; then
-            echo "Re-anchoring legacy revision 0012 -> 0004_product_provenance"
-            "${PYTHON_BIN}" -m alembic -c alembic.ini stamp 0004_product_provenance
+            echo "Re-anchoring legacy revision 0012 -> 0004_product_provenance via PostgreSQL"
+            PGPASSWORD="${POSTGRES_PASSWORD}" /opt/homebrew/bin/psql \
+              -h "${DB_HOST}" -p "${DB_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+              -v ON_ERROR_STOP=1 \
+              -c "UPDATE alembic_version SET version_num = '0004_product_provenance' WHERE version_num = '0012';"
           elif [ "${CURRENT_REVISION}" != "0004_product_provenance" ] &&                [ "${CURRENT_REVISION}" != "0016_blend_unique" ] &&                [ "${CURRENT_REVISION}" != "0017_schema_sync" ]; then
             echo "::error::Unknown Alembic revision '${CURRENT_REVISION}'. Refusing automatic repair."
             exit 1
