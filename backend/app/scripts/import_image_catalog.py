@@ -93,7 +93,7 @@ def main() -> int:
                     rel = product.image_url.removeprefix("/product-images/")
                     image_path = IMAGE_DIR / rel
                     emb = service.model.encode_image(str(image_path))
-                    service.save_product_embedding(db, str(product.id), emb, image_embedding=emb)
+                    product.image_embedding_vector = emb.tolist()
                     product.image_embedding_status = "completed"
                     product.image_embedding_model = service.model_name
                 db.commit()
