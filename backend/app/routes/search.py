@@ -18,11 +18,12 @@ from __future__ import annotations
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
 
 from ..db import get_session
+from ..auth_deps import get_current_user
 from ..models import Product
 from ..ai.ml_config import EMBEDDING_DIM
 
@@ -141,16 +142,20 @@ async def search_products(
 # GET /api/search/visual_search  — image-to-products via FashionCLIP
 # ---------------------------------------------------------------------------
 
-@router.get("/visual_search")
+@router.post("/visual_search")
 async def visual_search(
-    image_url: str = Query(..., description="Publicly accessible image URL"),
+    file: UploadFile = File(..., description="Fashion image to search"),
+    user: dict = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
     min_similarity: float = Query(0.0, ge=0.0, le=1.0, description="Minimum cosine similarity"),
     db: Session = Depends(get_session),
 ):
-    """Visual search: find products similar to the supplied image.
+    """Visual search: find products similar to an uploaded image.
 
-    The image is encoded with FashionCLIP.  Nearest neighbours are found via
+    Remote URLs are deliberately not accepted. The previous implementation
+    allowed arbitrary server-side URL fetching and created an SSRF risk.
+
+    The image is encoded with FashionCLIP. Nearest neighbours are found via
     pgvector when available, otherwise via a NumPy in-memory scan of
     ``ProductEmbedding`` rows.
 
@@ -168,16 +173,42 @@ async def visual_search(
             detail="Visual search is temporarily unavailable (ML stack not loaded).",
         )
 
-    # Encode the query image
+    # Read and validate the image before passing it to the ML model.
+    # This removes arbitrary remote URL fetching and bounds decompression work.
+    try:
+        import io
+        from PIL import Image, UnidentifiedImageError
+
+        raw = await file.read(5 * 1024 * 1024 + 1)
+        if not raw:
+            raise HTTPException(status_code=400, detail="Uploaded image is empty.")
+        if len(raw) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Image is too large (max 5MB).")
+
+        try:
+            image = Image.open(io.BytesIO(raw))
+            image.verify()
+            image = Image.open(io.BytesIO(raw)).convert("RGB")
+        except (UnidentifiedImageError, OSError):
+            raise HTTPException(status_code=400, detail="Invalid image file.")
+
+        width, height = image.size
+        if width < 64 or height < 64 or width > 4096 or height > 4096:
+            raise HTTPException(status_code=400, detail="Image dimensions must be between 64x64 and 4096x4096.")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Failed to validate visual-search image: %s", exc, exc_info=True)
+        raise HTTPException(status_code=400, detail="Invalid image upload.")
+
     try:
         embedding_service = get_embedding_service()
-        # encode_image accepts a URL string — fashionclip downloads it internally
-        query_vector = embedding_service.model.encode_image(image_url)
+        query_vector = embedding_service.model.encode_image(image)
     except Exception as exc:
-        logger.error("Failed to encode query image '%s': %s", image_url, exc)
+        logger.error("Failed to encode visual-search image: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=422,
-            detail=f"Could not encode the supplied image: {exc}",
+            status_code=503,
+            detail="Visual search is temporarily unavailable.",
         )
 
     # Nearest-neighbour search
@@ -241,7 +272,8 @@ async def visual_search(
 
 @router.get("/semantic_search")
 async def semantic_search(
-    query: str = Query(..., description="Natural-language fashion query"),
+    query: str = Query(..., min_length=1, max_length=500, description="Natural-language fashion query"),
+    user: dict = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
     min_similarity: float = Query(0.0, ge=0.0, le=1.0, description="Minimum cosine similarity"),
     db: Session = Depends(get_session),
@@ -269,8 +301,8 @@ async def semantic_search(
     except Exception as exc:
         logger.error("Failed to encode query text '%s': %s", query, exc)
         raise HTTPException(
-            status_code=422,
-            detail=f"Could not encode the supplied query: {exc}",
+            status_code=503,
+            detail="Semantic search is temporarily unavailable.",
         )
 
     # Nearest-neighbour scan via ProductEmbedding (text or combined vector)
