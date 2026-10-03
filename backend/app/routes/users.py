@@ -30,7 +30,7 @@ from ..models import (
 from ..models_moderation import UserBlock
 from ..models_payments import Payment
 from ..models_notifications import Notification
-from ..age_policy import is_minor, validate_date_of_birth
+from ..age_policy import validate_date_of_birth
 
 logger = logging.getLogger(__name__)
 
