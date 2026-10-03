@@ -525,6 +525,18 @@ class ApiService implements ApiServiceBase {
   Future<List<FriendSuggestion>> getFriendSuggestions() => _socialApi.getFriendSuggestions();
 
   @override
+  Future<void> reportUser({
+    required String targetFirebaseUid,
+    required String reason,
+    String? details,
+  }) =>
+      _socialApi.reportUser(
+        targetFirebaseUid: targetFirebaseUid,
+        reason: reason,
+        details: details,
+      );
+
+  @override
   Future<void> followUser(String targetFirebaseUid) => _socialApi.followUser(targetFirebaseUid);
 
   @override
