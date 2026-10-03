@@ -54,6 +54,7 @@ import '../screens/account_screen.dart';
 import '../screens/friends_screen.dart';
 import '../widgets/glass_app_shell.dart';
 import '../theme/glass_theme.dart';
+import '../services/feature_flags.dart';
 
 class AppRoutes {
   static const root = '/';
@@ -589,12 +590,16 @@ GoRouter createRouter({
       GoRoute(
         path: AppRoutes.cart,
         parentNavigatorKey: _rootNavigatorKey,
+        redirect: (context, state) =>
+            FeatureFlags.paymentsEnabled ? null : AppRoutes.wishlist,
         pageBuilder: (context, state) =>
             _buildPageWithTransition(context, state, CartScreen()),
       ),
       GoRoute(
         path: AppRoutes.checkout,
         parentNavigatorKey: _rootNavigatorKey,
+        redirect: (context, state) =>
+            FeatureFlags.paymentsEnabled ? null : AppRoutes.wishlist,
         pageBuilder: (context, state) =>
             _buildPageWithTransition(context, state, const CheckoutScreen()),
       ),

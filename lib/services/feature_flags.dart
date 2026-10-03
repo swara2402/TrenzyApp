@@ -8,7 +8,8 @@ class FeatureFlags {
 
   static const bool paymentsEnabled = bool.fromEnvironment(
     'FF_PAYMENTS_ENABLED',
-    defaultValue: true,
+    // Cart/Checkout are post-launch; opt in explicitly for future builds.
+    defaultValue: false,
   );
 
   static const bool notificationsEnabled = bool.fromEnvironment(
