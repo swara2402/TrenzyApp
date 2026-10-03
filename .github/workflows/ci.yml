@@ -49,7 +49,6 @@ jobs:
       - name: Verify production config has no concrete credentials
         run: |
           ! grep -Eq '^FIREBASE_API_KEY=AIza' backend/.env.production.example
-          ! grep -Eq '^RAZORPAY_KEY_SECRET=(?!REPLACE_WITH)' backend/.env.production.example || true
       - name: Verify beta commerce gate is fail-closed
         run: |
           python - <<'PY'
