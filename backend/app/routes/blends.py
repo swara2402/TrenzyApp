@@ -54,7 +54,7 @@ from ..auth_helpers import (
     raise_forbidden,
     raise_not_found,
 )
-from ..models import Blend, BlendInvitation, BlendMember, BlendSwipe, Product
+from ..models import Blend, BlendInvitation, BlendMember, BlendSwipe, Product, Friend
 from .products import _product_payload
 
 router = APIRouter(prefix="/api/blends", tags=["blends"])
@@ -326,6 +326,16 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
     if not group:
         raise HTTPException(status_code=404, detail="Blend group not found")
     group_id = group.id
+
+    # Product rule: Blend participants are friends only. A valid invitation
+    # is not a substitute for an accepted mutual friendship.
+    if group.user_firebase_uid != firebase_uid:
+        friendship = session.query(Friend).filter(
+            ((Friend.user_firebase_uid == firebase_uid) & (Friend.friend_firebase_uid == group.user_firebase_uid))
+            | ((Friend.user_firebase_uid == group.user_firebase_uid) & (Friend.friend_firebase_uid == firebase_uid))
+        ).first()
+        if not friendship:
+            raise HTTPException(status_code=403, detail="Blend participants must be friends with the Blend owner")
 
     _check_join_rate(firebase_uid)
 
