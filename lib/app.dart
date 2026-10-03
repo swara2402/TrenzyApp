@@ -18,6 +18,7 @@ import 'providers/wardrobe_provider.dart';
 import 'providers/notifications_provider.dart';
 import 'providers/blend_provider.dart';
 import 'providers/friend_provider.dart';
+import 'providers/auth_provider.dart';
 import 'providers/feed_provider.dart';
 
 class TrenzyApp extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
   late final GoRouter _router;
   final _authNotifier = ValueNotifier<bool>(FeatureFlags.devAuthBypass);
   final _onboardingCompleteNotifier = ValueNotifier<bool>(FeatureFlags.devAuthBypass);
+  final _ageVerifiedNotifier = ValueNotifier<bool>(FeatureFlags.devAuthBypass);
   StreamSubscription<User?>? _authSubscription;
 
   @override
@@ -47,6 +49,7 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     _router = createRouter(
       authNotifier: _authNotifier,
       onboardingCompleteNotifier: _onboardingCompleteNotifier,
+      ageVerifiedNotifier: _ageVerifiedNotifier,
       onToggleTheme: () => toggleTheme(ref),
     );
     ApiService.onSessionExpired = () {
@@ -57,10 +60,12 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       _authNotifier.value = user != null || FeatureFlags.devAuthBypass;
       if (FeatureFlags.devAuthBypass) {
+        _ageVerifiedNotifier.value = true;
         _onboardingCompleteNotifier.value = true;
       }
       // Invalidate all user-specific providers on logout
       if (user == null && !FeatureFlags.devAuthBypass) {
+        _ageVerifiedNotifier.value = false;
         ref.invalidate(cartProvider);
         ref.invalidate(wishlistProvider);
         ref.invalidate(wardrobeProvider);
@@ -117,11 +122,16 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     _authSubscription?.cancel();
     _authNotifier.dispose();
     _onboardingCompleteNotifier.dispose();
+    _ageVerifiedNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (prev, next) {
+      _ageVerifiedNotifier.value = next.valueOrNull?.ageVerified ?? false;
+    });
+
     ref.listen(userPreferencesProvider, (prev, next) {
       _onboardingCompleteNotifier.value = next.onboardingCompleted;
     });

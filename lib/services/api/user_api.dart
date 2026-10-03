@@ -10,6 +10,14 @@ class UserApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
+  Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth) async {
+    final data = await _client.post('/users/me/age-verification', body: {
+      'date_of_birth': dateOfBirth.toIso8601String().substring(0, 10),
+    });
+    _client.invalidateCache('currentUser');
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
   Future<Map<String, dynamic>> getUserProfile(String userId) async {
     final data = await _client.get('/users/$userId');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};

@@ -30,6 +30,26 @@ from __future__ import annotations
 from fastapi import Depends, HTTPException, Request
 from . import firebase_auth
 from .db import get_session
+from .models import User
+
+_AGE_EXEMPT_PATHS = {
+    "/api/auth/login",
+    "/api/auth/signup",
+    "/api/auth/google-login",
+    "/api/auth/reset-password",
+    "/api/auth/me",
+    "/api/users/me/age-verification",
+}
+
+def _enforce_age_verification(request: Request, uid: str, db) -> None:
+    """Fail closed for authenticated app routes until 13+ is verified."""
+    if request.url.path in _AGE_EXEMPT_PATHS:
+        return
+    user = db.query(User).filter(User.firebase_uid == uid).first()
+    if user is None:
+        raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
+    if user.date_of_birth is None:
+        raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
 
 
 def get_bearer_token(request: Request) -> str | None:
@@ -40,35 +60,36 @@ def get_bearer_token(request: Request) -> str | None:
     return firebase_auth.get_bearer_token(request)
 
 
-def get_current_user(token: str | None = Depends(get_bearer_token)) -> dict[str, any]:
-    """Dependency that verifies and returns the current authenticated user.
-    
-    Raises HTTPException(401) if token is invalid or missing.
-    
-    Returns:
-        dict with keys: uid, firebase_uid, email (optional), bypass (bool)
-    """
+def get_current_user(
+    request: Request,
+    token: str | None = Depends(get_bearer_token),
+    db=Depends(get_session),
+) -> dict[str, any]:
+    """Verify Firebase auth and enforce the 13+ account gate."""
     if not token:
-        raise HTTPException(
-            status_code=401,
-            detail="Missing authentication token",
-        )
-    return firebase_auth.verify_token_string(token)
+        raise HTTPException(status_code=401, detail="Missing authentication token")
+    claims = firebase_auth.verify_token_string(token)
+    uid = claims.get("uid") or claims.get("user_id")
+    if not isinstance(uid, str) or not uid:
+        raise HTTPException(status_code=401, detail="Missing uid claim")
+    _enforce_age_verification(request, uid, db)
+    return claims
 
 
-def get_current_user_id(request: Request) -> str:
-    """Dependency that returns the current user's verified UID.
-    
-    This is a convenience wrapper around get_current_user() that extracts
-    just the UID string. Use this when you only need the user ID, not the
-    full user dict.
-    
-    Raises HTTPException(401) if token is invalid.
-    
-    Returns:
-        User's Firebase UID as a string
-    """
-    return firebase_auth.get_current_user_id(request)
+def get_current_user_id(
+    request: Request,
+    db=Depends(get_session),
+) -> str:
+    """Return the verified UID after enforcing the 13+ account gate."""
+    token = get_bearer_token(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing authentication token")
+    claims = firebase_auth.verify_token_string(token)
+    uid = claims.get("uid") or claims.get("user_id")
+    if not isinstance(uid, str) or not uid:
+        raise HTTPException(status_code=401, detail="Unable to extract user ID from authentication token")
+    _enforce_age_verification(request, uid, db)
+    return uid
 
 
 def get_current_db_user(

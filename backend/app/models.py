@@ -19,10 +19,12 @@ material, fit) used by the catalog pipeline for outfit recommendations.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Optional
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -94,6 +96,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     bio: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    # DOB is private account data used only for the launch age gate and
+    # derived minor protections. It is never returned in public profiles.
+    date_of_birth: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     # Server-side admin flag. Deny-by-default: only rows explicitly set to
     # True (via migration/SQL by an operator, or Firebase custom claim) grant
     # access to admin-only endpoints. Never settable through the public API.

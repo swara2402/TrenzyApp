@@ -311,6 +311,34 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     }
   }
 
+  Future<void> verifyAge(DateTime dateOfBirth) async {
+    final current = state.valueOrNull;
+    if (current == null) {
+      throw const ApiException('You must be signed in to verify your age.');
+    }
+
+    final result = await _api.verifyAge(dateOfBirth);
+    final verified = result['ageVerified'] == true;
+    final isMinor = result['isMinor'] == true;
+    if (!verified) {
+      throw const ApiException('Age verification could not be completed.');
+    }
+
+    state = AsyncValue.data(
+      UserModel(
+        id: current.id,
+        name: current.name,
+        email: current.email,
+        avatarUrl: current.avatarUrl,
+        bio: current.bio,
+        isFollowing: current.isFollowing,
+        ageVerified: true,
+        isMinor: isMinor,
+      ),
+    );
+    await _syncBackendUser(_auth.currentUser!);
+  }
+
   Future<void> updateProfile({required String name}) async {
     final current = state.value;
     if (current == null) {

@@ -24,7 +24,7 @@ jobs:
         run: flutter pub get
       - name: Parse and format changed chat code
         run: |
-          dart format --output=none             lib/models/direct_message.dart             lib/screens/direct_chat_screen.dart             lib/services/api/social_api.dart             lib/services/api_service_base.dart             lib/services/api_service.dart             lib/services/mock_api_service.dart             lib/router/app_router.dart             lib/screens/friends_screen.dart
+          dart format --output=none             lib/models/direct_message.dart             lib/screens/direct_chat_screen.dart             lib/services/api/social_api.dart             lib/services/api_service_base.dart             lib/services/api_service.dart             lib/services/mock_api_service.dart             lib/router/app_router.dart             lib/screens/friends_screen.dart             lib/models/user_model.dart             lib/screens/age_verification_screen.dart             lib/services/api/user_api.dart             lib/providers/auth_provider.dart             lib/app.dart
       - name: Test direct-message model
         run: flutter test test/direct_message_test.dart
 
@@ -44,7 +44,8 @@ jobs:
         run: |
           test -f backend/migrations/env.py
           test -f backend/migrations/versions/0001_baseline.py
-          python -m py_compile backend/migrations/env.py backend/migrations/versions/0001_baseline.py
+          test -f backend/migrations/versions/0002_user_date_of_birth.py
+          python -m py_compile backend/migrations/env.py backend/migrations/versions/0001_baseline.py backend/migrations/versions/0002_user_date_of_birth.py
       - name: Verify beta commerce gate is fail-closed
         run: |
           python - <<'PY'

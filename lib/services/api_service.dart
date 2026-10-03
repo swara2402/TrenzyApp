@@ -762,6 +762,10 @@ class ApiService implements ApiServiceBase {
       _userApi.updateProfile(name: name);
 
   @override
+  Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth) =>
+      _userApi.verifyAge(dateOfBirth);
+
+  @override
   Future<Map<String, dynamic>> getUserProfile(String userId) =>
       _userApi.getUserProfile(userId);
 
