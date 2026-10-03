@@ -20,6 +20,7 @@ import '../screens/all_creators_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/sign_up_screen.dart';
+import '../screens/age_verification_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/favorite_categories_screen.dart';
 import '../screens/shopping_priorities_screen.dart';
@@ -67,6 +68,7 @@ class AppRoutes {
 
   static const login = '/login';
   static const signUp = '/sign-up';
+  static const ageVerification = '/age-verification';
   static const forgotPassword = '/forgot-password';
   static const favoriteBrands = '/favorite-brands';
   static const favoriteCategories = '/favorite-categories';
@@ -182,6 +184,7 @@ Page<dynamic> _buildPageWithFadeTransition(
 GoRouter createRouter({
   required ValueNotifier<bool> authNotifier,
   required ValueNotifier<bool> onboardingCompleteNotifier,
+  required ValueNotifier<bool> ageVerifiedNotifier,
   required VoidCallback onToggleTheme,
 }) {
   // By default go_router keeps browser pushes out of the address bar, so a
@@ -197,6 +200,7 @@ GoRouter createRouter({
     refreshListenable: Listenable.merge([
       authNotifier,
       onboardingCompleteNotifier,
+      ageVerifiedNotifier,
     ]),
     redirect: (context, state) {
       final isLoggedIn = authNotifier.value;
@@ -214,6 +218,7 @@ GoRouter createRouter({
           location == AppRoutes.splash ||
           location == AppRoutes.welcome ||
           location == AppRoutes.verifyEmail ||
+          location == AppRoutes.ageVerification ||
           location == AppRoutes.termsOfService ||
           location == AppRoutes.privacyPolicy;
 
@@ -226,6 +231,13 @@ GoRouter createRouter({
 
       if (!isLoggedIn && !isAuthRoute && !isOnboardingRoute) {
         return AppRoutes.splash;
+      }
+
+      if (isLoggedIn &&
+          !ageVerifiedNotifier.value &&
+          location != AppRoutes.ageVerification &&
+          !isAuthRoute) {
+        return AppRoutes.ageVerification;
       }
 
       // If logged in but onboarding not complete, force onboarding flow
@@ -246,6 +258,10 @@ GoRouter createRouter({
       return null;
     },
     routes: [
+      GoRoute(
+        path: AppRoutes.ageVerification,
+        builder: (context, state) => const AgeVerificationScreen(),
+      ),
       GoRoute(path: AppRoutes.root, redirect: (_, s) => AppRoutes.home),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
