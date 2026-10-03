@@ -91,6 +91,8 @@ from .routes import (
     blocks,
     persona,
     posts,
+    post_products,
+    product_reviews,
     product_images,
     product_variants,
     purchases,
@@ -514,6 +516,8 @@ app.include_router(recommendations.recommend_router)
 app.include_router(wardrobe.router)
 app.include_router(persona.router)
 app.include_router(posts.router)
+app.include_router(post_products.router)
+app.include_router(product_reviews.router)
 # Serve uploaded files
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Only catalog assets are public. User uploads (avatars/wardrobe/post images)
