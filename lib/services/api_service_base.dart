@@ -49,6 +49,7 @@ abstract class ApiServiceBase {
 
   // ---------- Profile ----------
   Future<Map<String, dynamic>> updateProfile({required String name});
+  Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth);
 
   // ---------- Wishlist ----------
   Future<Map<String, dynamic>> getWishlist();
