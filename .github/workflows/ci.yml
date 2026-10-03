@@ -1,0 +1,57 @@
+name: Trenzy CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    name: Flutter analyze + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.0"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+  backend-static:
+    name: Backend compile + launch-scope checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python sources
+        run: python -m compileall -q backend/app backend/tests
+
+      - name: Verify beta commerce gate is fail-closed
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          os.environ.pop("TRENZY_BETA_COMMERCE_ENABLED", None)
+          sys.path.insert(0, "backend")
+          from app.launch_flags import BETA_COMMERCE_ENABLED
+          assert BETA_COMMERCE_ENABLED is False
+          print("Beta commerce gate defaults to disabled.")
+          PY
