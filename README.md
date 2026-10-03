@@ -59,7 +59,6 @@ trenzy/
 ├── tests/                       # Playwright E2E tests
 ├── android/                     # Android-specific configuration
 ├── ios/                         # iOS-specific configuration
-├── web/                         # Web-specific configuration
 ├── docs/                        # Comprehensive documentation
 ├── scripts/                     # Utility scripts (secret scanning, data loading)
 ├── .github/workflows/           # GitHub Actions CI/CD pipelines
@@ -97,17 +96,16 @@ trenzy/
    # Migrations run automatically on startup
    ```
 
-3. **Start Flutter web (in a new terminal):**
+3. **Start Flutter:**
    ```bash
-   flutter run -d web-server --web-port 8080
-   # App will open at http://localhost:8080
+   flutter run -d ios
+   # or: flutter run -d android
    ```
 
 4. **Verify health:**
    ```bash
    curl http://localhost:8000/api/health
-   curl http://localhost:8080
-   ```
+    ```
 
 ### AI/ML Fashion Intelligence & Recommendation Pipeline
 
@@ -338,7 +336,7 @@ curl http://localhost:8000/api/health/ready
 
 **Web (local dev):**
 ```bash
-flutter run -d web-server --web-port 8080
+flutter run -d ios
 ```
 
 **iOS:**
@@ -352,19 +350,14 @@ flutter run -d android
 ```
 
 **Build for production:**
-Release builds no longer default to a hardcoded backend host (the former
-`https://api.trenzy.com` default pointed at a dead server). You MUST pass the
-backend URL at build time:
+Release builds no longer default to a hardcoded backend host. You MUST pass the backend URL at build time for mobile builds:
 
 ```bash
-flutter build web --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 flutter build ios --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 flutter build apk --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 ```
 
-`FF_API_URL_OVERRIDE` can be used the same way; a release build without either
-define fails fast with a clear message instead of silently routing to a
-phantom server. Debug builds keep `http://localhost:8000`.
+`FF_API_URL_OVERRIDE` can be used the same way. A release build without either define fails fast with a clear message. Debug builds keep `http://localhost:8000`.
 
 ## Running Tests
 
@@ -459,7 +452,7 @@ The beta product contract is defined by the finalized Trenzy product decisions: 
 - Input validation on all endpoints (Pydantic models)
 - SQL injection prevented via SQLAlchemy ORM parameterized queries
 - CSRF protection via SameSite cookies
-- Secure payment processing (Stripe in test/production mode)
+- Future direct checkout payment processing is planned around Razorpay; beta is affiliate-first
 
 **Infrastructure:**
 - Docker runs backend as non-root user
@@ -534,9 +527,9 @@ docker logs backend-db-1
 **"Flutter app not loading"**
 ```bash
 # Check web server is running on port 8080
-curl http://localhost:8080
+
 # Check browser console for errors
-# Try: flutter run -d web-server --web-port 8080 --verbose
+# Try: flutter run -d ios --verbose
 ```
 
 **"Tests failing in CI but passing locally"**
