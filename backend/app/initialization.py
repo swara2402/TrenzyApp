@@ -58,19 +58,17 @@ async def _init_config() -> None:
 
 
 async def _init_database() -> None:
-    """Initialize database schema and migrations."""
-    from .db import Base, SessionLocal
+    """Verify database connectivity and perform non-schema runtime bootstrap."""
+    from .db import SessionLocal
     from .models import Product
     from .scripts.load_products import main as load_products_data
 
     logger.info("Initializing database...")
     try:
-        # Create pgvector extension FIRST before creating tables that use vector type
-        _ensure_pgvector_extension()
-        Base.metadata.create_all(bind=engine)
-        _ensure_blend_invite_codes()
-        _ensure_user_is_admin_column()
-        _ensure_pgvector_columns()
+        # Alembic is the authoritative production schema mechanism. The container
+        # entrypoint runs `alembic upgrade head` before the API starts. Keep only
+        # idempotent runtime data/bootstrap checks here; do not create or mutate
+        # schema from application startup.
         _ensure_search_vector_triggers()
         with SessionLocal() as session:
             count = session.query(Product).count()
