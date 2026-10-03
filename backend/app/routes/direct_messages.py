@@ -135,7 +135,7 @@ def send_direct_message(
     sender = session.query(User).filter(User.firebase_uid == uid).first()
     sender_name = (sender.name if sender else None) or "A friend"
     session.add(Notification(
-        id=f"chat-{message.id or 'pending'}-{datetime.now(timezone.utc).timestamp()}",
+        id=f"chat-{message.id}-{datetime.now(timezone.utc).timestamp()}",
         user_firebase_uid=recipient,
         kind="direct_message",
         title=sender_name,
