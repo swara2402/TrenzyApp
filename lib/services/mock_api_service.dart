@@ -886,6 +886,12 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth) async {
+    await _delay(const Duration(milliseconds: 150));
+    return {'ageVerified': true, 'isMinor': false};
+  }
+
+  @override
   Future<void> deleteAccount() async {
     await _delay(const Duration(milliseconds: 500));
   }
