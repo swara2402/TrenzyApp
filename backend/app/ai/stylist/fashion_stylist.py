@@ -11,11 +11,9 @@ from __future__ import annotations
 
 from typing import List, Dict, Optional, Any
 import logging
-import os
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from openai import OpenAI
 
 from ...models import Product, User
 from ..models_ai import UserStyleProfile, AIConversation, AIMessage
@@ -29,23 +27,11 @@ logger = logging.getLogger(__name__)
 class FashionStylistAgent:
     """AI Fashion Stylist with RAG capabilities."""
 
-    def __init__(
-        self,
-        api_key: Optional[str] = None,
-        model: str = "gpt-4o-mini",
-    ):
-        """Initialize the stylist agent.
+    def __init__(self):
+        """Initialize the local-only Trenzy stylist.
 
-        Args:
-            api_key: OpenAI API key (defaults to OPENAI_API_KEY env var)
-            model: OpenAI model to use
+        The launch contract forbids outbound LLM/API calls for AI features.
         """
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            logger.warning("OPENAI_API_KEY not set, stylist agent will be limited")
-
-        self.client = OpenAI(api_key=self.api_key) if self.api_key else None
-        self.model = model
         self.recommender = RuleBasedRecommender()
         self.outfit_builder = AIOutfitBuilder()
         self.style_extractor = StyleDNAExtractor()
@@ -183,54 +169,9 @@ Be helpful, stylish, and concise. When recommending products, explain WHY they m
         # Retrieve relevant products
         relevant_products = self._retrieve_relevant_products(db, user_id, message)
 
-        # Build messages for LLM
-        messages = [
-            {
-                "role": "system",
-                "content": self._build_system_prompt(style_profile),
-            }
-        ]
-
-        # Add conversation history
-        history = db.query(AIMessage).filter(
-            AIMessage.conversation_id == conversation.id,
-        ).order_by(AIMessage.created_at).limit(10).all()
-
-        for msg in history:
-            messages.append({
-                "role": msg.role,
-                "content": msg.content,
-            })
-
-        # Add product context if available
-        if relevant_products:
-            product_context = "\n\nAvailable products:\n"
-            for i, product in enumerate(relevant_products[:5]):
-                product_context += f"{i+1}. {product.name} - ₹{product.price}\n"
-                if product.style:
-                    product_context += f"   Style: {product.style}\n"
-                if product.color:
-                    product_context += f"   Color: {product.color}\n"
-            messages.append({
-                "role": "system",
-                "content": product_context,
-            })
-
-        # Generate response
-        if self.client:
-            try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    max_tokens=500,
-                    temperature=0.7,
-                )
-                assistant_message = response.choices[0].message.content
-            except Exception as e:
-                logger.error(f"OpenAI API error: {e}")
-                assistant_message = self._fallback_response(message, relevant_products)
-        else:
-            assistant_message = self._fallback_response(message, relevant_products)
+        # Generate a deterministic local response. The launch contract
+        # forbids outbound LLM/API calls.
+        assistant_message = self._fallback_response(message, relevant_products)
 
         # Save assistant message
         assistant_msg = AIMessage(
