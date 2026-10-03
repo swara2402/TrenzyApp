@@ -17,10 +17,11 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
+from ..launch_flags import require_beta_commerce
 from ..models import Cart, CartItem, Product, ProductImage
 from .products import _product_payload
 
-router = APIRouter(prefix="/api/cart", tags=["cart"])
+router = APIRouter(prefix="/api/cart", tags=["cart"], dependencies=[Depends(require_beta_commerce)])
 logger = logging.getLogger(__name__)
 
 

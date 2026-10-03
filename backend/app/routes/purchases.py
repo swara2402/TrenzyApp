@@ -14,11 +14,12 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
+from ..launch_flags import require_beta_commerce
 from ..models import Product, Purchase
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/purchases", tags=["purchases"])
+router = APIRouter(prefix="/api/purchases", tags=["purchases"], dependencies=[Depends(require_beta_commerce)])
 
 
 @router.get("")

@@ -47,6 +47,7 @@ from sqlalchemy.orm import Session
 from ..auth_deps import require_admin
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
+from ..launch_flags import require_beta_commerce
 from ..models import CartItem, Order, OrderItem, Product, Purchase, Purchase, Purchase
 from ..models_payments import Payment
 from ..config import (
@@ -59,7 +60,7 @@ from ..config import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/payments", tags=["payments"])
+router = APIRouter(prefix="/api/payments", tags=["payments"], dependencies=[Depends(require_beta_commerce)])
 
 
 def _require_user(request: Request) -> dict[str, Any]:
