@@ -349,6 +349,15 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<void> reportUser({
+    required String targetFirebaseUid,
+    required String reason,
+    String? details,
+  }) async {
+    await _delay(const Duration(milliseconds: 100));
+  }
+
+  @override
   Future<void> followUser(String targetFirebaseUid) async {
     await _delay(const Duration(milliseconds: 100));
   }

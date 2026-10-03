@@ -57,6 +57,21 @@ class SocialApi {
     return [];
   }
 
+  // ---------- Safety / Reports ----------
+  Future<void> reportUser({
+    required String targetFirebaseUid,
+    required String reason,
+    String? details,
+  }) async {
+    final body = <String, dynamic>{
+      'target_type': 'user',
+      'target_id': targetFirebaseUid,
+      'reason': reason,
+    };
+    if (details != null && details.trim().isNotEmpty) body['details'] = details.trim();
+    await _client.post('/moderation/reports', body: body);
+  }
+
   // ---------- Follow ----------
   Future<void> followUser(String targetFirebaseUid) async {
     await _client.post('/follow', body: {'target_firebase_uid': targetFirebaseUid});
