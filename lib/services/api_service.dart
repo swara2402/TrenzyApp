@@ -591,6 +591,28 @@ class ApiService implements ApiServiceBase {
       );
 
   @override
+  Future<Map<String, dynamic>> getDirectMessages({
+    required String friendFirebaseUid,
+    int limit = 50,
+    int? beforeId,
+  }) =>
+      _socialApi.getDirectMessages(
+        friendFirebaseUid: friendFirebaseUid,
+        limit: limit,
+        beforeId: beforeId,
+      );
+
+  @override
+  Future<Map<String, dynamic>> sendDirectMessage({
+    required String toFirebaseUid,
+    required String message,
+  }) =>
+      _socialApi.sendDirectMessage(
+        toFirebaseUid: toFirebaseUid,
+        message: message,
+      );
+
+  @override
   Future<Map<String, dynamic>> getActivity({int limit = 20, int offset = 0}) =>
       _socialApi.getActivity(limit: limit, offset: offset);
 
