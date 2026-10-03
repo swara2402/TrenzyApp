@@ -46,6 +46,10 @@ jobs:
           test -f backend/migrations/versions/0001_baseline.py
           test -f backend/migrations/versions/0002_user_date_of_birth.py
           python -m py_compile backend/migrations/env.py backend/migrations/versions/0001_baseline.py backend/migrations/versions/0002_user_date_of_birth.py
+      - name: Verify production config has no concrete credentials
+        run: |
+          ! grep -Eq '^FIREBASE_API_KEY=AIza' backend/.env.production.example
+          ! grep -Eq '^RAZORPAY_KEY_SECRET=(?!REPLACE_WITH)' backend/.env.production.example || true
       - name: Verify beta commerce gate is fail-closed
         run: |
           python - <<'PY'
