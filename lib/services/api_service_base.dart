@@ -257,6 +257,17 @@ abstract class ApiServiceBase {
 
   // ---------- Feed ----------
   Future<Map<String, dynamic>> getFeed({int offset = 0, int limit = 20});
+ 
+  // ---------- Direct Friend Chat ----------
+  Future<Map<String, dynamic>> getDirectMessages({
+    required String friendFirebaseUid,
+    int limit = 50,
+    int? beforeId,
+  });
+  Future<Map<String, dynamic>> sendDirectMessage({
+    required String toFirebaseUid,
+    required String message,
+  });
 
   // ---------- Activity ----------
   Future<Map<String, dynamic>> getActivity({int limit = 20, int offset = 0});
