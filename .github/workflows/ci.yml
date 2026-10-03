@@ -18,7 +18,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.0"
+          flutter-version: "3.38.0"
           channel: stable
           cache: true
 
@@ -45,11 +45,12 @@ jobs:
         run: python -m compileall -q backend/app backend/tests
 
       - name: Verify beta commerce gate is fail-closed
-        working-directory: backend
         run: |
           python - <<'PY'
           import os
+          import sys
           os.environ.pop("TRENZY_BETA_COMMERCE_ENABLED", None)
+          sys.path.insert(0, "backend")
           from app.launch_flags import BETA_COMMERCE_ENABLED
           assert BETA_COMMERCE_ENABLED is False
           print("Beta commerce gate defaults to disabled.")
