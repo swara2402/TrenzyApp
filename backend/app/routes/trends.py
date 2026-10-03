@@ -186,10 +186,14 @@ def get_trend_predictions(
 
 
 @router.post("/track-view")
-def track_product_view(data: ProductTrendUpdate, request: Request, session: Session = Depends(get_session)) -> dict[str, Any]:
+def track_product_view(
+    data: ProductTrendUpdate,
+    request: Request,
+    user: dict = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
     """POST to record a product view for trend analytics."""
-    decoded = verify_firebase_token(request)
-    uid = _get_uid(decoded) if decoded.get("uid") else None
+    uid = _get_uid(user)
 
     product = session.query(Product).filter(Product.id == data.product_id).first()
     if not product:
@@ -247,7 +251,10 @@ def track_product_view(data: ProductTrendUpdate, request: Request, session: Sess
 
 @router.post("/affiliate-click")
 def track_affiliate_click(
-    data: ProductTrendUpdate, request: Request, session: Session = Depends(get_session)
+    data: ProductTrendUpdate,
+    request: Request,
+    user: dict = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """POST to record an affiliate ("Shop on Partner") click.
 
@@ -255,8 +262,7 @@ def track_affiliate_click(
     affiliate attribution pipeline. Returns the clean affiliate URL when the
     product has one so the client can open the partner site directly.
     """
-    decoded = verify_firebase_token(request)
-    uid = _get_uid(decoded) if decoded.get("uid") else None
+    uid = _get_uid(user)
 
     product = session.query(Product).filter(Product.id == data.product_id).first()
     if not product:
