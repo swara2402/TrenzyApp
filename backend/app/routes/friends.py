@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
-from ..models import Friend, FriendRequest, User
+from ..models import Friend, FriendRequest, User\nfrom ..models_moderation import UserBlock
 from ..rate_limit import rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ def send_friend_request(
             status_code=400, detail="Cannot send friend request to yourself"
         )
 
-    to_user = session.query(User).filter(User.firebase_uid == to_uid).first()
+    if session.query(UserBlock).filter(\n        ((UserBlock.blocker_firebase_uid == from_uid) & (UserBlock.blocked_firebase_uid == to_uid))\n        | ((UserBlock.blocker_firebase_uid == to_uid) & (UserBlock.blocked_firebase_uid == from_uid))\n    ).first():\n        raise HTTPException(status_code=403, detail="This social relationship is blocked")\n\n    to_user = session.query(User).filter(User.firebase_uid == to_uid).first()
     if not to_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -197,7 +197,7 @@ def get_friend_requests(
     decoded = verify_firebase_token(request)
     uid = _get_uid(decoded)
 
-    q = session.query(FriendRequest).filter(FriendRequest.status == "pending")
+    q = session.query(FriendRequest).filter(FriendRequest.status == "pending")\n    blocked_ids = session.query(UserBlock.blocked_firebase_uid).filter(UserBlock.blocker_firebase_uid == uid)\n    blocked_by_ids = session.query(UserBlock.blocker_firebase_uid).filter(UserBlock.blocked_firebase_uid == uid)\n    if box == "outgoing":\n        q = q.filter(~FriendRequest.to_firebase_uid.in_(blocked_ids), ~FriendRequest.to_firebase_uid.in_(blocked_by_ids))\n    else:\n        q = q.filter(~FriendRequest.from_firebase_uid.in_(blocked_ids), ~FriendRequest.from_firebase_uid.in_(blocked_by_ids))
     if box == "outgoing":
         q = q.filter(FriendRequest.from_firebase_uid == uid)
     else:
