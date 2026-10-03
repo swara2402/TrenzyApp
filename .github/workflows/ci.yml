@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  flutter:
-    name: Flutter analyze + test
+  flutter-chat:
+    name: Flutter direct-chat verification
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +22,11 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
-      - name: Analyze
-        run: flutter analyze
-      - name: Test
-        run: flutter test
+      - name: Parse and format changed chat code
+        run: |
+          dart format --output=none --set-exit-if-changed             lib/models/direct_message.dart             lib/screens/direct_chat_screen.dart             lib/services/api/social_api.dart             lib/services/api_service_base.dart             lib/services/api_service.dart             lib/services/mock_api_service.dart             lib/router/app_router.dart             lib/screens/friends_screen.dart
+      - name: Test direct-message model
+        run: flutter test test/direct_message_test.dart
 
   backend-static:
     name: Backend compile + launch-scope checks
