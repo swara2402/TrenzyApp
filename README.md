@@ -14,7 +14,7 @@ Trenzy is a cutting-edge fashion discovery platform that combines intelligent pr
 - Alembic (database migrations)
 
 **Mobile & Web:**
-- Flutter 3.16+ (iOS, Android, Web)
+- Flutter 3.16+ (iOS, Android)
 - Riverpod (state management)
 - Firebase Auth (client-side auth)
 
@@ -59,7 +59,6 @@ trenzy/
 ├── tests/                       # Playwright E2E tests
 ├── android/                     # Android-specific configuration
 ├── ios/                         # iOS-specific configuration
-├── web/                         # Web-specific configuration
 ├── docs/                        # Comprehensive documentation
 ├── scripts/                     # Utility scripts (secret scanning, data loading)
 ├── .github/workflows/           # GitHub Actions CI/CD pipelines
@@ -97,17 +96,16 @@ trenzy/
    # Migrations run automatically on startup
    ```
 
-3. **Start Flutter web (in a new terminal):**
+3. **Start Flutter:**
    ```bash
-   flutter run -d web-server --web-port 8080
-   # App will open at http://localhost:8080
+   flutter run -d ios
+   # or: flutter run -d android
    ```
 
 4. **Verify health:**
    ```bash
    curl http://localhost:8000/api/health
-   curl http://localhost:8080
-   ```
+    ```
 
 ### AI/ML Fashion Intelligence & Recommendation Pipeline
 
@@ -338,7 +336,7 @@ curl http://localhost:8000/api/health/ready
 
 **Web (local dev):**
 ```bash
-flutter run -d web-server --web-port 8080
+flutter run -d ios
 ```
 
 **iOS:**
@@ -352,19 +350,14 @@ flutter run -d android
 ```
 
 **Build for production:**
-Release builds no longer default to a hardcoded backend host (the former
-`https://api.trenzy.com` default pointed at a dead server). You MUST pass the
-backend URL at build time:
+Release builds no longer default to a hardcoded backend host. You MUST pass the backend URL at build time for mobile builds:
 
 ```bash
-flutter build web --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 flutter build ios --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 flutter build apk --release --dart-define=TRENZY_API_BASE_URL=https://api.example.com
 ```
 
-`FF_API_URL_OVERRIDE` can be used the same way; a release build without either
-define fails fast with a clear message instead of silently routing to a
-phantom server. Debug builds keep `http://localhost:8000`.
+`FF_API_URL_OVERRIDE` can be used the same way. A release build without either define fails fast with a clear message. Debug builds keep `http://localhost:8000`.
 
 ## Running Tests
 
@@ -433,6 +426,14 @@ docker-compose -f backend/docker-compose.yml up -d
 
 See `docs/DEPLOYMENT.md` for detailed production checklist and rollback procedures.
 
+## Product Decisions Baseline
+
+The beta product contract is defined by the finalized Trenzy product decisions: social fashion discovery, friends-only Blend, digital Wardrobe, AI Style Persona and Outfit Builder, Wishlist, Inspiration/posts/reviews, social/chat, affiliate-first commerce, iOS + Android, 13+ with additional minor protections, Mumbai-first beta, and an 8-week Beta-ready target of **29 November 2026**. Cart/Checkout and Order/Purchase History are explicitly post-launch. The canonical decision set contains 137 answered product, technical, launch, testing, security, analytics, platform, infrastructure, and deadline questions.
+
+**Commerce:** Affiliate-first for beta; direct checkout is a later phase. The planned direct-checkout payment system is Razorpay.
+
+**Infrastructure:** Target production cloud is AWS Mumbai (`ap-south-1`) with managed PostgreSQL/Redis and containerized backend/AI services. Scale is demand-driven rather than aggressive from day one.
+
 ## Security Model
 
 **Authentication & Authorization:**
@@ -451,7 +452,7 @@ See `docs/DEPLOYMENT.md` for detailed production checklist and rollback procedur
 - Input validation on all endpoints (Pydantic models)
 - SQL injection prevented via SQLAlchemy ORM parameterized queries
 - CSRF protection via SameSite cookies
-- Secure payment processing (Stripe in test/production mode)
+- Future direct checkout payment processing is planned around Razorpay; beta is affiliate-first
 
 **Infrastructure:**
 - Docker runs backend as non-root user
@@ -526,9 +527,9 @@ docker logs backend-db-1
 **"Flutter app not loading"**
 ```bash
 # Check web server is running on port 8080
-curl http://localhost:8080
+
 # Check browser console for errors
-# Try: flutter run -d web-server --web-port 8080 --verbose
+# Try: flutter run -d ios --verbose
 ```
 
 **"Tests failing in CI but passing locally"**
