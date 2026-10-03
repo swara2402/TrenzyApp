@@ -312,92 +312,94 @@ class _FindList extends ConsumerWidget {
     );
   }
 
-  Future<void> _showReportDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String targetUid,
-    String targetName,
-  ) async {
-    const reasons = <String, String>{
-      'spam': 'Spam',
-      'harassment': 'Harassment',
-      'hate': 'Hate or abusive content',
-      'sexual': 'Sexual content',
-      'violence': 'Violence or threats',
-      'other': 'Other',
-    };
-    String selected = 'other';
-    final detailsController = TextEditingController();
 
-    final submitted = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Report $targetName'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selected,
-                items: reasons.entries
-                    .map((entry) => DropdownMenuItem(
-                          value: entry.key,
-                          child: Text(entry.value),
-                        ))
-                    .toList(),
-                onChanged: (value) => setState(() => selected = value ?? 'other'),
-                decoration: const InputDecoration(labelText: 'Reason'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: detailsController,
-                maxLength: 500,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Additional details (optional)',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+}
+
+Future<void> _showReportDialog(
+  BuildContext context,
+  WidgetRef ref,
+  String targetUid,
+  String targetName,
+) async {
+  const reasons = <String, String>{
+    'spam': 'Spam',
+    'harassment': 'Harassment',
+    'hate': 'Hate or abusive content',
+    'sexual': 'Sexual content',
+    'violence': 'Violence or threats',
+    'other': 'Other',
+  };
+  String selected = 'other';
+  final detailsController = TextEditingController();
+
+  final submitted = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text('Report $targetName'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: selected,
+              items: reasons.entries
+                  .map((entry) => DropdownMenuItem(
+                        value: entry.key,
+                        child: Text(entry.value),
+                      ))
+                  .toList(),
+              onChanged: (value) => setState(() => selected = value ?? 'other'),
+              decoration: const InputDecoration(labelText: 'Reason'),
             ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Submit report'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: detailsController,
+              maxLength: 500,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Additional details (optional)',
+              ),
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Submit report'),
+          ),
+        ],
       ),
-    );
+    ),
+  );
 
-    if (submitted != true || !context.mounted) {
-      detailsController.dispose();
-      return;
-    }
-
-    try {
-      await ref.read(apiServiceProvider).reportUser(
-            targetFirebaseUid: targetUid,
-            reason: selected,
-            details: detailsController.text,
-          );
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Report submitted. Thank you.')),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not submit report: $e')),
-        );
-      }
-    } finally {
-      detailsController.dispose();
-    }
+  if (submitted != true || !context.mounted) {
+    detailsController.dispose();
+    return;
   }
 
+  try {
+    await ref.read(apiServiceProvider).reportUser(
+          targetFirebaseUid: targetUid,
+          reason: selected,
+          details: detailsController.text,
+        );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report submitted. Thank you.')),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not submit report: $e')),
+      );
+    }
+  } finally {
+    detailsController.dispose();
+  }
 }
+
