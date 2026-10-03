@@ -128,6 +128,10 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (prev, next) {
+      _ageVerifiedNotifier.value = next.valueOrNull?.ageVerified ?? false;
+    });
+
     ref.listen(userPreferencesProvider, (prev, next) {
       _onboardingCompleteNotifier.value = next.onboardingCompleted;
     });
