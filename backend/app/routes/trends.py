@@ -31,7 +31,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_session
-from ..firebase_auth import verify_firebase_token
 from ..auth_deps import get_current_user
 from ..models import TrendingCreator, TrendingProduct, AffiliateClick, Product, View, TrendMetric
 
