@@ -390,6 +390,50 @@ class Post(Base):
     )
 
 
+class PostProductTag(Base):
+    """Product tags attached to an Inspiration post."""
+
+    __tablename__ = "post_product_tags"
+    __table_args__ = (
+        UniqueConstraint("post_id", "product_id", name="uq_post_product_tag"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    product_id: Mapped[str] = mapped_column(
+        String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ProductReview(Base):
+    """Community review of a catalog product."""
+
+    __tablename__ = "product_reviews"
+    __table_args__ = (
+        UniqueConstraint("product_id", "user_firebase_uid", name="uq_product_review_user"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    product_id: Mapped[str] = mapped_column(
+        String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class Like(Base):
     __tablename__ = "likes"
     __table_args__ = (
