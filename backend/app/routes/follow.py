@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
-from ..models import Follow, User
+from ..models import Follow, User\nfrom ..models_moderation import UserBlock
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ def get_follow_status(request: Request, target: str, session: Session = Depends(
     decoded = verify_firebase_token(request)
     uid = _get_uid(decoded)
 
-    follows = session.query(Follow).filter(
+    if session.query(UserBlock).filter(\n        ((UserBlock.blocker_firebase_uid == uid) & (UserBlock.blocked_firebase_uid == target))\n        | ((UserBlock.blocker_firebase_uid == target) & (UserBlock.blocked_firebase_uid == uid))\n    ).first():\n        return {"isFollowing": False}\n\n    follows = session.query(Follow).filter(
         Follow.follower_firebase_uid == uid,
         Follow.following_firebase_uid == target,
     ).first() is not None
