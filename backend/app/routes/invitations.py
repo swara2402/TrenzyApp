@@ -19,6 +19,7 @@ from ..db import get_session
 from ..firebase_auth import verify_firebase_token
 from ..auth_helpers import require_blend_member_sync
 from ..models import Blend, BlendInvitation, BlendMember
+from ..models_moderation import UserBlock
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,13 @@ def accept_invitation(
     group = session.query(Blend).filter(Blend.id == inv.blend_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Blend group not found")
+
+    blocked = session.query(UserBlock).filter(
+        ((UserBlock.blocker_firebase_uid == firebase_uid) & (UserBlock.blocked_firebase_uid == inv.inviter_firebase_uid))
+        | ((UserBlock.blocker_firebase_uid == inv.inviter_firebase_uid) & (UserBlock.blocked_firebase_uid == firebase_uid))
+    ).first()
+    if blocked:
+        raise HTTPException(status_code=403, detail="This collaboration is blocked")
 
     # Check if user is already a member
     existing = (

@@ -26,6 +26,7 @@ from ..models import (
     WardrobeItem, Outfit, Decision, StylePersona, UserPreference,
     PushDevice, Cart, CartItem, DiscoverySwipe, Order, Purchase
 )
+from ..models_moderation import UserBlock
 from ..models_payments import Payment
 from ..models_notifications import Notification
 
@@ -181,6 +182,8 @@ def delete_account(
         (Friend, Friend.friend_firebase_uid),
         (FriendRequest, FriendRequest.from_firebase_uid),
         (FriendRequest, FriendRequest.to_firebase_uid),
+        (UserBlock, UserBlock.blocker_firebase_uid),
+        (UserBlock, UserBlock.blocked_firebase_uid),
         (WardrobeItem, WardrobeItem.user_firebase_uid),
         (Outfit, Outfit.user_firebase_uid),
         (Decision, Decision.user_firebase_uid),
