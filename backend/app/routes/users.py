@@ -10,6 +10,7 @@ Provides user CRUD and account management:
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,6 +30,7 @@ from ..models import (
 from ..models_moderation import UserBlock
 from ..models_payments import Payment
 from ..models_notifications import Notification
+from ..age_policy import is_minor, validate_date_of_birth
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,43 @@ class UserUpdateRequest(BaseModel):
 class ReportRequest(BaseModel):
     category: str
     description: str
+
+
+class AgeVerificationRequest(BaseModel):
+    date_of_birth: date
+
+
+@router.post("/me/age-verification")
+def verify_age(
+    payload: AgeVerificationRequest,
+    user: dict = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Record DOB after server-side validation of the 13+ launch rule.
+
+    DOB is private account data. The response exposes only verification state
+    and derived minor status.
+    """
+    firebase_uid = user.get("uid") or user.get("firebase_uid")
+    if not firebase_uid:
+        raise HTTPException(status_code=401, detail="Missing uid claim")
+
+    try:
+        age = validate_date_of_birth(payload.date_of_birth)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    db_user = session.query(User).filter(User.firebase_uid == str(firebase_uid)).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db_user.date_of_birth = payload.date_of_birth
+    session.commit()
+
+    return {
+        "ageVerified": True,
+        "isMinor": 13 <= age <= 17,
+    }
 
 
 def _user_payload(
