@@ -86,6 +86,7 @@ from .routes import (
     health,
     invitations,
     messages,
+    direct_messages,
     moderation,
     blocks,
     persona,
@@ -505,6 +506,7 @@ app.include_router(blocks.router)
 app.include_router(invitations.router)
 app.include_router(search.router)
 app.include_router(messages.router)
+app.include_router(direct_messages.router)
 app.include_router(uploads.router)
 app.include_router(health.router)
 app.include_router(recommendations.router)
