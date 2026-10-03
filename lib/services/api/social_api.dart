@@ -170,6 +170,35 @@ class SocialApi {
 
     await _client.post('/blends/messages/send', body: body);
   }
+ 
+  // ---------- Direct Friend Chat ----------
+  Future<Map<String, dynamic>> getDirectMessages({
+    required String friendFirebaseUid,
+    int limit = 50,
+    int? beforeId,
+  }) async {
+    final query = <String, String>{'limit': limit.toString()};
+    if (beforeId != null) query['before_id'] = beforeId.toString();
+    final data = await _client.get(
+      '/chat/conversations/${Uri.encodeComponent(friendFirebaseUid)}/messages',
+      queryParams: query,
+    );
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
+  Future<Map<String, dynamic>> sendDirectMessage({
+    required String toFirebaseUid,
+    required String message,
+  }) async {
+    final data = await _client.post(
+      '/chat/messages',
+      body: {
+        'toFirebaseUid': toFirebaseUid,
+        'message': message,
+      },
+    );
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
 
   // ---------- Activity ----------
   Future<Map<String, dynamic>> getActivity({int limit = 20, int offset = 0}) async {

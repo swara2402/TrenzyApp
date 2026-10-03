@@ -28,6 +28,7 @@ import '../screens/blend_lobby_screen.dart';
 import '../screens/blend_swipe_screen.dart';
 import '../screens/blend_results_screen.dart';
 import '../screens/blend_chat_screen.dart';
+import '../screens/direct_chat_screen.dart';
 import '../screens/outfit_builder_screen.dart';
 import '../screens/persona_screen.dart';
 import '../screens/decision_screen.dart';
@@ -494,6 +495,18 @@ GoRouter createRouter({
             BlendResultsScreen(groupId: groupId),
           );
         },
+      ),
+      GoRoute(
+        path: '/chat/direct',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context,
+          state,
+          DirectChatScreen(
+            friendFirebaseUid: state.uri.queryParameters['uid'] ?? '',
+            friendName: state.uri.queryParameters['name'] ?? 'Friend',
+          ),
+        ),
       ),
       GoRoute(
         path: AppRoutes.blendChat,

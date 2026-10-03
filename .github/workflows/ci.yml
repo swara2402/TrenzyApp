@@ -1,0 +1,53 @@
+name: Trenzy CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  flutter-chat:
+    name: Flutter direct-chat verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.6"
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Parse and format changed chat code
+        run: |
+          dart format --output=none             lib/models/direct_message.dart             lib/screens/direct_chat_screen.dart             lib/services/api/social_api.dart             lib/services/api_service_base.dart             lib/services/api_service.dart             lib/services/mock_api_service.dart             lib/router/app_router.dart             lib/screens/friends_screen.dart
+      - name: Test direct-message model
+        run: flutter test test/direct_message_test.dart
+
+  backend-static:
+    name: Backend compile + launch-scope checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: python -m pip install "fastapi>=0.112.0,<1.0.0"
+      - name: Compile Python sources
+        run: python -m compileall -q backend/app backend/tests
+      - name: Verify beta commerce gate is fail-closed
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          os.environ.pop("TRENZY_BETA_COMMERCE_ENABLED", None)
+          sys.path.insert(0, "backend")
+          from app.launch_flags import BETA_COMMERCE_ENABLED
+          assert BETA_COMMERCE_ENABLED is False
+          print("Beta commerce gate defaults to disabled.")
+          PY

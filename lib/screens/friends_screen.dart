@@ -161,9 +161,22 @@ class _FriendsList extends ConsumerWidget {
             f.firebaseUid,
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
           ),
-          trailing: IconButton(
-            icon: Icon(Icons.person_remove_outlined, color: colors.crimson),
-            onPressed: () => ref.read(friendsProvider.notifier).remove(f.id),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Message',
+                icon: Icon(Icons.chat_bubble_outline_rounded, color: colors.primary),
+                onPressed: () => context.push(
+                  '/chat/direct?uid=${Uri.encodeComponent(f.firebaseUid)}&name=${Uri.encodeComponent(f.name)}',
+                ),
+              ),
+              IconButton(
+                tooltip: 'Remove friend',
+                icon: Icon(Icons.person_remove_outlined, color: colors.crimson),
+                onPressed: () => ref.read(friendsProvider.notifier).remove(f.id),
+              ),
+            ],
           ),
           onTap: () => context.push(
             '${AppRoutes.userProfile}?uid=${Uri.encodeComponent(f.firebaseUid)}',
