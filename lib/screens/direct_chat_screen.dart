@@ -24,7 +24,7 @@ class _DirectChatScreenState extends ConsumerState<DirectChatScreen> {
 
   Future<void> _loadMessages() async {
     try {
-      final data = await ref.read(apiServiceProvider).getDirectMessages(friendFirebaseUid: ${widget.friendFirebaseUid});
+      final data = await ref.read(apiServiceProvider).getDirectMessages(friendFirebaseUid: widget.friendFirebaseUid);
       final rows = (data['messages'] as List<dynamic>? ?? [])
           .map((row) => DirectMessage.fromJson(Map<String, dynamic>.from(row as Map))).toList();
       if (!mounted) return;
@@ -45,7 +45,7 @@ class _DirectChatScreenState extends ConsumerState<DirectChatScreen> {
     _controller.clear();
     setState(() => _sending = true);
     try {
-      final data = await ref.read(apiServiceProvider).sendDirectMessage(toFirebaseUid: ${widget.friendFirebaseUid}, message: text);
+      final data = await ref.read(apiServiceProvider).sendDirectMessage(toFirebaseUid: widget.friendFirebaseUid, message: text);
       final raw = data['message'];
       if (raw is Map) {
         setState(() => _messages.add(DirectMessage.fromJson(Map<String, dynamic>.from(raw))));
@@ -78,9 +78,9 @@ class _DirectChatScreenState extends ConsumerState<DirectChatScreen> {
         titleSpacing: 0,
         title: Row(children: [
           CircleAvatar(radius: 18, backgroundColor: colors.primary.withValues(alpha: 0.18),
-            child: Text(${widget.friendName.isNotEmpty ? widget.friendName[0].toUpperCase() : '?'}, style: TextStyle(color: colors.primary, fontWeight: FontWeight.w700))),
+            child: Text(widget.friendName.isNotEmpty ? widget.friendName[0].toUpperCase() : '?', style: TextStyle(color: colors.primary, fontWeight: FontWeight.w700))),
           const SizedBox(width: 10),
-          Text(${widget.friendName}, style: TextStyle(color: colors.foreground, fontWeight: FontWeight.w700)),
+          Text(widget.friendName, style: TextStyle(color: colors.foreground, fontWeight: FontWeight.w700)),
         ]),
       ),
       body: Column(children: [
