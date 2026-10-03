@@ -1,12 +1,17 @@
 """Alembic environment for Trenzy."""
-import os
-from dotenv import load_dotenv
-load_dotenv()
-import os
-from dotenv import load_dotenv
-load_dotenv()
 import logging
 import os
+import sys
+from logging.config import fileConfig
+
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import URL
+
+from alembic import context
+
+load_dotenv()
+
 import sys
 from logging.config import fileConfig
 
@@ -18,19 +23,22 @@ from alembic import context
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
 db_user = os.getenv("POSTGRES_USER", "postgres")
 db_pass = os.getenv("POSTGRES_PASSWORD", "postgres")
 db_host = os.getenv("DB_HOST", "db")
+db_port = os.getenv("DB_PORT", "5432")
 db_name = os.getenv("POSTGRES_DB", "trenzy")
-sqlalchemy_url = f"postgresql+psycopg://{db_user}:{db_pass}@{db_host}:5432/{db_name}"
-config.set_main_option("sqlalchemy.url", sqlalchemy_url)
-# Substitute environment variables in the SQLAlchemy URL
-db_user = os.getenv("POSTGRES_USER", "postgres")
-db_pass = os.getenv("POSTGRES_PASSWORD", "postgres")
-db_host = os.getenv("DB_HOST", "db")
-db_name = os.getenv("POSTGRES_DB", "trenzy")
-sqlalchemy_url = f"postgresql+psycopg://{db_user}:{db_pass}@{db_host}:5432/{db_name}"
-config.set_main_option("sqlalchemy.url", sqlalchemy_url)
+
+database_url = URL.create(
+    "postgresql+psycopg",
+    username=db_user,
+    password=db_pass,
+    host=db_host,
+    port=int(db_port),
+    database=db_name,
+)
+config.set_main_option("sqlalchemy.url", database_url.render_as_string(hide_password=False))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
