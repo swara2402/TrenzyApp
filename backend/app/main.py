@@ -86,7 +86,7 @@ from .routes import (
     health,
     invitations,
     messages,
-    moderation,
+    moderation,\n    blocks,
     persona,
     posts,
     product_images,
@@ -499,7 +499,7 @@ app.include_router(wishlist_router)
 app.include_router(payments_router)
 app.include_router(ai.router)
 app.include_router(campaigns.router)
-app.include_router(moderation.router)
+app.include_router(moderation.router)\napp.include_router(blocks.router)
 app.include_router(invitations.router)
 app.include_router(search.router)
 app.include_router(messages.router)
