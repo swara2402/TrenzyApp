@@ -2,6 +2,16 @@
 
 Trenzy is a cutting-edge fashion discovery platform that combines intelligent product recommendations, social shopping experiences, and collaborative blend creation. The platform helps users discover fashion that matches their style through AI-powered recommendations, wishlist curation, and community-driven style voting.
 
+## Current Beta Launch Contract
+
+- **Target platforms:** iOS and Android. Web is not part of the current launch scope.
+- **Beta target:** Mumbai-first beta, targeted for 29 November 2026.
+- **Commerce:** affiliate-first during beta. Cart, direct checkout, payments, and purchase history are post-launch scope; the planned direct-checkout provider is Razorpay.
+- **Social safety:** reporting and blocking are part of the beta safety boundary. Direct 1:1 chat and Blend participation are friends-only.
+- **AI:** the launch Stylist contract is local-only; no external LLM/API dependency is required for Stylist chat.
+- **Production target:** AWS Mumbai (ap-south-1) with managed PostgreSQL/Redis and demand-driven container scaling.
+- **Age:** 13+ with additional protections for minors.
+
 ## Technology Stack
 
 **Backend:**
@@ -13,8 +23,8 @@ Trenzy is a cutting-edge fashion discovery platform that combines intelligent pr
 - SQLAlchemy ORM (database abstraction)
 - Alembic (database migrations)
 
-**Mobile & Web:**
-- Flutter 3.16+ (iOS, Android, Web)
+**Mobile:**
+- Flutter 3.16+ (iOS, Android)
 - Riverpod (state management)
 - Firebase Auth (client-side auth)
 
@@ -59,7 +69,6 @@ trenzy/
 ├── tests/                       # Playwright E2E tests
 ├── android/                     # Android-specific configuration
 ├── ios/                         # iOS-specific configuration
-├── web/                         # Web-specific configuration
 ├── docs/                        # Comprehensive documentation
 ├── scripts/                     # Utility scripts (secret scanning, data loading)
 ├── .github/workflows/           # GitHub Actions CI/CD pipelines
@@ -97,16 +106,14 @@ trenzy/
    # Migrations run automatically on startup
    ```
 
-3. **Start Flutter web (in a new terminal):**
+3. **Start the Flutter mobile app:**
    ```bash
-   flutter run -d web-server --web-port 8080
-   # App will open at http://localhost:8080
+   flutter run
    ```
 
-4. **Verify health:**
+4. **Verify backend health:**
    ```bash
    curl http://localhost:8000/api/health
-   curl http://localhost:8080
    ```
 
 ### AI/ML Fashion Intelligence & Recommendation Pipeline
