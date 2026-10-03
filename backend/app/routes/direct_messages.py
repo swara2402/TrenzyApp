@@ -129,6 +129,9 @@ def send_direct_message(
         created_at=datetime.now(timezone.utc),
     )
     session.add(message)
+    # Flush first so the generated message ID is available to the notification
+    # identifier before the transaction is committed.
+    session.flush()
 
     # Keep an in-app notification for the recipient. This is intentionally
     # separate from push delivery so push preferences can be added later.
