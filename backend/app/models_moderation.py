@@ -30,3 +30,6 @@ class ContentReport(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     resolved_at: Mapped[Optional[DateTime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+\n\nclass UserBlock(Base):\n    \"\"\"One user's safety block against another account.\"\"\"\n\n    __tablename__ = "user_blocks"\n    __table_args__ = (\n        Index("ix_user_blocks_blocker_created", "blocker_firebase_uid", "created_at"),\n        Index("ix_user_blocks_blocked", "blocked_firebase_uid"),\n    )\n\n    id: Mapped[str] = mapped_column(String, primary_key=True)\n    blocker_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)\n    blocked_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)\n    created_at: Mapped[DateTime] = mapped_column(\n        DateTime(timezone=True), server_default=func.now(), nullable=False\n    )\n
