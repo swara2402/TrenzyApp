@@ -816,6 +816,25 @@ class ProductVariant(Base):
     price_modifier: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
 
+class DirectMessage(Base):
+    """One-to-one message between two users.
+
+    Direct chat is available only between accepted friends. Messages are
+    addressable in either direction through the normalized conversation key.
+    """
+
+    __tablename__ = "direct_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    conversation_key: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    sender_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    recipient_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class PushDevice(Base):
     __tablename__ = "push_devices"
 
