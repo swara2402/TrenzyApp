@@ -294,6 +294,13 @@ abstract class ApiServiceBase {
   // ---------- Users ----------
   Future<Map<String, dynamic>> getUserProfile(String userId);
 
+  // ---------- Safety / Reports ----------
+  Future<void> reportUser({
+    required String targetFirebaseUid,
+    required String reason,
+    String? details,
+  });
+
   // ---------- Follow ----------
   Future<void> followUser(String targetFirebaseUid);
   Future<void> unfollowUser(String targetFirebaseUid);
