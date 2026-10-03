@@ -824,6 +824,33 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<Map<String, dynamic>> getDirectMessages({
+    required String friendFirebaseUid,
+    int limit = 50,
+    int? beforeId,
+  }) async {
+    await _delay(const Duration(milliseconds: 120));
+    return {'conversationId': 'mock-chat', 'messages': <Map<String, dynamic>>[]};
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendDirectMessage({
+    required String toFirebaseUid,
+    required String message,
+  }) async {
+    await _delay(const Duration(milliseconds: 120));
+    return {
+      'message': {
+        'id': DateTime.now().millisecondsSinceEpoch,
+        'senderFirebaseUid': 'firebase_12345',
+        'recipientFirebaseUid': toFirebaseUid,
+        'message': message,
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      },
+    };
+  }
+
+  @override
   Future<Map<String, dynamic>> getActivity(
       {int limit = 20, int offset = 0}) async {
     await _delay(const Duration(milliseconds: 200));
