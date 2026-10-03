@@ -14,7 +14,7 @@ Trenzy is a cutting-edge fashion discovery platform that combines intelligent pr
 - Alembic (database migrations)
 
 **Mobile & Web:**
-- Flutter 3.16+ (iOS, Android, Web)
+- Flutter 3.16+ (iOS, Android)
 - Riverpod (state management)
 - Firebase Auth (client-side auth)
 
@@ -432,6 +432,14 @@ docker-compose -f backend/docker-compose.yml up -d
    ```
 
 See `docs/DEPLOYMENT.md` for detailed production checklist and rollback procedures.
+
+## Product Decisions Baseline
+
+The beta product contract is defined by the finalized Trenzy product decisions: social fashion discovery, friends-only Blend, digital Wardrobe, AI Style Persona and Outfit Builder, Wishlist, Inspiration/posts/reviews, social/chat, affiliate-first commerce, iOS + Android, 13+ with additional minor protections, Mumbai-first beta, and an 8-week Beta-ready target of **29 November 2026**. Cart/Checkout and Order/Purchase History are explicitly post-launch. The canonical decision set contains 137 answered product, technical, launch, testing, security, analytics, platform, infrastructure, and deadline questions.
+
+**Commerce:** Affiliate-first for beta; direct checkout is a later phase. The planned direct-checkout payment system is Razorpay.
+
+**Infrastructure:** Target production cloud is AWS Mumbai (`ap-south-1`) with managed PostgreSQL/Redis and containerized backend/AI services. Scale is demand-driven rather than aggressive from day one.
 
 ## Security Model
 
