@@ -35,6 +35,7 @@ from ..auth_deps import get_current_user
 from ..models import User, StylePersona, UserPreference
 from ..errors import ValidationError
 from ..network import get_client_ip
+from ..age_policy import is_minor
 
 logger = logging.getLogger(__name__)
 
@@ -232,6 +233,8 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
         "name": user.name,
         "email": user.email,
         "avatarUrl": user.avatar_url or "",
+        "ageVerified": user.date_of_birth is not None,
+        "isMinor": is_minor(user.date_of_birth) if user.date_of_birth is not None else False,
     }
 
 
