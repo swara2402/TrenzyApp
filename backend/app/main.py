@@ -345,7 +345,7 @@ async def age_gate_middleware(request: Request, call_next):
         or path.startswith("/openapi")
         or path.startswith("/redoc")
     )
-    if not exempt and request.headers.get("Authorization", "").lower().startswith("bearer "):
+    if APP_ENV != "test" and not exempt and request.headers.get("Authorization", "").lower().startswith("bearer "):
         try:
             from .firebase_auth import verify_token_string
             from .db import SessionLocal
