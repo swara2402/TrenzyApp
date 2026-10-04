@@ -110,7 +110,7 @@ jobs:
           args=(
             --image-dir "$IMAGE_DIR"
             --catalog-file "$CATALOG_FILE"
-            --batch-size "$${{ inputs.batch_size }}"
+            --batch-size "${{ inputs.batch_size }}"
           )
           if [ "${{ inputs.embed }}" = "true" ]; then
             args+=(--embed)
