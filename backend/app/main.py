@@ -328,6 +328,61 @@ async def request_id_middleware(request: Request, call_next):
 
 
 @app.middleware("http")
+async def age_gate_middleware(request: Request, call_next):
+    """Enforce the server-side age gate for authenticated API requests.
+
+    Some legacy route handlers still perform their own Firebase verification
+    instead of depending on get_current_user(). This middleware closes that
+    consistency gap: whenever an API request carries a bearer token, the
+    token's UID must have a DOB on the server unless the endpoint is explicitly
+    part of authentication/age-verification bootstrap.
+    """
+    path = request.url.path
+    exempt = (
+        path.startswith("/api/auth/")
+        or path == "/api/users/me/age-verification"
+        or path.startswith("/docs")
+        or path.startswith("/openapi")
+        or path.startswith("/redoc")
+    )
+    if not exempt and request.headers.get("Authorization", "").lower().startswith("bearer "):
+        try:
+            from .firebase_auth import verify_token_string
+            from .db import SessionLocal
+            from .models import User
+
+            token = request.headers.get("Authorization", "")[7:].strip()
+            claims = verify_token_string(token)
+            uid = claims.get("uid") or claims.get("user_id")
+            if not isinstance(uid, str) or not uid:
+                return JSONResponse(
+                    status_code=401,
+                    content={"status": "error", "error_code": "unauthorized", "message": "Missing uid claim"},
+                )
+            db = SessionLocal()
+            try:
+                user = db.query(User).filter(User.firebase_uid == uid).first()
+                if user is None or user.date_of_birth is None:
+                    return JSONResponse(
+                        status_code=403,
+                        content={
+                            "status": "error",
+                            "error_code": "age_verification_required",
+                            "message": "AGE_VERIFICATION_REQUIRED",
+                        },
+                    )
+            finally:
+                db.close()
+        except Exception as exc:
+            # Preserve the existing route-level auth behavior for malformed or
+            # invalid tokens; do not turn every public endpoint into a second
+            # authentication implementation.
+            logger.debug("Age-gate middleware skipped invalid bearer token: %s", exc)
+
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     """Attach production security headers to every response."""
     response = await call_next(request)
