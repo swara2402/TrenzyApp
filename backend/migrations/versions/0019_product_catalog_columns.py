@@ -35,8 +35,6 @@ _COLUMNS = {
     "text_embedding_model": sa.String(100),
     "text_embedding_version": sa.String(50),
     "text_embedding_created_at": sa.DateTime(timezone=True),
-    "image_embedding_vector": sa.JSON(),
-    "text_embedding_vector": sa.JSON(),
 }
 
 
