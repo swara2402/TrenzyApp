@@ -5,14 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/models/product_model.dart';
 import 'package:trenzy/providers/products_provider.dart';
-import 'package:trenzy/providers/cart_provider.dart';
 import 'package:trenzy/providers/wishlist_provider.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/widgets/section_states.dart';
@@ -29,7 +27,6 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   bool _isAddingToWardrobe = false;
-  bool _isOpeningPartner = false;
   bool _isLiked = false;
   bool _isSaved = false;
 
@@ -273,10 +270,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                           ),
                         ),
                         error: (_, _) => const SizedBox.shrink(),
-                        data: (_) => Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: _DeliveryInfoCard(),
-                        ),
+                        data: (_) => const SizedBox.shrink(),
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 120)),
@@ -321,11 +315,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     product: product,
                     isLiked: _isLiked,
                     isAddingToWardrobe: _isAddingToWardrobe,
-                    isOpeningPartner: _isOpeningPartner,
                     onToggleWishlist: () => _toggleWishlist(product),
                     onAddToWardrobe: () => _addToWardrobe(product),
-                    onShopOnPartner: () => _shopOnPartner(product),
-                    onSaveToList: () => _saveToList(product),
                     onAddToBlend: () => context.push(AppRoutes.blendHub),
                   ),
                 ),
@@ -355,83 +346,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         setState(() => _isLiked = !_isLiked);
       }
     }
-  }
-
-  Future<void> _saveToList(ProductModel product) async {
-    HapticFeedback.mediumImpact();
-    // "Save to List" feeds the Decision List (the cart) — the same list the
-    // cart screen's empty state tells users to save products into. The heart
-    // button is the wishlist toggle; keep those two destinations separate.
-    try {
-      await ref.read(cartProvider.notifier).addToCart(product);
-      if (!mounted) return;
-      GlassToast.success(
-        context,
-        'Saved to your Decision List',
-        actionLabel: 'View List',
-        onAction: () => context.push(AppRoutes.cart),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      GlassToast.error(context, 'Could not save item. Please try again.');
-    }
-  }
-
-  Future<void> _shopOnPartner(ProductModel product) async {
-    if (_isOpeningPartner) return;
-    setState(() => _isOpeningPartner = true);
-    HapticFeedback.mediumImpact();
-
-    final api = ref.read(apiServiceProvider);
-    // Record the affiliate click first; the backend returns the clean
-    // partner URL when one exists for the product.
-    final trackedLink = await api.trackAffiliateClick(product.id);
-    trackAffiliateClick(ref, product.id, partner: product.effectiveBrand);
-
-    final link = trackedLink ?? _firstAffiliateUrl(product);
-    final uri = link != null
-        ? Uri.tryParse(link)
-        : Uri.parse(
-            'https://www.google.com/search?q=${Uri.encodeComponent('${product.name} ${product.effectiveBrand}')}',
-          );
-
-    var launched = false;
-    if (uri != null && (uri.isScheme('http') || uri.isScheme('https'))) {
-      try {
-        // On web, `externalApplication` becomes window.open() — which popup
-        // blockers silently kill once the click handler has awaited the
-        // affiliate-tracking calls above. Navigating the current tab
-        // ('_self') always works and Back returns the user to the product
-        // page (the URL is deep-linkable since the router change).
-        launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-          webOnlyWindowName: '_self',
-        );
-      } catch (_) {
-        launched = false;
-      }
-    }
-
-    if (mounted) {
-      setState(() => _isOpeningPartner = false);
-      if (!launched) {
-        GlassToast.error(context, 'Could not open the partner store right now');
-      }
-    }
-  }
-
-  String? _firstAffiliateUrl(ProductModel product) {
-    final raw = product.affiliateLinks;
-    if (raw == null || raw.isEmpty) return null;
-    final cleaned = raw.trim();
-    if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
-      return cleaned;
-    }
-    // JSON-ish or comma-separated list of links.
-    final urls = RegExp(r'https?://[^\s"}\],]+').allMatches(cleaned);
-    if (urls.isEmpty) return null;
-    return urls.first.group(0);
   }
 
   Future<void> _addToWardrobe(ProductModel product) async {
@@ -755,80 +669,21 @@ class _WhyRecommendedSection extends StatelessWidget {
   }
 }
 
-class _DeliveryInfoCard extends StatelessWidget {
-  const _DeliveryInfoCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      radius: 14,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: context.trenzyColors.emerald.withValues(alpha: 0.15),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              Icons.local_shipping_outlined,
-              size: 18,
-              color: context.trenzyColors.emerald,
-            ),
-          ),
-          SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Delivery',
-                  style: GlassTypography.body(
-                    fontSize: 13,
-                    weight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Standard shipping available at partner store',
-                  style: GlassTypography.body(
-                    fontSize: 12,
-                    color: context.trenzyColors.mutedFg,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _BottomActionBar extends StatelessWidget {
   const _BottomActionBar({
     required this.product,
     required this.isLiked,
     required this.isAddingToWardrobe,
-    required this.isOpeningPartner,
     required this.onToggleWishlist,
     required this.onAddToWardrobe,
-    required this.onShopOnPartner,
-    required this.onSaveToList,
     required this.onAddToBlend,
   });
 
   final ProductModel product;
   final bool isLiked;
   final bool isAddingToWardrobe;
-  final bool isOpeningPartner;
   final VoidCallback onToggleWishlist;
   final VoidCallback onAddToWardrobe;
-  final VoidCallback onShopOnPartner;
-  final VoidCallback onSaveToList;
   final VoidCallback onAddToBlend;
 
   @override
@@ -856,78 +711,49 @@ class _BottomActionBar extends StatelessWidget {
             stops: const [0.0, 0.6, 1.0],
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
-            // Main CTA row
-            Row(
-              children: [
-                // Wishlist toggle
-                TapScale(
-                  onTap: onToggleWishlist,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isLiked
-                          ? context.trenzyColors.crimson.withValues(alpha: 0.15)
-                          : context.trenzyColors.glass,
-                      borderRadius: BorderRadius.circular(GlassRadius.button),
-                      border: Border.all(
-                        color: isLiked
-                            ? context.trenzyColors.crimson.withValues(
-                                alpha: 0.4,
-                              )
-                            : context.trenzyColors.glassBorder,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
-                      size: 20,
-                      color: isLiked
-                          ? context.trenzyColors.crimson
-                          : context.trenzyColors.fg60,
-                    ),
+            TapScale(
+              onTap: onToggleWishlist,
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isLiked
+                      ? context.trenzyColors.crimson.withValues(alpha: 0.15)
+                      : context.trenzyColors.glass,
+                  borderRadius: BorderRadius.circular(GlassRadius.button),
+                  border: Border.all(
+                    color: isLiked
+                        ? context.trenzyColors.crimson.withValues(alpha: 0.4)
+                        : context.trenzyColors.glassBorder,
                   ),
                 ),
-                SizedBox(width: 10),
-
-                // Shop on Partner (primary CTA)
-                Expanded(
-                  flex: 3,
-                  child: GlowButton(
-                    label: isOpeningPartner ? 'Opening...' : 'Shop on Partner',
-                    icon: isOpeningPartner ? null : Icons.open_in_new_rounded,
-                    loading: isOpeningPartner,
-                    onTap: isOpeningPartner ? null : onShopOnPartner,
-                  ),
+                alignment: Alignment.center,
+                child: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  size: 20,
+                  color: isLiked
+                      ? context.trenzyColors.crimson
+                      : context.trenzyColors.fg60,
                 ),
-              ],
+              ),
             ),
-            SizedBox(height: 10),
-
-            // Secondary actions row
-            Row(
-              children: [
-                _SecondaryAction(
-                  icon: Icons.checkroom_outlined,
-                  label: 'Wardrobe',
-                  onTap: isAddingToWardrobe ? null : onAddToWardrobe,
-                ),
-                SizedBox(width: 10),
-                _SecondaryAction(
-                  icon: Icons.bookmark_border_rounded,
-                  label: 'Save to List',
-                  onTap: onSaveToList,
-                ),
-                SizedBox(width: 10),
-                _SecondaryAction(
-                  icon: Icons.blender_outlined,
-                  label: 'Add to Blend',
-                  onTap: onAddToBlend,
-                ),
-              ],
+            SizedBox(width: 10),
+            Expanded(
+              child: _SecondaryAction(
+                icon: Icons.checkroom_outlined,
+                label: 'Wardrobe',
+                onTap: isAddingToWardrobe ? null : onAddToWardrobe,
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _SecondaryAction(
+                icon: Icons.blender_outlined,
+                label: 'Add to Blend',
+                onTap: onAddToBlend,
+              ),
             ),
           ],
         ),
