@@ -694,18 +694,7 @@ class _MiniMoodboardCard extends StatelessWidget {
         border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       clipBehavior: Clip.antiAlias,
-      child: item.imageUrl != null
-          ? CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg))
-          : Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.palette_outlined, color: context.trenzyColors.primary, size: 24),
-                  SizedBox(height: 4),
-                  Text(item.itemType.replaceAll('_', ' '), style: TextStyle(fontSize: 9, color: context.trenzyColors.mutedFg)),
-                ],
-              ),
-            ),
+      child: CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
     );
   }
 }

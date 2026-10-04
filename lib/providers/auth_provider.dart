@@ -351,7 +351,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       state = AsyncValue.data(
         synced.copyWith(
           id: current.id,
-          email: synced.email?.isNotEmpty == true ? synced.email : current.email,
+          email: synced.email.isNotEmpty == true ? synced.email : current.email,
         ),
       );
     } catch (e) {

@@ -180,13 +180,13 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                 ],
               ),
               SizedBox(height: 16),
-              if (item.imageUrl != null) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: CachedNetworkImage(imageUrl: item.imageUrl!, height: 250, width: double.infinity, fit: BoxFit.cover),
-                ),
-                SizedBox(height: 16),
-              ],
+              ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedNetworkImage(imageUrl: item.imageUrl!, height: 250, width: double.infinity, fit: BoxFit.cover),
+              ),
+              SizedBox(height: 16),
+            ],
               if (item.caption != null && item.caption!.isNotEmpty) ...[
                 Text(item.caption!, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
                 SizedBox(height: 12),
@@ -426,9 +426,7 @@ class _MoodboardTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: item.imageUrl != null
-                  ? CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => _itemPlaceholder(item, context), errorWidget: (_, _, _) => _itemPlaceholder(item, context))
-                  : _itemPlaceholder(item, context),
+              child: CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => _itemPlaceholder(item, context), errorWidget: (_, _, _) => _itemPlaceholder(item, context)),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

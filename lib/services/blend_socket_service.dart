@@ -26,6 +26,10 @@ class BlendSocketService {
         return 'dislike';
       case SwipeType.love:
         return 'love';
+      case SwipeType.pass:
+        return 'pass';
+      case SwipeType.superLike:
+        return 'superlike';
     }
   }
 

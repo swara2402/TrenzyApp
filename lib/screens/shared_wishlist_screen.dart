@@ -170,7 +170,11 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
 
     switch (_sortBy) {
       case 'oldest':
-        result.sort((a, b) => (a.createdAt ?? '').compareTo(b.createdAt ?? ''));
+        result.sort((a, b) {
+          final aDate = a.createdAt ?? DateTime(1970);
+          final bDate = b.createdAt ?? DateTime(1970);
+          return aDate.compareTo(bDate);
+        });
         break;
       case 'name':
         result.sort((a, b) => a.productName.compareTo(b.productName));
@@ -181,8 +185,12 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
       case 'price_low':
         result.sort((a, b) => (a.productPrice ?? 0).compareTo(b.productPrice ?? 0));
         break;
-      default:
-        result.sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
+      default: // newest first
+        result.sort((a, b) {
+          final aDate = a.createdAt ?? DateTime(1970);
+          final bDate = b.createdAt ?? DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
     }
 
     return result;
