@@ -16,6 +16,8 @@ import os
 import sys
 from pathlib import Path
 
+from .launch_flags import BETA_COMMERCE_ENABLED
+
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -173,7 +175,7 @@ if PAYMENTS_MODE not in ("simulation", "razorpay"):
     )
 
 # Production mode must use Razorpay, not simulation
-if IS_PRODUCTION and PAYMENTS_MODE == "simulation":
+if IS_PRODUCTION and BETA_COMMERCE_ENABLED and PAYMENTS_MODE == "simulation":
     raise RuntimeError(
         "Refusing to start: PAYMENTS_MODE=simulation in production (APP_ENV=%r). "
         "Set PAYMENTS_MODE=razorpay and provide Razorpay credentials." % APP_ENV
@@ -241,30 +243,20 @@ def validate_startup_config() -> list[str]:
         if not redis_url.strip():
             errors.append("REDIS_URL is required in production for rate limiting and clustering.")
 
-        # Check Payment credentials
-        if PAYMENTS_MODE != "razorpay":
-            errors.append("PAYMENTS_MODE must be 'razorpay' in production.")
-        if not RAZORPAY_KEY_ID or "placeholder" in RAZORPAY_KEY_ID.lower():
-            errors.append("RAZORPAY_KEY_ID is missing or placeholder in production.")
-        if RAZORPAY_KEY_ID.lower().startswith("rzp_test_"):
-            errors.append(
-                "RAZORPAY_KEY_ID is a TEST key (rzp_test_) in production — "
-                "orders would be marked complete without real money moving. "
-                "Use a live rzp_live_ key."
-            )
-        if not RAZORPAY_KEY_SECRET or "placeholder" in RAZORPAY_KEY_SECRET.lower():
-            errors.append("RAZORPAY_KEY_SECRET is missing or placeholder in production.")
-        if not RAZORPAY_WEBHOOK_SECRET or "placeholder" in RAZORPAY_WEBHOOK_SECRET.lower():
-            errors.append("RAZORPAY_WEBHOOK_SECRET is missing or placeholder in production.")
-
-        # A dedicated checkout-signing secret (or the webhook secret) is
-        # required so hosted checkout URLs cannot be forged with a well-known
-        # dev fallback value.
-        if not PAYMENT_CHECKOUT_SECRET and not RAZORPAY_WEBHOOK_SECRET:
-            errors.append(
-                "PAYMENT_CHECKOUT_SECRET (or RAZORPAY_WEBHOOK_SECRET) is required "
-                "in production to sign hosted checkout URLs."
-            )
+        # Direct commerce is post-launch. Require Razorpay only when enabled.
+        if BETA_COMMERCE_ENABLED:
+            if PAYMENTS_MODE != "razorpay":
+                errors.append("PAYMENTS_MODE must be 'razorpay' when direct commerce is enabled in production.")
+            if not RAZORPAY_KEY_ID or "placeholder" in RAZORPAY_KEY_ID.lower():
+                errors.append("RAZORPAY_KEY_ID is missing or placeholder in production.")
+            if RAZORPAY_KEY_ID.lower().startswith("rzp_test_"):
+                errors.append("RAZORPAY_KEY_ID is a TEST key in production — use a live rzp_live_ key.")
+            if not RAZORPAY_KEY_SECRET or "placeholder" in RAZORPAY_KEY_SECRET.lower():
+                errors.append("RAZORPAY_KEY_SECRET is missing or placeholder in production.")
+            if not RAZORPAY_WEBHOOK_SECRET or "placeholder" in RAZORPAY_WEBHOOK_SECRET.lower():
+                errors.append("RAZORPAY_WEBHOOK_SECRET is missing or placeholder in production.")
+            if not PAYMENT_CHECKOUT_SECRET and not RAZORPAY_WEBHOOK_SECRET:
+                errors.append("PAYMENT_CHECKOUT_SECRET (or RAZORPAY_WEBHOOK_SECRET) is required in production to sign hosted checkout URLs.")
 
         # Check dev auth bypass is off
         if DEV_AUTH_BYPASS:
