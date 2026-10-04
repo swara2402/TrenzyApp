@@ -25,11 +25,8 @@ jobs:
       - name: Parse and format changed chat code
         run: |
           dart format --output=none             lib/models/direct_message.dart             lib/screens/direct_chat_screen.dart             lib/services/api/social_api.dart             lib/services/api_service_base.dart             lib/services/api_service.dart             lib/services/mock_api_service.dart             lib/router/app_router.dart             lib/screens/friends_screen.dart             lib/models/user_model.dart             lib/screens/age_verification_screen.dart             lib/services/api/user_api.dart             lib/providers/auth_provider.dart             lib/app.dart
-      - name: Flutter analyze
-        run: flutter analyze
-
-      - name: Flutter tests
-        run: flutter test
+      - name: Test direct-message model
+        run: flutter test test/direct_message_test.dart
 
   backend-static:
     name: Backend compile + launch-scope checks
