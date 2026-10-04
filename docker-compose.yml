@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # Add your Firebase and other environment variables here
+      # - FIREBASE_SERVICE_ACCOUNT_FILE=/app/secrets/serviceAccountKey.json
+    volumes:
+      # Mount your product images directory so they're available in the container
+      - ./backend/uploads/product-images/images:/app/uploads/product-images/images
+      # Mount your data directory to persist catalog changes
+      - ./backend/data:/app/data
+      # Uncomment below if you have service account credentials
+      # - ./secrets:/app/secrets
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

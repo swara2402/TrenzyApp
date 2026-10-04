@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "262146737740",
+    "project_id": "trenzy2400",
+    "storage_bucket": "trenzy2400.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262146737740:android:187c3407ac2ef8a8b6d6e9",
+        "android_client_info": {
+          "package_name": "com.trenzy.trenzy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "262146737740-090smkk2fpudld4gtipgv5svnr1it8j5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_owu_-gg4KGVjo11Lq8pGUSHj5xFQ_YI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "262146737740-090smkk2fpudld4gtipgv5svnr1it8j5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "262146737740-4m8me74kb83qmdia70aujo5bs1af0lr3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.trenzy.trenzy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

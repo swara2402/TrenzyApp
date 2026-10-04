@@ -1,0 +1,143 @@
+[
+  {
+    "id": "prod_001",
+    "name": "Premium Cotton T-Shirt",
+    "description": "Classic fit 100% organic cotton t-shirt, perfect for everyday wear.",
+    "price": 799,
+    "currency": "INR",
+    "brand": "Trenzy Essentials",
+    "category": "tops",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Black",
+      "White",
+      "Heather Gray"
+    ],
+    "mainImage": "https://picsum.photos/seed/tshirt/800/1000",
+    "galleryImages": [
+      "https://picsum.photos/seed/tshirt1/800/1000",
+      "https://picsum.photos/seed/tshirt2/800/1000"
+    ],
+    "stock": 150,
+    "rating": 4.5,
+    "reviewCount": 32,
+    "createdAt": "2026-01-15T00:00:00Z"
+  },
+  {
+    "id": "prod_002",
+    "name": "Slim Fit Denim Jeans",
+    "description": "Timeless slim-fit jeans crafted from premium stretch denim.",
+    "price": 1499,
+    "currency": "INR",
+    "brand": "Trenzy Denim Co.",
+    "category": "bottoms",
+    "sizes": [
+      "28x30",
+      "30x32",
+      "32x34",
+      "34x36"
+    ],
+    "colors": [
+      "Dark Wash",
+      "Light Wash",
+      "Black"
+    ],
+    "mainImage": "https://picsum.photos/seed/jeans/800/1000",
+    "galleryImages": [
+      "https://picsum.photos/seed/jeans1/800/1000",
+      "https://picsum.photos/seed/jeans2/800/1000"
+    ],
+    "stock": 89,
+    "rating": 4.7,
+    "reviewCount": 56,
+    "createdAt": "2026-01-16T00:00:00Z"
+  },
+  {
+    "id": "prod_003",
+    "name": "Leather Crossbody Bag",
+    "description": "Genuine leather crossbody bag with adjustable strap and internal pockets.",
+    "price": 2999,
+    "currency": "INR",
+    "brand": "Trenzy Accessories",
+    "category": "accessories",
+    "sizes": [
+      "One Size"
+    ],
+    "colors": [
+      "Brown",
+      "Black",
+      "Tan"
+    ],
+    "mainImage": "https://picsum.photos/seed/bag/800/1000",
+    "galleryImages": [
+      "https://picsum.photos/seed/bag1/800/1000",
+      "https://picsum.photos/seed/bag2/800/1000"
+    ],
+    "stock": 45,
+    "rating": 4.8,
+    "reviewCount": 21,
+    "createdAt": "2026-01-17T00:00:00Z"
+  },
+  {
+    "id": "prod_004",
+    "name": "Minimalist Watch",
+    "description": "Swiss-made minimalist watch with sapphire crystal and stainless steel case.",
+    "price": 17499,
+    "currency": "INR",
+    "brand": "Trenzy Timepieces",
+    "category": "accessories",
+    "sizes": [
+      "One Size"
+    ],
+    "colors": [
+      "Silver",
+      "Gold",
+      "Black"
+    ],
+    "mainImage": "https://picsum.photos/seed/watch/800/1000",
+    "galleryImages": [
+      "https://picsum.photos/seed/watch1/800/1000",
+      "https://picsum.photos/seed/watch2/800/1000"
+    ],
+    "stock": 32,
+    "rating": 4.9,
+    "reviewCount": 14,
+    "createdAt": "2026-01-18T00:00:00Z"
+  },
+  {
+    "id": "prod_005",
+    "name": "Performance Running Sneakers",
+    "description": "Lightweight performance sneakers with responsive cushioning for all-day comfort.",
+    "price": 8399,
+    "currency": "INR",
+    "brand": "Trenzy Active",
+    "category": "footwear",
+    "sizes": [
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "colors": [
+      "White/Blue",
+      "Black/Gray",
+      "Red/Black"
+    ],
+    "mainImage": "https://picsum.photos/seed/sneakers/800/1000",
+    "galleryImages": [
+      "https://picsum.photos/seed/sneakers1/800/1000",
+      "https://picsum.photos/seed/sneakers2/800/1000"
+    ],
+    "stock": 78,
+    "rating": 4.6,
+    "reviewCount": 43,
+    "createdAt": "2026-01-19T00:00:00Z"
+  }
+]

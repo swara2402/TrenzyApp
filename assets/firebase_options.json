@@ -1,0 +1,36 @@
+{
+  "web": {
+    "apiKey": "AIzaSyBMRiWHWzGTDCEfmZ8m8h927jnnU4eTAeM",
+    "appId": "1:262146737740:web:19aa430ab6eebe26b6d6e9",
+    "messagingSenderId": "262146737740",
+    "projectId": "trenzy2400",
+    "authDomain": "trenzy2400.firebaseapp.com",
+    "storageBucket": "trenzy2400.firebasestorage.app",
+    "measurementId": "G-0EWF8FCQV8"
+  },
+  "android": {
+    "apiKey": "AIzaSyB_owu_-gg4KGVjo11Lq8pGUSHj5xFQ_YI",
+    "appId": "1:262146737740:android:187c3407ac2ef8a8b6d6e9",
+    "messagingSenderId": "262146737740",
+    "projectId": "trenzy2400",
+    "storageBucket": "trenzy2400.firebasestorage.app"
+  },
+  "ios": {
+    "apiKey": "AIzaSyBT_8bM43Ln5ZSZe6DefCQlUyPMv5iQs4s",
+    "appId": "1:262146737740:ios:b1fe623c4137ffc6b6d6e9",
+    "messagingSenderId": "262146737740",
+    "projectId": "trenzy2400",
+    "storageBucket": "trenzy2400.firebasestorage.app",
+    "iosClientId": "262146737740-4m8me74kb83qmdia70aujo5bs1af0lr3.apps.googleusercontent.com",
+    "iosBundleId": "com.trenzy.trenzy"
+  },
+  "macos": {
+    "apiKey": "AIzaSyBT_8bM43Ln5ZSZe6DefCQlUyPMv5iQs4s",
+    "appId": "1:262146737740:ios:b1fe623c4137ffc6b6d6e9",
+    "messagingSenderId": "262146737740",
+    "projectId": "trenzy2400",
+    "storageBucket": "trenzy2400.firebasestorage.app",
+    "iosClientId": "262146737740-4m8me74kb83qmdia70aujo5bs1af0lr3.apps.googleusercontent.com",
+    "iosBundleId": "com.trenzy.trenzy"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "readiness": "FOUNDATION",
+  "catalog": {
+    "total_products": 500,
+    "eligible": 500,
+    "archived": 0,
+    "metadata_complete": 0
+  },
+  "images": {
+    "valid": 500,
+    "temp_failures": 0,
+    "perm_failures": 0,
+    "duplicates": 0,
+    "invalid": 0
+  },
+  "licenses": {
+    "licensed_complete": 0,
+    "attribution_required": 0
+  },
+  "metadata": {
+    "completeness_pct": 0.0
+  },
+  "embeddings": {
+    "model": "FashionCLIP",
+    "dimension": 512,
+    "valid": 0,
+    "invalid": 0
+  },
+  "search": {
+    "visual": true,
+    "semantic": true
+  },
+  "style_dna": {
+    "status": "IMPLEMENTED"
+  },
+  "interactions": {
+    "total_events": 0,
+    "positive_events": 0,
+    "date_range": "N/A"
+  },
+  "recommendations": {
+    "current_model": null,
+    "status": "NOT READY - insufficient interaction data"
+  },
+  "models": {
+    "production_models": 0,
+    "retired_models": 0
+  },
+  "security": {
+    "auth_verified": true,
+    "rate_limits_verified": true
+  },
+  "performance": {},
+  "tests": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "blockers": [
+    "Low catalog metadata completeness (<50%) in static file"
+  ]
+}

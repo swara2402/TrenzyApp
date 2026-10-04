@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment files (real credentials never committed)
+.env
+.env.local
+*.env
+!*.env.example
+firebase_service_account.json
+*service_account*.json
+*.jks
+android/keystore
+
+# ML model artifacts
+models/
+ml/runs/
+ml/data/raw/
+ml/data/processed/
+ml/data/features/
+ml/data/splits/
+reports/
+*.pkl
+*.joblib
+*.onnx
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+# Commit Flutter dependency resolution for reproducible builds
+# pubspec.lock is intentionally tracked
+
+ios/Pods/
+ios/.symlinks/
+android/.gradle/
+android/local.properties
+android/app/.cxx/
+
+# Node
+node_modules/
+dist/
+npm-debug.log*
+
+# Database/upload files
+*.sqlite
+*.sqlite3
+*.db
+uploads/
+*.log
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+*.iml
+
+# Test artifacts
+test-results/
+playwright-report/

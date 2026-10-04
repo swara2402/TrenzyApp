@@ -1,0 +1,168 @@
+name: Trenzy Catalog Import
+
+on:
+  workflow_dispatch:
+    inputs:
+      embed:
+        description: "Generate FashionCLIP embeddings after catalog import"
+        required: true
+        default: false
+        type: boolean
+      batch_size:
+        description: "Database/embedding batch size"
+        required: true
+        default: "16"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  catalog-import:
+    name: Local Mac catalog migration + import
+    runs-on: [self-hosted, macOS, ARM64]
+    env:
+      DB_HOST: ${{ secrets.TRENZY_DB_HOST }}
+      DB_PORT: ${{ secrets.TRENZY_DB_PORT }}
+      POSTGRES_DB: trenzy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${{ secrets.TRENZY_POSTGRES_PASSWORD }}
+      APP_ENV: development
+      IMAGE_DIR: /Users/sam/trenzy-data/Trenzy/images
+      CATALOG_FILE: /Users/sam/trenzy-data/Trenzy/catalog.csv
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Verify local catalog files
+        run: |
+          test -d "$IMAGE_DIR"
+          test -f "$CATALOG_FILE"
+          image_count=$(find "$IMAGE_DIR" -type f \( -iname 'TRZ-*.jpg' -o -iname 'TRZ-*.jpeg' -o -iname 'TRZ-*.png' -o -iname 'TRZ-*.webp' \) | wc -l | tr -d ' ')
+          echo "Catalog image count: $image_count"
+          test "$image_count" -eq 2000
+
+      - name: Prepare Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Verify Alembic has one head
+        working-directory: backend
+        run: |
+          python -m alembic heads
+          heads=$(python -m alembic heads | awk 'NF')
+          test "$(printf '%s\n' "$heads" | wc -l | tr -d ' ')" -eq 1
+
+      - name: Upgrade local database
+        working-directory: backend
+        run: python -m alembic upgrade head
+
+      - name: Verify catalog schema
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+          required = {
+              "source",
+              "source_license",
+              "license_attribution",
+              "image_sha256",
+              "currency",
+              "image_embedding_status",
+              "text_embedding_status",
+          }
+          with psycopg.connect(
+              host=os.environ["DB_HOST"],
+              port=int(os.environ["DB_PORT"]),
+              dbname=os.environ["POSTGRES_DB"],
+              user=os.environ["POSTGRES_USER"],
+              password=os.environ["POSTGRES_PASSWORD"],
+          ) as conn:
+              with conn.cursor() as cur:
+                  cur.execute(
+                      "SELECT column_name FROM information_schema.columns "
+                      "WHERE table_name = 'products'"
+                  )
+                  actual = {row[0] for row in cur.fetchall()}
+          missing = required - actual
+          if missing:
+              raise SystemExit(f"Missing product columns: {sorted(missing)}")
+          print("Catalog schema verified.")
+          PY
+
+      - name: Validate 2,000 catalog rows and images
+        working-directory: backend
+        run: |
+          python -m app.scripts.import_image_catalog             --image-dir "$IMAGE_DIR"             --catalog-file "$CATALOG_FILE"             --dry-run
+
+      - name: Import 2,000 catalog products
+        working-directory: backend
+        run: |
+          args=(
+            --image-dir "$IMAGE_DIR"
+            --catalog-file "$CATALOG_FILE"
+            --batch-size "${{ inputs.batch_size }}"
+          )
+          if [ "${{ inputs.embed }}" = "true" ]; then
+            args+=(--embed)
+          fi
+          python -m app.scripts.import_image_catalog "${args[@]}"
+
+      - name: Verify imported catalog
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+
+          with psycopg.connect(
+              host=os.environ["DB_HOST"],
+              port=int(os.environ["DB_PORT"]),
+              dbname=os.environ["POSTGRES_DB"],
+              user=os.environ["POSTGRES_USER"],
+              password=os.environ["POSTGRES_PASSWORD"],
+          ) as conn:
+              with conn.cursor() as cur:
+                  cur.execute(
+                      "SELECT COUNT(*) FROM products "
+                      "WHERE source = 'trenzy_generated_catalog'"
+                  )
+                  catalog_count = cur.fetchone()[0]
+                  cur.execute(
+                      "SELECT COUNT(*) FROM products "
+                      "WHERE source = 'trenzy_generated_catalog' "
+                      "AND image_url IS NOT NULL"
+                  )
+                  image_count = cur.fetchone()[0]
+                  cur.execute(
+                      "SELECT COUNT(*) FROM products "
+                      "WHERE id LIKE 'TRZ-%'"
+                  )
+                  trz_count = cur.fetchone()[0]
+                  cur.execute(
+                      "SELECT COUNT(*) FROM ("
+                      "SELECT id FROM products WHERE id LIKE 'TRZ-%' "
+                      "GROUP BY id HAVING COUNT(*) > 1"
+                      ") duplicates"
+                  )
+                  duplicate_ids = cur.fetchone()[0]
+
+          print(f"Catalog products: {catalog_count}")
+          print(f"Catalog products with image_url: {image_count}")
+          print(f"TRZ products: {trz_count}")
+          print(f"Duplicate TRZ IDs: {duplicate_ids}")
+
+          assert catalog_count == 2000, f"Expected 2000 catalog products, got {catalog_count}"
+          assert image_count == 2000, f"Expected 2000 catalog images, got {image_count}"
+          assert trz_count == 2000, f"Expected 2000 TRZ products, got {trz_count}"
+          assert duplicate_ids == 0, f"Found {duplicate_ids} duplicate TRZ IDs"
+          print("2,000-product catalog verification PASSED.")
+          PY

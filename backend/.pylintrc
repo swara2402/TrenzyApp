@@ -1,0 +1,146 @@
+[MASTER]
+# Specify a configuration file
+#rcfile=
+
+# Add files or directories to the blacklist. They should be base names, not
+# paths.
+ignore=CVS,tests
+
+# Add files or directories matching the regex patterns to the blacklist. The
+# regex matches against base names, not paths.
+ignore-patterns=test_.*?\.py
+
+# Use multiple processes to speed up Pylint.
+jobs=4
+
+# List of plugins (as comma separated)
+load-plugins=
+
+# Pickle collected data for later comparisons.
+persistent=yes
+
+# Minimum Python version to target. Used for version dependent checks and
+# Python 2/3 compatibility checks. Default is inferred from the version of
+# Python used to run pylint.
+py-version=3.11
+
+[MESSAGES CONTROL]
+# Only show warnings with the given message ids and higher severity than FATAL
+# (i.e. FATAL, ERROR, WARNING, CONVENTION, REFACTOR & INFO)
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-branches,
+    too-many-locals,
+    line-too-long,
+    invalid-name,
+
+[REPORTS]
+# Set the output format. Available formats are text, parseable, colorized, json
+# and msvs (visual studio). You can also give a reporter class e.g. mypackage.reporting.Main
+output-format=text
+
+# Tells whether to display a full report or only the messages
+reports=no
+
+# Tells whether to display a full report or only the messages
+score=yes
+
+[REFACTORING]
+# Maximum number of nested blocks for function / method body
+max-nested-blocks=5
+
+[LOGGING]
+# Format of logging function message.
+logging-format-style=new
+
+[VARIABLES]
+# A regular expression matching the name of dummy variables (i.e. expected to
+# not be used).
+dummy-variables-rgx=_+$|^dummy
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=100
+
+# Regexp for a line that is allowed to be longer than the limit.
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+
+# Allow the body of a class to be on the same line as the declaration if body
+# contains single statement.
+single-line-class-stmt=no
+
+# Allow the body of an if to be on the same line as the test if there is no
+# else.
+single-line-if-stmt=no
+
+[SIMILARITIES]
+# Ignore comments when computing similarities.
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities.
+ignore-docstrings=yes
+
+# Minimum lines number d a similarity to be considered a duplicate
+min-similarity-lines=4
+
+[DESIGN]
+# Maximum number of attributes for class body
+max-attributes=7
+
+# Maximum number of boolean expressions in a if statement
+max-bool-expr=5
+
+# Maximum number of branch for function / method body
+max-branches=12
+
+# Maximum number of locals for function / method body
+max-locals=15
+
+# Maximum number of parents for a class (see R0901).
+max-parents=7
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=20
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=2
+
+[CLASSES]
+# List of method names used to declare an abstract method. The naming style
+# of these function names should be in lower case with words separated
+# by underscores e.g. foo_bar (See also the valid-classmethod-first-arg
+# and valid-metaclass-classmethod-first-arg options below).
+defining-attr-methods=__init__,__new__,setUp,__post_init__
+
+# List of valid names for the first argument in a class method.
+valid-classmethod-first-arg=cls
+
+# List of valid names for the first argument in a metaclass class method.
+valid-metaclass-classmethod-first-arg=mcs
+
+[IMPORTS]
+# Force import order to recognize a module as part of the standard
+# compatibility libraries.
+known-standard-library=
+
+# Force import order to recognize a module as part of a third party library.
+known-third-party=sqlalchemy,fastapi,pytest
+
+# Analyse import fallback blocks. This can be used to support both Python 2 and
+# 3 compatible code, which means that the split-string module used in Python 2
+# is replaced with the backports.functools_lru_cache module in Python 3.
+analyse-fallback-blocks=no
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when being caught. Defaults to "Exception"
+overgeneral-exceptions=Exception
