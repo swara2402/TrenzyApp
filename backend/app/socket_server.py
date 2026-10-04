@@ -752,6 +752,30 @@ async def join_blend(sid, data):
             await sio.emit("socket_error", "Blend not found", to=sid)
             return
 
+        # Blend participation is a friends-only safety boundary. Keep the
+        # Socket.IO path consistent with the REST join endpoint so clients
+        # cannot bypass the relationship check by joining a room directly.
+        if group.user_firebase_uid != user_id:
+            from .models import Friend
+
+            friendship = db.query(Friend).filter(
+                (
+                    (Friend.user_firebase_uid == user_id)
+                    & (Friend.friend_firebase_uid == group.user_firebase_uid)
+                )
+                | (
+                    (Friend.user_firebase_uid == group.user_firebase_uid)
+                    & (Friend.friend_firebase_uid == user_id)
+                )
+            ).first()
+            if not friendship:
+                await sio.emit(
+                    "socket_error",
+                    "Blend participants must be friends with the Blend owner",
+                    to=sid,
+                )
+                return
+
         existing = (
             db.query(BlendMember)
             .filter(
