@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
-from ..auth_deps import get_current_user
+from ..auth_deps import get_current_user, require_admin
 from ..models_notifications import Notification
 
 logger = logging.getLogger(__name__)
@@ -305,6 +305,6 @@ def send_push(
 
 
 @router.get("/metrics")
-def notification_metrics(user: dict = Depends(get_current_user)) -> dict:
+def notification_metrics(user: dict = Depends(require_admin)) -> dict:
     """Ops visibility into notification volume and push outcomes."""
     return dict(_notif_metrics)
