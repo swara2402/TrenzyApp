@@ -93,6 +93,7 @@ def get_current_user_id(
 
 
 def get_current_db_user(
+    request: Request,
     token: str | None = Depends(get_bearer_token),
     db=Depends(get_session),
 ):
