@@ -48,7 +48,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.item.name;
+    _nameController.text = widget.item.name ?? '';
     _brandController.text = widget.item.brand ?? '';
     _imageUrlController.text = widget.item.imageUrl ?? '';
     _colorController.text = widget.item.color ?? '';

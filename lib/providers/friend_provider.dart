@@ -94,7 +94,7 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
         outgoing: [
           ...current.outgoing,
           FriendRequestItem(
-            id: -1,
+            id: '-1',
             fromFirebaseUid: '',
             fromName: 'You',
             toFirebaseUid: toFirebaseUid,
@@ -117,7 +117,7 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        incoming: current.incoming.where((r) => r.id != requestId).toList(),
+        incoming: current.incoming.where((r) => r.id != requestId.toString()).toList(),
       ),
     );
     try {
@@ -135,7 +135,7 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        incoming: current.incoming.where((r) => r.id != requestId).toList(),
+        incoming: current.incoming.where((r) => r.id != requestId.toString()).toList(),
       ),
     );
     try {
@@ -153,7 +153,7 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        friends: current.friends.where((f) => f.id != friendId).toList(),
+        friends: current.friends.where((f) => f.id != friendId.toString()).toList(),
       ),
     );
     try {

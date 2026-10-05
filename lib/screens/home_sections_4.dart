@@ -268,16 +268,15 @@ class _TrendingProductCardState extends State<_TrendingProductCard>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (widget.trend.category != null)
-                        Text(
-                          widget.trend.category!,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: context.trenzyColors.mutedFg,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        widget.trend.category,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: context.trenzyColors.mutedFg,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       Spacer(),
                       Row(
                         children: [

@@ -78,7 +78,8 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 _pendingMessageIds.contains(m.id) &&
                 m.senderId == msg.senderId &&
                 m.message == msg.message &&
-                msg.createdAt.difference(m.createdAt).abs() <
+                msg.createdAt != null && m.createdAt != null &&
+                msg.createdAt!.difference(m.createdAt!).abs() <
                     const Duration(seconds: 10),
           );
           if (tempIndex >= 0) {
@@ -301,55 +302,7 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
   }
 
   Widget _buildMessageBubble(GroupMessage msg, bool isMe) {
-    if (msg.attachedProductId != null) {
-      return _buildProductMessage(msg, isMe);
-    }
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        constraints: BoxConstraints(maxWidth: 280),
-        child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            if (!isMe)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  msg.senderName,
-                  style: TextStyle(
-                    color: context.trenzyColors.primary.withValues(alpha: 0.7),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isMe ? null : context.trenzyColors.graphite,
-                gradient: isMe ? GlassGradients.primary : null,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMe ? 16 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 16),
-                ),
-                border: isMe ? null : Border.all(color: context.trenzyColors.glassBorder),
-              ),
-              child: Text(
-                msg.message,
-                style: TextStyle(
-                  color: isMe ? context.trenzyColors.primaryFg : context.trenzyColors.foreground,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return _buildProductMessage(msg, isMe);
   }
 
   Widget _buildProductMessage(GroupMessage msg, bool isMe) {
@@ -366,29 +319,28 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (msg.attachedProductImage != null)
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: msg.attachedProductImage!,
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: CachedNetworkImage(
+                imageUrl: msg.attachedProductImage,
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (_, _) => Container(
                   height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (_, _) => Container(
-                    height: 160,
-                    color: context.trenzyColors.graphite,
-                    child: Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)),
-                  ),
-                  errorWidget: (_, _, _) => Container(
-                    height: 160,
-                    color: context.trenzyColors.graphite,
-                    child: Icon(Icons.image_not_supported, color: context.trenzyColors.mutedFg),
-                  ),
+                  color: context.trenzyColors.graphite,
+                  child: Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)),
+                ),
+                errorWidget: (_, _, _) => Container(
+                  height: 160,
+                  color: context.trenzyColors.graphite,
+                  child: Icon(Icons.image_not_supported, color: context.trenzyColors.mutedFg),
                 ),
               ),
+            ),
             Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
@@ -405,7 +357,7 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          msg.attachedProductTitle ?? '',
+                          msg.attachedProductTitle,
                           style: TextStyle(
                             color: context.trenzyColors.primary,
                             fontWeight: FontWeight.bold,
@@ -415,15 +367,14 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (msg.attachedProductPrice != null)
-                        Text(
-                          msg.attachedProductPrice!,
-                          style: TextStyle(
-                            color: context.trenzyColors.foreground,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
+                      Text(
+                        msg.attachedProductPrice,
+                        style: TextStyle(
+                          color: context.trenzyColors.foreground,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
+                      ),
                     ],
                   ),
                 ],

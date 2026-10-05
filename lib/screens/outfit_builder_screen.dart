@@ -29,15 +29,15 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     super.initState();
     if (widget.initialOutfit != null) {
       _nameController.text = widget.initialOutfit!.name;
-      if (widget.initialOutfit!.items.isNotEmpty) {
+      if (widget.initialOutfit!.items.isNotEmpty == true) {
         for (final item in widget.initialOutfit!.items) {
           final itemId = int.tryParse(item.id) ?? 0;
           if (itemId > 0) {
             _canvasItems.add(_ItemData(
               itemId,
-              item.brand ?? 'Unknown',
+              item.brand.isEmpty ? 'Unknown' : item.brand,
               item.name,
-              item.imageUrl ?? '',
+              item.imageUrl,
             ));
           }
         }
@@ -467,9 +467,9 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
               final parsedId = int.tryParse(w.id) ?? 0;
               return _ItemData(
                 parsedId,
-                w.brand ?? 'Unknown',
+                w.brand,
                 w.name,
-                w.imageUrl ?? '',
+                w.imageUrl,
               );
             })
             .where((item) => item.id > 0)
@@ -607,10 +607,10 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: colors.graphite,
-                  backgroundImage: (user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty)
-                      ? NetworkImage(user.avatarUrl!)
+                  backgroundImage: (user?.avatarUrl != null && user!.avatarUrl.isNotEmpty)
+                      ? NetworkImage(user.avatarUrl)
                       : null,
-                  child: (user?.avatarUrl == null || user!.avatarUrl!.isEmpty)
+                  child: (user?.avatarUrl == null || user!.avatarUrl.isEmpty)
                       ? Text(
                           (user?.name ?? 'U').substring(0, 1).toUpperCase(),
                           style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),

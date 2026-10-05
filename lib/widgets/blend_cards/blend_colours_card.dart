@@ -48,7 +48,7 @@ class BlendColoursCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colours = results.sharedColours;
+    final colours = results.sharedColours ?? [];
 
     if (colours.isEmpty) {
       return _buildEmptyState();

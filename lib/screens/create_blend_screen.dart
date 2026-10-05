@@ -427,7 +427,7 @@ class FriendCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    friend.name,
+                    friend.name ?? '',
                     style: TextStyle(
                       color: context.trenzyColors.foreground,
                       fontWeight: FontWeight.bold,
@@ -562,7 +562,7 @@ class SelectedFriends extends ConsumerWidget {
                   .map((friend) => Padding(
                         padding: const EdgeInsets.only(right: 10.0),
                         child: FriendChip(
-                          name: friend.name,
+                          name: friend.name ?? '',
                           imageUrl: friend.avatarUrl ?? 'https://placehold.co/100x100/1a1a2e/666.png?text=?',
                           onDeleted: () {
                             ref.read(selectedFriendsProvider.notifier).state = [

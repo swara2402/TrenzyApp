@@ -153,13 +153,13 @@ class _FriendsList extends ConsumerWidget {
           leading: CircleAvatar(
             backgroundColor: colors.primary.withValues(alpha: 0.2),
             child: Text(
-              f.name.isNotEmpty ? f.name[0].toUpperCase() : '?',
+              f.name != null && f.name!.isNotEmpty ? f.name![0].toUpperCase() : '?',
               style: TextStyle(color: colors.primary),
             ),
           ),
-          title: Text(f.name, style: TextStyle(color: colors.foreground)),
+          title: Text(f.name ?? '', style: TextStyle(color: colors.foreground)),
           subtitle: Text(
-            f.firebaseUid,
+            f.firebaseUid ?? '',
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
           ),
           trailing: Row(
@@ -169,23 +169,23 @@ class _FriendsList extends ConsumerWidget {
                 tooltip: 'Message',
                 icon: Icon(Icons.chat_bubble_outline_rounded, color: colors.primary),
                 onPressed: () => context.push(
-                  '/chat/direct?uid=${Uri.encodeComponent(f.firebaseUid)}&name=${Uri.encodeComponent(f.name)}',
+                  '/chat/direct?uid=${Uri.encodeComponent(f.firebaseUid ?? '')}&name=${Uri.encodeComponent(f.name ?? '')}',
                 ),
               ),
               IconButton(
                 tooltip: 'Report user',
                 icon: Icon(Icons.flag_outlined, color: colors.mutedFg),
-                onPressed: () => _showReportDialog(context, ref, f.firebaseUid, f.name),
+                onPressed: () => _showReportDialog(context, ref, f.firebaseUid ?? '', f.name ?? ''),
               ),
               IconButton(
                 tooltip: 'Remove friend',
                 icon: Icon(Icons.person_remove_outlined, color: colors.crimson),
-                onPressed: () => ref.read(friendsProvider.notifier).remove(f.id),
+                onPressed: () => ref.read(friendsProvider.notifier).remove(int.tryParse(f.id ?? '') ?? 0),
               ),
             ],
           ),
           onTap: () => context.push(
-            '${AppRoutes.userProfile}?uid=${Uri.encodeComponent(f.firebaseUid)}',
+            '${AppRoutes.userProfile}?uid=${Uri.encodeComponent(f.firebaseUid ?? '')}',
           ),
         );
       },
@@ -214,9 +214,9 @@ class _RequestsList extends ConsumerWidget {
         return ListTile(
           tileColor: colors.graphite,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text(r.fromName, style: TextStyle(color: colors.foreground)),
+          title: Text(r.fromName ?? '', style: TextStyle(color: colors.foreground)),
           subtitle: Text(
-            r.fromFirebaseUid,
+            r.fromFirebaseUid ?? '',
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
           ),
           trailing: Row(
@@ -224,11 +224,11 @@ class _RequestsList extends ConsumerWidget {
             children: [
               IconButton(
                 icon: Icon(Icons.check, color: colors.emerald),
-                onPressed: () => ref.read(friendsProvider.notifier).accept(r.id),
+                onPressed: () => ref.read(friendsProvider.notifier).accept(int.tryParse(r.id ?? '') ?? 0),
               ),
               IconButton(
                 icon: Icon(Icons.close, color: colors.crimson),
-                onPressed: () => ref.read(friendsProvider.notifier).reject(r.id),
+                onPressed: () => ref.read(friendsProvider.notifier).reject(int.tryParse(r.id ?? '') ?? 0),
               ),
             ],
           ),
@@ -295,14 +295,14 @@ class _FindList extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                title: Text(s.name, style: TextStyle(color: colors.foreground)),
+                title: Text(s.name ?? '', style: TextStyle(color: colors.foreground)),
                 subtitle: Text(
-                  s.reason.replaceAll('_', ' '),
+                  s.reason?.replaceAll('_', ' ') ?? '',
                   style: TextStyle(color: colors.mutedFg, fontSize: 12),
                 ),
                 trailing: TextButton(
                   onPressed: () =>
-                      ref.read(friendsProvider.notifier).sendRequest(s.firebaseUid),
+                      ref.read(friendsProvider.notifier).sendRequest(s.firebaseUid ?? ''),
                   child: const Text('Add'),
                 ),
               ),

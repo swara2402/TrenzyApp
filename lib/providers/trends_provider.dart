@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/trend_model.dart';
+import '../models/social_models.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/feed_item.dart';
+import '../models/social_models.dart';
 import '../providers/feed_provider.dart';
 import '../theme/glass_theme.dart';
 

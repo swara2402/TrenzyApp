@@ -165,7 +165,7 @@ class _DecisionScreenState extends ConsumerState<DecisionScreen> {
       final reasoning = await api.getReasoning(
         query: widget.query ?? '',
         optionTitle: product.name,
-        optionPrice: product.effectivePrice,
+        optionPrice: product.effectivePrice.toString(),
         aiScore: index,
         socialApproval: 0,
       );
@@ -334,9 +334,9 @@ class _DecisionCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-                  child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                  child: product.imageUrl.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: ApiService.resolveImageUrl(product.imageUrl!) ?? '',
+                          imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? '',
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -394,17 +394,16 @@ class _DecisionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (product.brand != null)
-                    Text(
-                      product.brand!.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                        color: context.trenzyColors.primary,
-                      ),
+                  Text(
+                    product.brand.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: context.trenzyColors.primary,
                     ),
-                  if (product.brand != null) SizedBox(height: 3),
+                  ),
+                  SizedBox(height: 3),
                   Text(
                     product.name,
                     style: TextStyle(
@@ -427,7 +426,7 @@ class _DecisionCard extends StatelessWidget {
                           border: isSelected ? null : Border.all(color: context.trenzyColors.glassBorder),
                         ),
                         child: Text(
-                          product.effectivePrice,
+                          product.effectivePrice.toString(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -435,19 +434,19 @@ class _DecisionCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (product.rating != null) ...[
-                        SizedBox(width: 8),
-                        Icon(Icons.star_rounded, size: 14, color: context.trenzyColors.primary),
-                        SizedBox(width: 2),
-                        Text(
-                          product.rating!.toStringAsFixed(1),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: context.trenzyColors.mutedFg,
-                          ),
+                      ...[
+                      SizedBox(width: 8),
+                      Icon(Icons.star_rounded, size: 14, color: context.trenzyColors.primary),
+                      SizedBox(width: 2),
+                      Text(
+                        product.rating.toStringAsFixed(1),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: context.trenzyColors.mutedFg,
                         ),
-                      ],
+                      ),
+                    ],
                     ],
                   ),
                 ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animations/animations.dart';
 
-import '../models/decision_flow.dart' as decision_flow;
 import '../screens/inspo_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/closet_screen.dart';
@@ -49,6 +48,7 @@ import '../screens/shared_wishlist_screen.dart';
 import '../screens/moodboard_screen.dart';
 import '../screens/edit_clothing_screen.dart'; // Import EditClothingScreen
 import '../models/wardrobe_model.dart'; // Import WardrobeItem
+import '../models/decision_flow.dart' as decision_flow;
 
 import '../screens/terms_of_service_screen.dart';
 import '../screens/analytics_dashboard_screen.dart';

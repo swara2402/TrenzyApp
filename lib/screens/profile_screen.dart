@@ -217,17 +217,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               radius: 68,
               backgroundColor: context.trenzyColors.graphite,
               backgroundImage:
-                  user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-              child: user.avatarUrl == null
-                  ? Text(
-                      (user.name.isNotEmpty ? user.name[0] : 'U').toUpperCase(),
-                      style: TextStyle(
-                        color: context.trenzyColors.primary,
-                        fontSize: 44,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : null,
+                  NetworkImage(user.avatarUrl),
+              child: null,
             ),
           ),
           SizedBox(height: GlassSpacing.md),
@@ -613,24 +604,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 color: context.trenzyColors.graphite,
                 borderRadius: BorderRadius.circular(GlassRadius.card),
                 border: Border.all(color: context.trenzyColors.glassBorder),
-                image: post.attachment != null
-                    ? DecorationImage(
-                        image: CachedNetworkImageProvider(post.attachment!),
+                image: DecorationImage(
+                        image: CachedNetworkImageProvider(post.attachment),
                         fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: post.attachment == null
-                  ? Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        post.content,
-                        style: TextStyle(color: context.trenzyColors.foreground),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 5,
                       ),
-                    )
-                  : null,
+              ),
+              child: null,
             );
           },
         );
@@ -690,21 +669,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           top: Radius.circular(GlassRadius.card),
                         ),
                       ),
-                      child: item.imageUrl != null
-                          ? ClipRRect(
+                      child: ClipRRect(
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(GlassRadius.card)),
                               child: CachedNetworkImage(
-                                imageUrl: item.imageUrl!,
+                                imageUrl: item.imageUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (_, _) => Container(color: context.trenzyColors.graphite),
                                 errorWidget: (_, _, _) => Icon(Icons.checkroom_outlined, color: context.trenzyColors.mutedFg),
-                              ),
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.checkroom_outlined,
-                                color: context.trenzyColors.primary.withValues(alpha: 0.4),
-                                size: 32,
                               ),
                             ),
                     ),

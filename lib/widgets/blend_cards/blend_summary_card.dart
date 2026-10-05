@@ -22,7 +22,8 @@ class BlendSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = results;
-    final levelColor = _levelColor(r.fashionScore);
+    final levelColor = _levelColor((r.fashionScore ?? 0).toInt());
+    final compatLevel = r.compatibilityLevel != null ? '${r.compatibilityLevel}' : '';
 
     return Container(
       width: double.infinity,
@@ -62,7 +63,7 @@ class BlendSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            r.groupName,
+            r.groupName ?? '',
             style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
           ),
           const SizedBox(height: 24),
@@ -71,7 +72,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Fashion Score',
-                  value: '${r.fashionScore}%',
+                  value: '${r.fashionScore ?? 0}%',
                   color: levelColor,
                 ),
               ),
@@ -79,7 +80,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Compatibility',
-                  value: r.compatibilityLevel.isNotEmpty ? r.compatibilityLevel : 'N/A',
+                  value: compatLevel.isNotEmpty ? compatLevel : 'N/A',
                   color: levelColor,
                 ),
               ),
@@ -91,7 +92,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Shared Brands',
-                  value: '${r.sharedBrands.length}',
+                  value: '${r.sharedBrands?.length ?? 0}',
                   color: context.trenzyColors.primary,
                 ),
               ),
@@ -99,7 +100,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Shared Styles',
-                  value: '${r.sharedStyles.length}',
+                  value: '${r.sharedStyles?.length ?? 0}',
                   color: context.trenzyColors.emerald,
                 ),
               ),
@@ -111,7 +112,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Swipes',
-                  value: '${r.totalSwipes}',
+                  value: '${r.totalSwipes ?? 0}',
                   color: context.trenzyColors.fg60,
                 ),
               ),
@@ -119,7 +120,7 @@ class BlendSummaryCard extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Wardrobe Overlap',
-                  value: '${r.wardrobeOverlap}',
+                  value: '${r.wardrobeOverlap ?? 0}',
                   color: context.trenzyColors.fg60,
                 ),
               ),

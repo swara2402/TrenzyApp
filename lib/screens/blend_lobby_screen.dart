@@ -211,7 +211,7 @@ class _BlendLobbyContent extends StatelessWidget {
                       shape: BoxShape.circle,
                       // Border color based on presence status
                       gradient: LinearGradient(
-                        colors: member.isOnline
+                        colors: member.isOnline == true
                             ? [GlassColors.emerald, GlassColors.emerald.withValues(alpha: 0.7)]
                             : [GlassColors.mutedFg, GlassColors.mutedFg.withValues(alpha: 0.5)],
                       ),
@@ -225,7 +225,7 @@ class _BlendLobbyContent extends StatelessWidget {
                         child: Text(
                           member.userName.isNotEmpty ? member.userName[0].toUpperCase() : '?',
                           style: TextStyle(
-                            color: member.isOnline ? GlassColors.emerald : GlassColors.mutedFg,
+                            color: member.isOnline == true ? GlassColors.emerald : GlassColors.mutedFg,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
@@ -234,7 +234,7 @@ class _BlendLobbyContent extends StatelessWidget {
                     ),
                   ),
                   // Online presence dot
-                  if (member.isOnline)
+                  if (member.isOnline == true)
                     Positioned(
                       bottom: 5,
                       right: 5,
@@ -255,7 +255,7 @@ class _BlendLobbyContent extends StatelessWidget {
                       ),
                     ),
                   // Ready status indicator
-                  if (member.isReady)
+                  if (member.isReady == true)
                     Positioned(
                       top: -5,
                       right: -5,
@@ -285,9 +285,10 @@ class _BlendLobbyContent extends StatelessWidget {
   }
 
   Widget _buildContextMessage(BuildContext context) {
-    final readyCount = group.members.where((m) => m.isReady).length;
-    final notReadyMembers = group.members.where((m) => !m.isReady).map((m) => m.userName).toList();
-    final allReady = group.members.isNotEmpty && group.members.every((m) => m.isReady);
+    final members = group.members;
+    final readyCount = members.where((m) => m.isReady == true).length;
+    final notReadyMembers = members.where((m) => m.isReady != true).map((m) => m.userName).toList();
+    final allReady = members.isNotEmpty && members.every((m) => m.isReady == true);
     
     final statusText = allReady
         ? 'Everyone ready \u2014 Start swiping to discover your shared style picks!'
@@ -494,8 +495,9 @@ class _BlendLobbyContent extends StatelessWidget {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    final notReadyMembers = group.members.where((m) => !m.isReady).map((m) => m.userName).toList();
-    final allReady = group.members.isNotEmpty && group.members.every((m) => m.isReady);
+    final members = group.members;
+    final notReadyMembers = members.where((m) => m.isReady != true).map((m) => m.userName).toList();
+    final allReady = members.isNotEmpty && members.every((m) => m.isReady == true);
     return Positioned(
       bottom: 32,
       left: 20,

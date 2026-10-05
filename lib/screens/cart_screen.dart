@@ -191,7 +191,7 @@ class _CartItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = cartItem.product;
-    final unitPrice = product.price ?? 0;
+    final unitPrice = product.price;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -203,7 +203,7 @@ class _CartItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
-                imageUrl: product.imageUrl ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
+                imageUrl: product.imageUrl,
                 width: 90,
                 height: 110,
                 fit: BoxFit.cover,

@@ -96,16 +96,12 @@ class BlendProductsCard extends StatelessWidget {
     );
   }
 
-
-
   List<BlendRankedProduct> _flattenRecommendations(
-    Map<String, List<BlendRankedProduct>> recommendations,
+    List<BlendRankedProduct>? recommendations,
   ) {
-    final list = <BlendRankedProduct>[];
-    for (final entry in recommendations.entries) {
-      list.addAll(entry.value);
-    }
-    list.sort((a, b) => b.score.compareTo(a.score));
+    if (recommendations == null) return [];
+    final list = List<BlendRankedProduct>.from(recommendations);
+    list.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
     return list;
   }
 }
@@ -118,6 +114,10 @@ class _ProductRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = rankedProduct.product;
+    final brand = p?.effectiveBrand ?? p?.brand ?? '';
+    final price = '${p?.effectivePrice ?? p?.price ?? 0.0}';
+    final metaText = [brand, price].where((s) => s.isNotEmpty).join(' · ');
+    final matchScore = (rankedProduct.matchScore ?? 0).toInt();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -133,9 +133,9 @@ class _ProductRow extends StatelessWidget {
             child: SizedBox(
               width: 56,
               height: 56,
-              child: p.imageUrl != null
+              child: p?.imageUrl != null
                   ? CachedNetworkImage(
-                      imageUrl: p.imageUrl!,
+                      imageUrl: p!.imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (_, a) => Container(
                         color: context.trenzyColors.fg10,
@@ -165,16 +165,14 @@ class _ProductRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  p.name,
+                  p?.name ?? '',
                   style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  [p.effectiveBrand, p.effectivePrice]
-                      .where((s) => s.isNotEmpty)
-                      .join(' · '),
+                  metaText,
                   style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -185,14 +183,14 @@ class _ProductRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: rankedProduct.matchScore >= 70
+              color: matchScore >= 70
                   ? Colors.green.withValues(alpha: 0.1)
                   : context.trenzyColors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(GlassRadius.pill),
             ),
             child: Text(
-              '${rankedProduct.matchScore}%',
-              style: GlassTypography.meta(fontSize: 12, color: rankedProduct.matchScore >= 70 ? Colors.green : context.trenzyColors.primary)
+              '$matchScore%',
+              style: GlassTypography.meta(fontSize: 12, color: matchScore >= 70 ? Colors.green : context.trenzyColors.primary)
                   .copyWith(fontWeight: FontWeight.w900),
             ),
           ),

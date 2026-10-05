@@ -144,19 +144,8 @@ class _CreatorTile extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 23,
                     backgroundColor: context.trenzyColors.graphite,
-                    backgroundImage: creator.avatarUrl != null
-                        ? NetworkImage(creator.avatarUrl!)
-                        : null,
-                    child: creator.avatarUrl == null
-                        ? Text(
-                            (creator.name.isNotEmpty ? creator.name[0] : 'U').toUpperCase(),
-                            style: TextStyle(
-                              color: context.trenzyColors.primary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
+                    backgroundImage: NetworkImage(creator.avatarUrl),
+                    child: null,
                   ),
                 ),
                 SizedBox(width: 14),

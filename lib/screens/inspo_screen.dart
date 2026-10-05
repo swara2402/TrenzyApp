@@ -187,23 +187,8 @@ class InspoScreen extends ConsumerWidget {
                                     radius: 28,
                                     backgroundColor:
                                         context.trenzyColors.graphite,
-                                    backgroundImage: creator.avatarUrl != null
-                                        ? NetworkImage(creator.avatarUrl!)
-                                        : null,
-                                    child: creator.avatarUrl == null
-                                        ? Text(
-                                            (creator.name.isNotEmpty
-                                                    ? creator.name[0]
-                                                    : 'U')
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                              color:
-                                                  context.trenzyColors.primary,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          )
-                                        : null,
+                                    backgroundImage: NetworkImage(creator.avatarUrl),
+                                    child: null,
                                   ),
                                 ),
                                 SizedBox(height: 6),
@@ -334,8 +319,7 @@ class InspoScreen extends ConsumerWidget {
                                       children: [
                                         Positioned.fill(
                                           child:
-                                              trend.imageUrl != null &&
-                                                  trend.imageUrl!.isNotEmpty
+                                              trend.imageUrl.isNotEmpty
                                               ? ClipRRect(
                                                   borderRadius:
                                                       const BorderRadius.vertical(
@@ -344,7 +328,7 @@ class InspoScreen extends ConsumerWidget {
                                                         ),
                                                       ),
                                                   child: CachedNetworkImage(
-                                                    imageUrl: trend.imageUrl!,
+                                                    imageUrl: trend.imageUrl,
                                                     fit: BoxFit.cover,
                                                     placeholder:
                                                         (context, url) =>
@@ -436,7 +420,7 @@ class InspoScreen extends ConsumerWidget {
                                         ),
                                         SizedBox(height: 2),
                                         Text(
-                                          trend.category ?? '',
+                                          trend.category,
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: context.trenzyColors.mutedFg,
@@ -578,9 +562,9 @@ class _InspoProductCard extends StatelessWidget {
               child: SizedBox(
                 width: 100,
                 height: 100,
-                child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                child: product.imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: product.imageUrl!,
+                        imageUrl: product.imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[900],
@@ -612,17 +596,16 @@ class _InspoProductCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (product.brand != null)
-                      Text(
-                        product.brand!.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                          color: context.trenzyColors.primary,
-                        ),
+                    Text(
+                      product.brand.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: context.trenzyColors.primary,
                       ),
-                    if (product.brand != null) SizedBox(height: 4),
+                    ),
+                    SizedBox(height: 4),
                     Text(
                       product.name,
                       style: TextStyle(
@@ -633,17 +616,15 @@ class _InspoProductCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (product.price != null) ...[
-                      SizedBox(height: 6),
-                      Text(
-                        '\u20B9${product.price!.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: context.trenzyColors.primary,
-                        ),
+                    SizedBox(height: 6),
+                    Text(
+                      '\u20B9${product.price.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: context.trenzyColors.primary,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),

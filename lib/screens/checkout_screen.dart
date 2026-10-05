@@ -197,13 +197,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             child: SizedBox(
                               width: 52,
                               height: 64,
-                              child: product.imageUrl != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: product.imageUrl!,
+                              child: CachedNetworkImage(
+                                      imageUrl: product.imageUrl,
                                       fit: BoxFit.cover,
-                                    )
-                                  : ColoredBox(
-                                      color: context.trenzyColors.glassBorder,
                                     ),
                             ),
                           ),

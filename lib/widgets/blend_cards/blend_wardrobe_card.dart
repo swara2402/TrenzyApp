@@ -15,7 +15,7 @@ class BlendWardrobeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final overlap = results.wardrobeOverlap;
+    final overlap = results.wardrobeOverlap ?? 0;
     final allProducts = _allRecommendedProducts(results.recommendations);
 
     return Container(
@@ -116,16 +116,12 @@ class BlendWardrobeCard extends StatelessWidget {
     );
   }
 
-
-
   List<BlendRankedProduct> _allRecommendedProducts(
-    Map<String, List<BlendRankedProduct>> recommendations,
+    List<BlendRankedProduct>? recommendations,
   ) {
-    final list = <BlendRankedProduct>[];
-    for (final entry in recommendations.entries) {
-      list.addAll(entry.value);
-    }
-    list.sort((a, b) => b.score.compareTo(a.score));
+    if (recommendations == null) return [];
+    final list = List<BlendRankedProduct>.from(recommendations);
+    list.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
     return list;
   }
 }
@@ -153,9 +149,9 @@ class _OverlapProductRow extends StatelessWidget {
             child: SizedBox(
               width: 44,
               height: 44,
-              child: p.imageUrl != null
+              child: p?.imageUrl != null
                   ? CachedNetworkImage(
-                      imageUrl: p.imageUrl!,
+                      imageUrl: p!.imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (_, a) => Container(
                         color: context.trenzyColors.fg10,
@@ -185,20 +181,20 @@ class _OverlapProductRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  p.name,
+                  p?.name ?? '',
                   style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  p.brand ?? p.category ?? '',
+                  p?.brand ?? p?.category ?? '',
                   style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
                 ),
               ],
             ),
           ),
           Text(
-            '${rankedProduct.matchScore}%',
+            '${(rankedProduct.matchScore ?? 0).toInt()}%',
             style: GlassTypography.buttonLabel(fontSize: 14, color: context.trenzyColors.primary)
                 .copyWith(fontWeight: FontWeight.w900),
           ),

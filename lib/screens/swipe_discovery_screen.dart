@@ -429,7 +429,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                       Row(
                         children: [
                           Text(
-                            product.brand ?? '',
+                            product.brand,
                             style: TextStyle(
                               color: context.trenzyColors.fg70,
                               fontSize: 14,
@@ -454,7 +454,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                               ],
                             ),
                             child: Text(
-                              '₹${(product.price ?? 0).toStringAsFixed(0)}',
+                              '₹${product.price.toStringAsFixed(0)}',
                               style: TextStyle(
                                 color: context.trenzyColors.primaryFg,
                                 fontSize: 15,
@@ -470,9 +470,8 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                         spacing: 8,
                         runSpacing: 4,
                         children: [
-                          _tagChip(product.category ?? ''),
-                          if (product.color != null)
-                            _tagChip(product.color!),
+                          _tagChip(product.category),
+                          _tagChip(product.color),
                           if (product.tags.isNotEmpty)
                             _tagChip(product.tags.first),
                         ],

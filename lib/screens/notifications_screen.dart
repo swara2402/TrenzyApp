@@ -135,7 +135,7 @@ class NotificationsScreen extends ConsumerWidget {
                 return _NotificationTile(
                   notification: n,
                   onTap: () async {
-                    if (!n.read) {
+                    if (n.read != true) {
                       final api = ref.read(apiServiceProvider);
                       await api.markNotificationRead(n.id);
                       ref.invalidate(notificationsProvider);

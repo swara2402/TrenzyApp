@@ -76,9 +76,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                     children: [
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.card)),
-                        child: widget.product.imageUrl != null && widget.product.imageUrl!.isNotEmpty
+                        child: widget.product.imageUrl.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: widget.product.imageUrl!,
+                                imageUrl: widget.product.imageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 memCacheWidth: 400,
@@ -170,31 +170,31 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                           overflow: TextOverflow.ellipsis,
                         ),
                     Text(
-                      widget.customPriceText ?? widget.product.effectivePrice,
+                      widget.customPriceText ?? '${widget.product.effectivePrice}',
                           style: GlassTypography.body(
                             fontSize: 14,
                             weight: FontWeight.w800,
                             color: context.trenzyColors.primary,
                           ),
                         ),
-                    if (widget.product.rating != null) ...[
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.star, size: 11, color: Colors.amber),
-                          SizedBox(width: 2),
-                          Text(
-                            widget.product.rating!.toStringAsFixed(1),
-                            style: GlassTypography.body(fontSize: 10, color: context.trenzyColors.mutedFg),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star, size: 11, color: Colors.amber),
+                        SizedBox(width: 2),
+                        Text(
+                          widget.product.rating.toStringAsFixed(1),
+                          style: GlassTypography.body(fontSize: 10, color: context.trenzyColors.mutedFg),
+                        ),
+                      ],
+                    ),
+                  ],
                     // Show recommendation reason if available
-                    if (widget.product.reason != null && widget.product.reason!.isNotEmpty) ...[
+                    if (widget.product.reason.isNotEmpty) ...[
                       SizedBox(height: 4),
                       Text(
-                        widget.product.reason!,
+                        widget.product.reason,
                         style: GlassTypography.body(fontSize: 10, color: context.trenzyColors.mutedFg.withValues(alpha: 0.8)),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -264,7 +264,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         child: Stack(
           children: [
             CachedNetworkImage(
-              imageUrl: widget.product.imageUrl ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
+              imageUrl: widget.product.imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
@@ -338,7 +338,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(widget.product.imageUrl ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image'),
+                  image: CachedNetworkImageProvider(widget.product.imageUrl),
                   fit: BoxFit.cover,
                 ),
                 border: Border.all(color: context.trenzyColors.glassBorder),
@@ -368,7 +368,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
           ),
           SizedBox(height: 4),
           Text(
-            widget.customPriceText ?? widget.product.effectivePrice,
+            widget.customPriceText ?? '${widget.product.effectivePrice}',
             style: TextStyle(
               color: context.trenzyColors.primary,
               fontSize: 14,
@@ -376,10 +376,10 @@ class _ProductCardState extends ConsumerState<ProductCard> {
             ),
           ),
           // Show recommendation reason if available in compact mode
-          if (widget.product.reason != null && widget.product.reason!.isNotEmpty) ...[
+          if (widget.product.reason.isNotEmpty) ...[
             SizedBox(height: 4),
             Text(
-              widget.product.reason!,
+              widget.product.reason,
               style: TextStyle(
                 color: context.trenzyColors.mutedFg.withValues(alpha: 0.7),
                 fontSize: 10,

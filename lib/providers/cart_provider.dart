@@ -107,7 +107,8 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
     }
   }
 
-  CartItem? _findByProduct(String productId) {
+  CartItem? _findByProduct(String? productId) {
+    if (productId == null) return null;
     final current = state.valueOrNull;
     if (current == null) return null;
     for (final i in current.items) {
@@ -116,13 +117,15 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
     return null;
   }
 
-  Future<void> incrementQuantity(String productId) async {
+  Future<void> incrementQuantity(String? productId) async {
+    if (productId == null) return;
     final item = _findByProduct(productId);
     if (item == null) return;
     await updateQuantity(item.id, item.quantity + 1, productId: productId);
   }
 
-  Future<void> decrementQuantity(String productId) async {
+  Future<void> decrementQuantity(String? productId) async {
+    if (productId == null) return;
     final item = _findByProduct(productId);
     if (item == null) return;
     final currentQuantity = item.quantity;
@@ -232,5 +235,5 @@ final cartTotalItemsProvider = Provider<int>((ref) {
 final cartSubtotalProvider = Provider<double>((ref) {
   final s = ref.watch(cartProvider).valueOrNull;
   if (s == null) return 0;
-  return s.total > 0 ? s.total : s.subtotal;
+  return (s.total > 0 ? s.total : s.subtotal) ?? 0.0;
 });

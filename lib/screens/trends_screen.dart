@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/trends_provider.dart';
 import 'package:trenzy/models/trend_model.dart';
+import 'package:trenzy/models/social_models.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
 class TrendsScreen extends ConsumerWidget {
@@ -379,9 +380,9 @@ class _TrendProductCard extends StatelessWidget {
                   children: [
                     Positioned.fill(
                       child:
-                          trend.imageUrl != null && trend.imageUrl!.isNotEmpty
+                          trend.imageUrl.isNotEmpty
                           ? CachedNetworkImage(
-                              imageUrl: trend.imageUrl!,
+                              imageUrl: trend.imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 color: Colors.grey[900],
@@ -467,18 +468,18 @@ class _TrendProductCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (trend.category != null) ...[
-                        SizedBox(height: 2),
-                        Text(
-                          trend.category!,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: context.trenzyColors.mutedFg,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      ...[
+                      SizedBox(height: 2),
+                      Text(
+                        trend.category,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: context.trenzyColors.mutedFg,
                         ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                       Spacer(),
                       Row(
                         children: [
@@ -550,10 +551,9 @@ class _PredictionCard extends StatelessWidget {
                   width: 64,
                   height: 64,
                   child:
-                      prediction.imageUrl != null &&
-                          prediction.imageUrl!.isNotEmpty
+                      prediction.imageUrl.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: prediction.imageUrl!,
+                          imageUrl: prediction.imageUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: Colors.grey[900],
@@ -598,16 +598,16 @@ class _PredictionCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (prediction.category != null) ...[
-                      SizedBox(height: 2),
-                      Text(
-                        prediction.category!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.trenzyColors.mutedFg,
-                        ),
+                    ...[
+                    SizedBox(height: 2),
+                    Text(
+                      prediction.category,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.trenzyColors.mutedFg,
                       ),
-                    ],
+                    ),
+                  ],
                     SizedBox(height: 6),
                     Text(
                       prediction.reasoning,

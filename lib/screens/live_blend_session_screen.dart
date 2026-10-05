@@ -200,7 +200,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
               _buildCompatibilityMeter(),
               SizedBox(height: 24),
               blendGroupAsync.when(
-                data: (group) => group.options.isNotEmpty
+                data: (group) => group.options.isNotEmpty == true
                     ? _buildProductCard(group.options.first, group)
                     : Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
@@ -434,7 +434,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
-                imageUrl: product.imageUrl ?? '',
+                imageUrl: product.imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(
                   color: context.trenzyColors.graphite,
@@ -466,11 +466,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                   children: [
                     Row(
                       children: [
-                        if (product.brand != null)
-                          _buildTag(product.brand!, Colors.white.withValues(alpha: 0.1)),
-                        if (product.brand != null) SizedBox(width: 8),
-                        if (product.category != null)
-                          _buildTag(product.category!, context.trenzyColors.primary.withValues(alpha: 0.2), textColor: context.trenzyColors.primary),
+                        _buildTag(product.brand, Colors.white.withValues(alpha: 0.1)),
+                        SizedBox(width: 8),
+                        _buildTag(product.category, context.trenzyColors.primary.withValues(alpha: 0.2), textColor: context.trenzyColors.primary),
                       ],
                     ),
                     SizedBox(height: 16),
@@ -486,16 +484,15 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 8),
-                    if (product.description != null)
-                      Text(
-                        product.description!,
-                        style: TextStyle(
-                          color: context.trenzyColors.mutedFg.withValues(alpha: 0.9),
-                          fontSize: 15,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      product.description,
+                      style: TextStyle(
+                        color: context.trenzyColors.mutedFg.withValues(alpha: 0.9),
+                        fontSize: 15,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -513,7 +510,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                               ),
                             ),
                             Text(
-                              product.effectivePrice,
+                              '${product.effectivePrice}',
                               style: TextStyle(
                                 color: context.trenzyColors.primary,
                                 fontSize: 28,
@@ -621,7 +618,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
   void _sendSwipe(String groupId, dynamic user, SwipeType type) {
     if (user == null) return;
     final blendGroup = ref.read(blendGroupProvider(groupId)).valueOrNull;
-    if (blendGroup == null || blendGroup.options.isEmpty) return;
+    if (blendGroup == null || blendGroup.options.isEmpty == true) return;
 
     final totalSwipes = _liveState?.totalSwipes ?? 0;
     final productIndex = totalSwipes % blendGroup.options.length;
