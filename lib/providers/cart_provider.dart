@@ -54,8 +54,8 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
     }
 
     final double? parsedTotal = _toDoubleOrNull(res['total']);
-    final double total = parsedTotal ??
-        items.fold(0.0, (s, i) => s + i.totalPrice);
+    final double total =
+        parsedTotal ?? items.fold(0.0, (s, i) => s + i.totalPrice);
 
     return CartState(
       items: items,
@@ -72,8 +72,9 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
 
   Future<void> addToCart(ProductModel product, {int quantity = 1}) async {
     final current = state.valueOrNull ?? const CartState(isLoaded: true);
-    final existingIndex =
-        current.items.indexWhere((i) => i.product.id == product.id);
+    final existingIndex = current.items.indexWhere(
+      (i) => i.product.id == product.id,
+    );
 
     final List<CartItem> optimistic;
     if (existingIndex >= 0) {
@@ -176,8 +177,9 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
     final current = state.valueOrNull ?? const CartState(isLoaded: true);
     final optimistic = current.items
         .where(
-          (i) => !(i.id == itemId ||
-              (productId != null && i.product.id == productId)),
+          (i) =>
+              !(i.id == itemId ||
+                  (productId != null && i.product.id == productId)),
         )
         .toList();
     state = AsyncData(
@@ -221,8 +223,9 @@ class CartNotifier extends AutoDisposeAsyncNotifier<CartState> {
   }
 }
 
-final cartProvider =
-    AsyncNotifierProvider.autoDispose<CartNotifier, CartState>(CartNotifier.new);
+final cartProvider = AsyncNotifierProvider.autoDispose<CartNotifier, CartState>(
+  CartNotifier.new,
+);
 
 final cartItemsProvider = Provider<List<CartItem>>((ref) {
   return ref.watch(cartProvider).valueOrNull?.items ?? const [];
@@ -235,5 +238,6 @@ final cartTotalItemsProvider = Provider<int>((ref) {
 final cartSubtotalProvider = Provider<double>((ref) {
   final s = ref.watch(cartProvider).valueOrNull;
   if (s == null) return 0;
-  return (s.total > 0 ? s.total : s.subtotal) ?? 0.0;
+  final total = s.total;
+  return total != null && total > 0 ? total : s.subtotal;
 });

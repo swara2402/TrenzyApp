@@ -35,3 +35,6 @@ xgboost>=2.0.0,<3.0.0
 # Test dependencies (CI + local backend test suite)
 pytest>=8.0,<9.0
 pytest-asyncio>=0.23,<1.0
+# Required by [tool.pytest.ini_options].addopts in pyproject.toml (--cov).
+# Without it, `python -m pytest` aborts before collecting any test.
+pytest-cov>=4.1,<7.0
