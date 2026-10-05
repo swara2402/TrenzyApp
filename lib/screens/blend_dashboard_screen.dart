@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../models/blend_model.dart';
+import '../models/blend_dashboard_models.dart';
+import '../models/wardrobe_model.dart';
 import '../providers/blend_dashboard_provider.dart';
 import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
@@ -172,7 +174,7 @@ class _BlendDashboardContent extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            dashboard.name,
+            dashboard.name ?? '',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground),
           ),
           Text(
@@ -534,7 +536,7 @@ class _BlendDashboardContent extends ConsumerWidget {
                       decoration: BoxDecoration(shape: BoxShape.circle, color: context.trenzyColors.graphite),
                       child: Center(
                         child: Text(
-                          member.userName.isNotEmpty ? member.userName[0].toUpperCase() : '?',
+                          member.userName.isNotEmpty == true ? member.userName[0].toUpperCase() : '?',
                           style: TextStyle(color: context.trenzyColors.primary, fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -615,22 +617,22 @@ class _InsightCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(insight.title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground)),
+                Text(insight.title ?? '', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground)),
                 SizedBox(height: 4),
-                Text(insight.description, style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+                Text(insight.description ?? '', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
               ],
             ),
           ),
-          if (insight.confidence > 0)
+          if ((insight.confidence ?? 0.0) > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: insight.confidence >= 0.7 ? context.trenzyColors.emerald.withValues(alpha: 0.12) : context.trenzyColors.primary.withValues(alpha: 0.12),
+                color: (insight.confidence ?? 0.0) >= 0.7 ? context.trenzyColors.emerald.withValues(alpha: 0.12) : context.trenzyColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${(insight.confidence * 100).round()}%',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: insight.confidence >= 0.7 ? context.trenzyColors.emerald : context.trenzyColors.primary),
+                '${((insight.confidence ?? 0.0) * 100).round()}%',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: (insight.confidence ?? 0.0) >= 0.7 ? context.trenzyColors.emerald : context.trenzyColors.primary),
               ),
             ),
         ],
@@ -658,9 +660,7 @@ class _MiniWishlistCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: item.productImage != null
-                ? CachedNetworkImage(imageUrl: item.productImage!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg))
-                : Container(color: context.trenzyColors.glass, child: Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg))),
+            child: CachedNetworkImage(imageUrl: item.productImage, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
           ),
           Padding(
             padding: const EdgeInsets.all(8),
@@ -668,8 +668,7 @@ class _MiniWishlistCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.productName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground), maxLines: 1, overflow: TextOverflow.ellipsis),
-                if (item.productBrand != null)
-                  Text(item.productBrand!, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
+                Text(item.productBrand, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
               ],
             ),
           ),
@@ -694,7 +693,7 @@ class _MiniMoodboardCard extends StatelessWidget {
         border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       clipBehavior: Clip.antiAlias,
-      child: CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
+      child: CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
     );
   }
 }
@@ -731,7 +730,7 @@ class _ActivityRow extends StatelessWidget {
         ),
         SizedBox(width: 10),
         Expanded(
-          child: Text(event.description, style: TextStyle(fontSize: 12, color: context.trenzyColors.foreground)),
+          child: Text(event.description ?? '', style: TextStyle(fontSize: 12, color: context.trenzyColors.foreground)),
         ),
       ],
     );

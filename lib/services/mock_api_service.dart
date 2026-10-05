@@ -537,8 +537,8 @@ class MockApiService implements ApiServiceBase {
   Future<List<Friend>> getFriends() async {
     await _delay(const Duration(milliseconds: 200));
     return [
-      const Friend(id: 1, firebaseUid: 'alice', name: 'Alice', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=A'),
-      const Friend(id: 2, firebaseUid: 'bob', name: 'Bob', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=B'),
+      Friend(id: '1', firebaseUid: 'alice', name: 'Alice', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=A'),
+      Friend(id: '2', firebaseUid: 'bob', name: 'Bob', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=B'),
     ];
   }
 

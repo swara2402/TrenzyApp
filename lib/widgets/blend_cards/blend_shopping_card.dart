@@ -93,12 +93,12 @@ class BlendShoppingCard extends StatelessWidget {
   }
 
   static _Personality _derivePersonality(BlendResults r) {
-    final brandCount = r.sharedBrands.length;
-    final styleCount = r.sharedStyles.length;
-    final colourCount = r.sharedColours.length;
-    final categoryCount = r.sharedCategories.length;
-    final overlap = r.wardrobeOverlap;
-    final score = r.fashionScore;
+    final brandCount = r.sharedBrands?.length ?? 0;
+    final styleCount = r.sharedStyles?.length ?? 0;
+    final colourCount = r.sharedColours?.length ?? 0;
+    final categoryCount = r.sharedCategories?.length ?? 0;
+    final overlap = r.wardrobeOverlap ?? 0;
+    final score = r.fashionScore ?? 0;
 
     if (brandCount >= 4 && score >= 60) {
       return _Personality(

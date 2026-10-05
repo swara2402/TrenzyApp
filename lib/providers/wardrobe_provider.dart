@@ -274,7 +274,7 @@ class OutfitsNotifier extends AutoDisposeAsyncNotifier<List<Outfit>> {
             name: name ?? o.name,
             description: o.description,
             items: o.items,
-            wardrobeItemIds: wardrobeItemIds ?? o.wardrobeItemIds,
+            wardrobeItemIds: wardrobeItemIds?.map((id) => id.toString()).toList() ?? o.wardrobeItemIds,
             occasion: occasion ?? o.occasion,
             isFavorite: o.isFavorite,
             createdAt: o.createdAt,

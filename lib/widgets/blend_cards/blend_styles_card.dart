@@ -14,7 +14,7 @@ class BlendStylesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final styles = results.sharedStyles;
+    final styles = results.sharedStyles ?? [];
 
     if (styles.isEmpty) {
       return _buildEmptyState();
@@ -92,8 +92,6 @@ class BlendStylesCard extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
 class _StyleChip extends StatelessWidget {

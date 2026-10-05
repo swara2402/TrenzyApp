@@ -266,15 +266,14 @@ class _WishlistProductRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
-                  if (product.price != null)
-                    Text(
-                      '\u20B9${product.price!.toStringAsFixed(0)}',
-                      style: GlassTypography.body(
-                        fontSize: 13,
-                        weight: FontWeight.w800,
-                        color: context.trenzyColors.primary,
-                      ),
+                  Text(
+                    '\u20B9${product.price.toStringAsFixed(0)}',
+                    style: GlassTypography.body(
+                      fontSize: 13,
+                      weight: FontWeight.w800,
+                      color: context.trenzyColors.primary,
                     ),
+                  ),
                 ],
               ),
             ),

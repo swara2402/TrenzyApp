@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../models/blend_model.dart';
+import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
 import '../theme/glass_theme.dart';
 
@@ -159,8 +159,8 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     if (_searchQuery.isNotEmpty) {
       result = result.where((e) =>
         e.productName.toLowerCase().contains(_searchQuery) ||
-        (e.productBrand?.toLowerCase().contains(_searchQuery) ?? false) ||
-        (e.productCategory?.toLowerCase().contains(_searchQuery) ?? false)
+        e.productBrand.toLowerCase().contains(_searchQuery) ||
+        e.productCategory.toLowerCase().contains(_searchQuery)
       ).toList();
     }
 
@@ -180,10 +180,10 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
         result.sort((a, b) => a.productName.compareTo(b.productName));
         break;
       case 'price_high':
-        result.sort((a, b) => (b.productPrice ?? 0).compareTo(a.productPrice ?? 0));
+        result.sort((a, b) => b.productPrice.compareTo(a.productPrice));
         break;
       case 'price_low':
-        result.sort((a, b) => (a.productPrice ?? 0).compareTo(b.productPrice ?? 0));
+        result.sort((a, b) => a.productPrice.compareTo(b.productPrice));
         break;
       default: // newest first
         result.sort((a, b) {
@@ -197,10 +197,11 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
   }
 
   void _toggleFavorite(SharedWishlistItem item) {
+    final parsedId = int.tryParse(item.id ?? '') ?? 0;
     ref.read(blendWishlistNotifierProvider.notifier).updateItem(
       blendId: widget.groupId,
-      itemId: item.id,
-      isFavorite: !item.isFavorite,
+      itemId: parsedId,
+      isFavorite: !(item.isFavorite ?? false),
     );
   }
 
@@ -218,9 +219,10 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
           ),
           TextButton(
             onPressed: () {
+              final parsedId = int.tryParse(item.id ?? '') ?? 0;
               ref.read(blendWishlistNotifierProvider.notifier).removeItem(
                 blendId: widget.groupId,
-                itemId: item.id,
+                itemId: parsedId,
               );
               Navigator.of(ctx).pop();
               ref.invalidate(sharedWishlistProvider(widget.groupId));
@@ -397,9 +399,7 @@ class _WishlistItemCard extends StatelessWidget {
               flex: 3,
               child: Stack(
                 children: [
-                  item.productImage != null
-                      ? CachedNetworkImage(imageUrl: item.productImage!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => _PlaceholderIcon())
-                      : _PlaceholderIcon(),
+                  CachedNetworkImage(imageUrl: item.productImage, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => _PlaceholderIcon()),
                   Positioned(
                     top: 6, right: 6,
                     child: GestureDetector(
@@ -411,8 +411,8 @@ class _WishlistItemCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          item.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          color: item.isFavorite ? context.trenzyColors.crimson : context.trenzyColors.mutedFg,
+                          item.isFavorite == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          color: item.isFavorite == true ? context.trenzyColors.crimson : context.trenzyColors.mutedFg,
                           size: 18,
                         ),
                       ),
@@ -429,12 +429,11 @@ class _WishlistItemCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(item.productName, style: TextStyle(fontWeight: FontWeight.w600, color: context.trenzyColors.foreground, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
-                    if (item.productBrand != null)
-                      Text(item.productBrand!, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
-                    if (item.productPrice != null) ...[
-                      SizedBox(height: 2),
-                      Text('₹${item.productPrice!.toStringAsFixed(0)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
-                    ],
+                    Text(item.productBrand, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
+                    ...[
+                    SizedBox(height: 2),
+                    Text('₹${item.productPrice.toStringAsFixed(0)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
+                  ],
                     Spacer(),
                     Row(
                       children: [
@@ -504,23 +503,23 @@ class _ItemDetailsSheet extends StatelessWidget {
               ],
             ),
             SizedBox(height: 16),
-            if (item.productImage != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: CachedNetworkImage(imageUrl: item.productImage!, height: 200, width: double.infinity, fit: BoxFit.cover),
-              ),
-              SizedBox(height: 16),
-            ],
-            if (item.productBrand != null) ...[
-              Text('Brand:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
-              Text(item.productBrand!, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
-              SizedBox(height: 8),
-            ],
-            if (item.productPrice != null) ...[
-              Text('Price:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
-              Text('₹${item.productPrice!.toStringAsFixed(0)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
-              SizedBox(height: 8),
-            ],
+            ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: CachedNetworkImage(imageUrl: item.productImage, height: 200, width: double.infinity, fit: BoxFit.cover),
+            ),
+            SizedBox(height: 16),
+          ],
+            ...[
+            Text('Brand:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+            Text(item.productBrand, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
+            SizedBox(height: 8),
+          ],
+            ...[
+            Text('Price:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+            Text('₹${item.productPrice.toStringAsFixed(0)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
+            SizedBox(height: 8),
+          ],
             if (item.notes != null && item.notes!.isNotEmpty) ...[
               Text('Notes:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
               Container(
@@ -541,8 +540,8 @@ class _ItemDetailsSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: GlowButton(
-                    label: item.isFavorite ? 'Favorited' : 'Mark Favorite',
-                    icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    label: item.isFavorite == true ? 'Favorited' : 'Mark Favorite',
+                    icon: item.isFavorite == true ? Icons.favorite : Icons.favorite_border,
                     onTap: () {
                       onToggleFavorite();
                       Navigator.of(context).pop();

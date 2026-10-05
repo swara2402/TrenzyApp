@@ -1688,11 +1688,11 @@ class GridMiniCards extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child:
-                      product.imageUrl != null && product.imageUrl!.isNotEmpty
+                      product.imageUrl.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(18),
                           child: CachedNetworkImage(
-                            imageUrl: product.imageUrl!,
+                            imageUrl: product.imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (_, _) => Center(
                               child: Icon(Icons.shopping_bag_rounded, size: 38),
@@ -1718,7 +1718,7 @@ class GridMiniCards extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                product.effectivePrice,
+                product.effectivePrice.toString(),
                 style: TextStyle(
                   color: context.trenzyColors.primary,
                   fontSize: 11,
@@ -1943,7 +1943,8 @@ class SlimArchiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayTitle = title ?? product?.name ?? 'Item';
-    final displaySubtitle = subtitle ?? product?.effectivePrice ?? '';
+    final displaySubtitle = subtitle ??
+        (product?.effectivePrice != null ? '\$${product!.effectivePrice.toStringAsFixed(2)}' : '');
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1961,7 +1962,7 @@ class SlimArchiveCard extends StatelessWidget {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(14),
                     child: CachedNetworkImage(
-                      imageUrl: product!.imageUrl!,
+                      imageUrl: product!.imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (_, _) =>
                           Icon(Icons.shopping_bag_rounded),

@@ -68,7 +68,7 @@ class BlendResultsScreen extends ConsumerWidget {
           trackBlendResultsViewed(
             ref,
             groupId,
-            fashionScore: results.fashionScore,
+            fashionScore: (results.fashionScore ?? 0).toInt(),
           );
         });
         return RefreshIndicator(
@@ -100,8 +100,8 @@ class _BlendResultsContent extends StatelessWidget {
             elevation: 0,
             leading: GlassBackButton(),
             title: DisplayText(
-              results.groupName.isNotEmpty
-                  ? results.groupName
+              results.groupName?.isNotEmpty == true
+                  ? results.groupName!
                   : 'Blend Results',
               fontSize: 20,
             ),
@@ -123,31 +123,31 @@ class _BlendResultsContent extends StatelessWidget {
           SliverToBoxAdapter(child: _buildScoreSection(context)),
           SliverToBoxAdapter(child: _buildCompatibilityNarrative(context)),
           SliverToBoxAdapter(child: _buildInfoSection()),
-          if (results.sharedStyles.isNotEmpty)
+          if (results.sharedStyles?.isNotEmpty == true)
             SliverToBoxAdapter(
               child: _buildSharedSection(
                 context,
                 'Shared Styles',
-                results.sharedStyles,
+                results.sharedStyles!,
               ),
             ),
-          if (results.sharedBrands.isNotEmpty)
+          if (results.sharedBrands?.isNotEmpty == true)
             SliverToBoxAdapter(
               child: _buildSharedSection(
                 context,
                 'Shared Brands',
-                results.sharedBrands,
+                results.sharedBrands!,
               ),
             ),
-          if (results.sharedCategories.isNotEmpty)
+          if (results.sharedCategories?.isNotEmpty == true)
             SliverToBoxAdapter(
               child: _buildSharedSection(
                 context,
                 'Shared Categories',
-                results.sharedCategories,
+                results.sharedCategories!,
               ),
             ),
-          if (results.winners.isNotEmpty)
+          if (results.categoryWinners?.isNotEmpty == true || results.winners?.isNotEmpty == true)
             SliverToBoxAdapter(child: _buildWinnersSection(context))
           else if (results.overallWinner == null)
             SliverToBoxAdapter(
@@ -169,8 +169,8 @@ class _BlendResultsContent extends StatelessWidget {
   }
 
   Widget _buildScoreSection(BuildContext context) {
-    final score = results.fashionScore;
-    final level = results.compatibilityLevel;
+    final score = results.fashionScore ?? 0.0;
+    final level = results.compatibilityLevel != null ? '${results.compatibilityLevel}' : '';
 
     // Determine emoji for accessibility
     String accessibilityEmoji;
@@ -293,17 +293,17 @@ class _BlendResultsContent extends StatelessWidget {
     // Generate a human-readable narrative based on the results
     final narratives = <String>[];
 
-    if (results.sharedStyles.isNotEmpty) {
+    if (results.sharedStyles?.isNotEmpty == true) {
       narratives.add(
-        'You and your group share a love for ${results.sharedStyles.first} style',
+        'You and your group share a love for ${results.sharedStyles!.first} style',
       );
     }
-    if (results.sharedBrands.length >= 2) {
+    if ((results.sharedBrands?.length ?? 0) >= 2) {
       narratives.add(
-        'Top brand matches: ${results.sharedBrands.take(2).join(" and ")}',
+        'Top brand matches: ${results.sharedBrands!.take(2).join(" and ")}',
       );
     }
-    if (results.wardrobeOverlap > 0) {
+    if ((results.wardrobeOverlap ?? 0) > 0) {
       narratives.add(
         '${results.wardrobeOverlap} shared wardrobe items show strong style alignment',
       );
@@ -400,7 +400,7 @@ class _BlendResultsContent extends StatelessWidget {
             value: '${results.totalSwipes}',
             icon: Icons.swipe,
           ),
-          if (results.wardrobeOverlap > 0) ...[
+          if ((results.wardrobeOverlap ?? 0) > 0) ...[
             SizedBox(width: 12),
             _InfoChip(
               label: 'Wardrobe Overlap',
@@ -508,7 +508,7 @@ class _BlendResultsContent extends StatelessWidget {
             ],
           ),
           SizedBox(height: 20),
-          ...results.winners.map((winner) {
+          ...(results.categoryWinners ?? []).map((catWinner) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Column(
@@ -517,14 +517,14 @@ class _BlendResultsContent extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        winner.category,
+                        catWinner.category ?? 'Winner',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: context.trenzyColors.foreground,
                         ),
                       ),
-                      if (winner.isTie)
+                      if (catWinner.winner?.isTie == true)
                         Container(
                           margin: const EdgeInsets.only(left: 8),
                           padding: const EdgeInsets.symmetric(
@@ -558,7 +558,7 @@ class _BlendResultsContent extends StatelessWidget {
                     height: 240,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: winner.products.map((rp) {
+                      children: (catWinner.products ?? (catWinner.winner != null ? [catWinner.winner!] : [])).map((rp) {
                         return _WinnerProductCard(rankedProduct: rp);
                       }).toList(),
                     ),
@@ -683,10 +683,10 @@ class _BlendResultsContent extends StatelessWidget {
   }
 
   Future<void> _shareResults(BuildContext context) async {
-    final topPicks = results.winners
-        .expand((w) => w.products)
+    final topPicks = (results.topProducts ?? [])
+        .map((p) => p.product?.name ?? '')
+        .where((name) => name.isNotEmpty)
         .take(3)
-        .map((p) => p.product.name)
         .join(', ');
     final body = StringBuffer('My Blend "${results.groupName}"');
     body.write(' hit ${results.fashionScore}% style compatibility on Trenzy!');
@@ -722,7 +722,7 @@ class _WinnerProductCard extends ConsumerWidget {
     final w = isLarge ? double.infinity : 180.0;
 
     final isStrongAgreement =
-        rankedProduct.matchScore >= 70 || rankedProduct.loveCount >= 2;
+        (rankedProduct.matchScore ?? 0) >= 70 || (rankedProduct.loveCount ?? 0) >= 2;
     final consensusLabel = isStrongAgreement ? 'Strong agreement' : 'Split';
     final consensusColor = isStrongAgreement
         ? context.trenzyColors.emerald
@@ -761,9 +761,9 @@ class _WinnerProductCard extends ConsumerWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                product.imageUrl != null && product.imageUrl!.isNotEmpty
+                product?.imageUrl != null && product!.imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: product.imageUrl!,
+                        imageUrl: product.imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         placeholder: (_, _) => Container(
@@ -840,7 +840,7 @@ class _WinnerProductCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product.name,
+                  product?.name ?? 'Product',
                   style: TextStyle(
                     color: context.trenzyColors.foreground,
                     fontSize: 14,
@@ -864,7 +864,7 @@ class _WinnerProductCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        product.effectivePrice,
+                        '${product?.effectivePrice ?? product?.price ?? 0.0}',
                         style: TextStyle(
                           color: isLarge
                               ? context.trenzyColors.primaryFg
@@ -874,8 +874,8 @@ class _WinnerProductCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    if (rankedProduct.matchScore > 0) SizedBox(width: 8),
-                    if (rankedProduct.matchScore > 0)
+                    if ((rankedProduct.matchScore ?? 0) > 0) SizedBox(width: 8),
+                    if ((rankedProduct.matchScore ?? 0) > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -910,28 +910,29 @@ class _WinnerProductCard extends ConsumerWidget {
                   ],
                 ),
                 // Member voting breakdown (if available)
-                if (rankedProduct.loveCount > 0 ||
-                    rankedProduct.likeCount > 0) ...[
+                if ((rankedProduct.loveCount ?? 0) > 0 ||
+                    (rankedProduct.likeCount ?? 0) > 0) ...[
                   SizedBox(height: 8),
                   _MemberVotingBreakdown(rankedProduct: rankedProduct),
                 ],
                 SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _saveToWishlist(context, ref, product),
-                    icon: Icon(Icons.favorite_border_rounded, size: 16),
-                    label: Text(ctaLabel),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: context.trenzyColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                if (product != null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _saveToWishlist(context, ref, product),
+                      icon: Icon(Icons.favorite_border_rounded, size: 16),
+                      label: Text(ctaLabel),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: context.trenzyColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
-                ),
                 SizedBox(height: 6),
                 SizedBox(
                   width: double.infinity,
@@ -969,7 +970,7 @@ class _MemberVotingBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalVotes = rankedProduct.loveCount + rankedProduct.likeCount;
+    final totalVotes = (rankedProduct.loveCount ?? 0) + (rankedProduct.likeCount ?? 0);
     if (totalVotes == 0) return SizedBox.shrink();
 
     return Container(
@@ -993,19 +994,19 @@ class _MemberVotingBreakdown extends StatelessWidget {
           SizedBox(height: 6),
           Row(
             children: [
-              if (rankedProduct.loveCount > 0)
+              if ((rankedProduct.loveCount ?? 0) > 0)
                 _VoteChip(
                   icon: Icons.favorite,
-                  count: rankedProduct.loveCount,
+                  count: rankedProduct.loveCount!,
                   color: context.trenzyColors.crimson,
                   label: 'Loved',
                 ),
-              if (rankedProduct.loveCount > 0 && rankedProduct.likeCount > 0)
+              if ((rankedProduct.loveCount ?? 0) > 0 && (rankedProduct.likeCount ?? 0) > 0)
                 SizedBox(width: 8),
-              if (rankedProduct.likeCount > 0)
+              if ((rankedProduct.likeCount ?? 0) > 0)
                 _VoteChip(
                   icon: Icons.thumb_up,
-                  count: rankedProduct.likeCount,
+                  count: rankedProduct.likeCount!,
                   color: context.trenzyColors.primary,
                   label: 'Liked',
                 ),

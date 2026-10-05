@@ -28,7 +28,7 @@ firebase_service_account.json
 android/keystore
 
 # ML model artifacts
-models/
+/models/
 ml/runs/
 ml/data/raw/
 ml/data/processed/

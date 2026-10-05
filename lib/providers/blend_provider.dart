@@ -50,7 +50,7 @@ final blendGroupProvider = FutureProvider.autoDispose
 final blendResultsProvider = FutureProvider.autoDispose
     .family<BlendResults, String>((ref, groupId) async {
       final uid = ref.watch(authProvider.select((a) => a.valueOrNull?.id));
-      if (uid == null) return BlendResults(groupId: groupId, groupName: '', recommendations: const {}, winners: const []);
+      if (uid == null) return BlendResults(groupId: groupId, groupName: '', recommendations: const []);
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendResults(groupId);

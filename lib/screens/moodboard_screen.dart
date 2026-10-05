@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../models/blend_model.dart';
+import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
 import '../theme/glass_theme.dart';
 
@@ -138,7 +138,7 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
             onPressed: () {
               ref.read(moodboardNotifierProvider.notifier).removeItem(
                 blendId: widget.groupId,
-                itemId: item.id,
+                itemId: int.tryParse(item.id) ?? -1,
               );
               Navigator.of(ctx).pop();
               ref.invalidate(moodboardProvider(widget.groupId));
@@ -183,15 +183,15 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
               ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: CachedNetworkImage(imageUrl: item.imageUrl!, height: 250, width: double.infinity, fit: BoxFit.cover),
+                child: CachedNetworkImage(imageUrl: item.imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover),
               ),
               SizedBox(height: 16),
             ],
-              if (item.caption != null && item.caption!.isNotEmpty) ...[
-                Text(item.caption!, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
+              if (item.caption.isNotEmpty) ...[
+                Text(item.caption, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
                 SizedBox(height: 12),
               ],
-              if (item.content != null && item.content!.isNotEmpty) ...[
+              if (item.content.isNotEmpty) ...[
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -200,7 +200,7 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    item.content!.entries.map((e) => '${e.key}: ${e.value}').join('\n'),
+                    item.content,
                     style: TextStyle(fontSize: 13, color: context.trenzyColors.mutedFg),
                   ),
                 ),
@@ -426,7 +426,7 @@ class _MoodboardTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: CachedNetworkImage(imageUrl: item.imageUrl!, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => _itemPlaceholder(item, context), errorWidget: (_, _, _) => _itemPlaceholder(item, context)),
+              child: CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => _itemPlaceholder(item, context), errorWidget: (_, _, _) => _itemPlaceholder(item, context)),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -437,8 +437,8 @@ class _MoodboardTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item.itemType.replaceAll('_', ' '), style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
-                        if (item.caption != null && item.caption!.isNotEmpty)
-                          Text(item.caption!, style: TextStyle(fontSize: 11, color: context.trenzyColors.foreground), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        if (item.caption.isNotEmpty)
+                          Text(item.caption, style: TextStyle(fontSize: 11, color: context.trenzyColors.foreground), maxLines: 2, overflow: TextOverflow.ellipsis),
                       ],
                     ),
                   ),

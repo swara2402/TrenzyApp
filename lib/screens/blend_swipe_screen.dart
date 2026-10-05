@@ -405,7 +405,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                       radius: 14,
                       backgroundColor: context.trenzyColors.graphite,
                       child: Text(
-                        m.userName.isNotEmpty ? m.userName[0].toUpperCase() : '?',
+                        m.userName.isNotEmpty == true ? m.userName[0].toUpperCase() : '?',
                         style: TextStyle(fontSize: 12, color: context.trenzyColors.primary),
                       ),
                     ),
@@ -527,9 +527,9 @@ class _ProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+            child: product.imageUrl.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: product.imageUrl!,
+                    imageUrl: product.imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     placeholder: (_, _) => Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg, size: 24)),
@@ -550,12 +550,12 @@ class _ProductCard extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  product.brand ?? '',
+                  product.brand,
                   style: TextStyle(fontSize: 14, color: context.trenzyColors.mutedFg),
                 ),
                 SizedBox(height: 8),
                 Text(
-                  product.effectivePrice,
+                  product.effectivePrice.toString(),
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.trenzyColors.primary),
                 ),
               ],

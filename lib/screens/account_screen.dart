@@ -59,7 +59,7 @@ class AccountScreen extends ConsumerWidget {
                     radius: 28,
                     backgroundColor: c.primary.withValues(alpha: 0.15),
                     child: Text(
-                      (user.name.isNotEmpty ? user.name[0] : 'U').toUpperCase(),
+                      ((user.name.isNotEmpty ? user.name[0] : 'U')).toUpperCase(),
                       style: GlassTypography.display(
                         fontSize: 22,
                         color: c.primary,
@@ -84,7 +84,7 @@ class AccountScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          user.email ?? '',
+                          user.email,
                           style: GlassTypography.body(
                             fontSize: 13,
                             color: c.mutedFg,

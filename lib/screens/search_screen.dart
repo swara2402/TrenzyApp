@@ -688,13 +688,12 @@ class _SearchResults extends ConsumerWidget {
                               top: Radius.circular(16),
                             ),
                           ),
-                          child: product.imageUrl != null
-                              ? ClipRRect(
+                          child: ClipRRect(
                                   borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(16),
                                   ),
                                   child: CachedNetworkImage(
-                                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl!,
+                                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                                     fit: BoxFit.cover,
                                     width: double.infinity,
                                     placeholder: (_, _) => Container(color: Colors.grey[900]),
@@ -702,10 +701,6 @@ class _SearchResults extends ConsumerWidget {
                                         Icon(Icons.image_outlined,
                                             color: context.trenzyColors.mutedFg),
                                   ),
-                                )
-                              : Center(
-                                  child: Icon(Icons.shopping_bag_outlined,
-                                      color: context.trenzyColors.mutedFg),
                                 ),
                         ),
                       ),
@@ -714,16 +709,15 @@ class _SearchResults extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (product.brand != null)
-                              Text(
-                                product.brand!.toUpperCase(),
-                                style: TextStyle(
-                                  color: context.trenzyColors.primary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.2,
-                                ),
+                            Text(
+                              product.brand.toUpperCase(),
+                              style: TextStyle(
+                                color: context.trenzyColors.primary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
                               ),
+                            ),
                             SizedBox(height: 4),
                             Text(
                               product.name,
@@ -735,17 +729,17 @@ class _SearchResults extends ConsumerWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            if (product.price != null) ...[
-                              SizedBox(height: 4),
-                              Text(
-                                '\u20B9${product.price!.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  color: context.trenzyColors.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ...[
+                            SizedBox(height: 4),
+                            Text(
+                              '\u20B9${product.price.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                color: context.trenzyColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
+                            ),
+                          ],
                           ],
                         ),
                       ),

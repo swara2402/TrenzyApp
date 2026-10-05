@@ -48,7 +48,9 @@ class _BlendHeroCardState extends State<BlendHeroCard>
   @override
   Widget build(BuildContext context) {
     final r = widget.results;
-    final levelColor = _levelColor(r.fashionScore);
+    final scoreInt = (r.fashionScore ?? 0).toInt();
+    final levelColor = _levelColor(scoreInt);
+    final compatLevel = r.compatibilityLevel != null ? '${r.compatibilityLevel}' : '';
 
     return FadeTransition(
       opacity: _fadeIn,
@@ -82,7 +84,7 @@ class _BlendHeroCardState extends State<BlendHeroCard>
                     .copyWith(fontWeight: FontWeight.w800, letterSpacing: 0.5),
               ),
               const SizedBox(height: 8),
-              if (r.compatibilityLevel.isNotEmpty)
+              if (compatLevel.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   decoration: BoxDecoration(
@@ -91,14 +93,14 @@ class _BlendHeroCardState extends State<BlendHeroCard>
                     border: Border.all(color: levelColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
-                    r.compatibilityLevel,
+                    compatLevel,
                     style: GlassTypography.meta(fontSize: 12, color: levelColor)
                         .copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.3),
                   ),
                 ),
               const SizedBox(height: 20),
               TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: r.fashionScore.toDouble()),
+                tween: Tween(begin: 0, end: (r.fashionScore ?? 0).toDouble()),
                 duration: const Duration(milliseconds: 1500),
                 curve: Curves.easeOutQuart,
                 builder: (context, value, _) {
@@ -116,7 +118,7 @@ class _BlendHeroCardState extends State<BlendHeroCard>
               ),
               const SizedBox(height: 16),
               Text(
-                r.memberCount > 2
+                (r.memberCount ?? 0) > 2
                     ? "Based on your group's wishlists and purchase history"
                     : 'Based on your wishlists and purchase history',
                 style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.fg50),
@@ -131,10 +133,10 @@ class _BlendHeroCardState extends State<BlendHeroCard>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _StatTile(label: 'Members', value: '${r.memberCount}'),
-                  _StatTile(label: 'Swipes', value: '${r.totalSwipes}'),
-                  _StatTile(label: 'Brands', value: '${r.sharedBrands.length}'),
-                  _StatTile(label: 'Overlap', value: '${r.wardrobeOverlap}'),
+                  _StatTile(label: 'Members', value: '${r.memberCount ?? 0}'),
+                  _StatTile(label: 'Swipes', value: '${r.totalSwipes ?? 0}'),
+                  _StatTile(label: 'Brands', value: '${r.sharedBrands?.length ?? 0}'),
+                  _StatTile(label: 'Overlap', value: '${r.wardrobeOverlap ?? 0}'),
                 ],
               ),
             ],

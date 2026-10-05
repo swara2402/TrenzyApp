@@ -583,10 +583,9 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                product.imageUrl != null &&
-                                        product.imageUrl!.isNotEmpty
+                                product.imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                        imageUrl: product.imageUrl!,
+                                        imageUrl: product.imageUrl,
                                         fit: BoxFit.cover,
                                         memCacheWidth: 400,
                                         placeholder: (_, _) => Container(
@@ -656,7 +655,7 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                                       ),
                                       SizedBox(height: 4),
                                       Text(
-                                        product.effectivePrice,
+                                        product.effectivePrice.toString(),
                                         style: TextStyle(
                                           color: context.trenzyColors.primary,
                                           fontSize: 12,

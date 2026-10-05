@@ -14,7 +14,7 @@ class BlendOutfitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allProducts = _topScoredProducts(results.winners);
+    final allProducts = _topScoredProducts(results.categoryWinners);
 
     if (allProducts.isEmpty) {
       return _buildEmptyState();
@@ -117,13 +117,18 @@ class BlendOutfitCard extends StatelessWidget {
   }
 
   List<BlendRankedProduct> _topScoredProducts(
-    List<BlendCategoryWinner> winners,
+    List<BlendCategoryWinner>? winners,
   ) {
+    if (winners == null) return [];
     final list = <BlendRankedProduct>[];
     for (final w in winners) {
-      list.addAll(w.products);
+      if (w.products != null) {
+        list.addAll(w.products!);
+      } else if (w.winner != null) {
+        list.add(w.winner!);
+      }
     }
-    list.sort((a, b) => b.score.compareTo(a.score));
+    list.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
     return list;
   }
 }
@@ -178,14 +183,14 @@ class _OutfitSlot extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          if (product != null && product.imageUrl != null)
+          if (product != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
                 width: 36,
                 height: 36,
                 child: CachedNetworkImage(
-                  imageUrl: product.imageUrl!,
+                  imageUrl: product.imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (_, a) => Container(
                     color: context.trenzyColors.fg10,
@@ -217,7 +222,7 @@ class _OutfitSlot extends StatelessWidget {
           ),
           if (rp != null)
             Text(
-              '${rp.matchScore}%',
+              '${(rp.matchScore ?? 0).toInt()}%',
               style: GlassTypography.buttonLabel(fontSize: 14, color: context.trenzyColors.primary)
                   .copyWith(fontWeight: FontWeight.w900),
             ),

@@ -50,76 +50,64 @@ List<RecommendationReason> generateReasons(ProductModel product, {Map<String, dy
   final reasons = <RecommendationReason>[];
   
   // Enhanced style matching with deeper reasoning
-  if (product.style != null) {
-    final styleInsights = _getStyleInsight(product.style!, userProfile);
-    reasons.add(RecommendationReason(
-      label: styleInsights['label']!,
-      detail: styleInsights['detail']!,
-      icon: IconName.style,
-      confidence: styleInsights['confidence'] ?? 0.8,
-    ));
-  }
+  final styleInsights = _getStyleInsight(product.style, userProfile);
+  reasons.add(RecommendationReason(
+    label: styleInsights['label']!,
+    detail: styleInsights['detail']!,
+    icon: IconName.style,
+    confidence: styleInsights['confidence'] ?? 0.8,
+  ));
 
   // Enhanced season matching with weather context
-  if (product.season != null) {
-    final seasonInsights = _getSeasonInsight(product.season!, userProfile);
-    reasons.add(RecommendationReason(
-      label: seasonInsights['label']!,
-      detail: seasonInsights['detail']!,
-      icon: IconName.season,
-      confidence: seasonInsights['confidence'] ?? 0.7,
-    ));
-  }
+  final seasonInsights = _getSeasonInsight(product.season, userProfile);
+  reasons.add(RecommendationReason(
+    label: seasonInsights['label']!,
+    detail: seasonInsights['detail']!,
+    icon: IconName.season,
+    confidence: seasonInsights['confidence'] ?? 0.7,
+  ));
 
   // Enhanced occasion matching
-  if (product.occasion != null) {
-    final occasionInsights = _getOccasionInsight(product.occasion!, userProfile);
-    reasons.add(RecommendationReason(
-      label: occasionInsights['label']!,
-      detail: occasionInsights['detail']!,
-      icon: IconName.occasion,
-      confidence: occasionInsights['confidence'] ?? 0.75,
-    ));
-  }
+  final occasionInsights = _getOccasionInsight(product.occasion, userProfile);
+  reasons.add(RecommendationReason(
+    label: occasionInsights['label']!,
+    detail: occasionInsights['detail']!,
+    icon: IconName.occasion,
+    confidence: occasionInsights['confidence'] ?? 0.75,
+  ));
 
   // Enhanced color matching with palette analysis
-  if (product.color != null) {
-    final colorInsights = _getColorInsight(product.color!, userProfile);
-    reasons.add(RecommendationReason(
-      label: colorInsights['label']!,
-      detail: colorInsights['detail']!,
-      icon: IconName.color,
-      confidence: colorInsights['confidence'] ?? 0.7,
-    ));
-  }
+  final colorInsights = _getColorInsight(product.color, userProfile);
+  reasons.add(RecommendationReason(
+    label: colorInsights['label']!,
+    detail: colorInsights['detail']!,
+    icon: IconName.color,
+    confidence: colorInsights['confidence'] ?? 0.7,
+  ));
 
   // Enhanced brand matching with preference history
-  if (product.brand != null) {
-    final brandInsights = _getBrandInsight(product.brand!, userProfile);
-    reasons.add(RecommendationReason(
-      label: brandInsights['label']!,
-      detail: brandInsights['detail']!,
-      icon: IconName.brand,
-      confidence: brandInsights['confidence'] ?? 0.8,
-    ));
-  }
+  final brandInsights = _getBrandInsight(product.brand, userProfile);
+  reasons.add(RecommendationReason(
+    label: brandInsights['label']!,
+    detail: brandInsights['detail']!,
+    icon: IconName.brand,
+    confidence: brandInsights['confidence'] ?? 0.8,
+  ));
 
   // Enhanced fit matching
-  if (product.fit != null) {
-    final fitInsights = _getFitInsight(product.fit!, userProfile);
-    reasons.add(RecommendationReason(
-      label: fitInsights['label']!,
-      detail: fitInsights['detail']!,
-      icon: IconName.fit,
-      confidence: fitInsights['confidence'] ?? 0.75,
-    ));
-  }
+  final fitInsights = _getFitInsight(product.fit, userProfile);
+  reasons.add(RecommendationReason(
+    label: fitInsights['label']!,
+    detail: fitInsights['detail']!,
+    icon: IconName.fit,
+    confidence: fitInsights['confidence'] ?? 0.75,
+  ));
 
   // Enhanced rating with social proof (using actual rating, not fake count)
-  if (product.rating != null && product.rating! >= 4.0) {
+  if (product.rating >= 4.0) {
     reasons.add(RecommendationReason(
       label: 'Highly rated',
-      detail: '${product.rating!.toStringAsFixed(1)} stars from verified purchases',
+      detail: '${product.rating.toStringAsFixed(1)} stars from verified purchases',
       icon: IconName.trending,
       confidence: 0.85,
     ));
@@ -137,8 +125,8 @@ List<RecommendationReason> generateReasons(ProductModel product, {Map<String, dy
   }
 
   // Add price insight if available
-  if (product.price != null && product.price! > 0) {
-    final priceInsight = _getPriceInsight(product.price!, userProfile);
+  if (product.price > 0) {
+    final priceInsight = _getPriceInsight(product.price, userProfile);
     if (priceInsight != null) {
       reasons.add(RecommendationReason(
         label: priceInsight['label']!,
@@ -340,10 +328,10 @@ Map<String, dynamic>? _getPriceInsight(double price, Map<String, dynamic>? userP
 }
 
 Map<String, dynamic>? _getVibeInsight(ProductModel product, String vibe) {
-  final productStyle = product.style?.toLowerCase() ?? '';
-  final productOccasion = product.occasion?.toLowerCase() ?? '';
-  
-  if (vibe.toLowerCase().contains(productStyle) || 
+  final productStyle = product.style.toLowerCase();
+  final productOccasion = product.occasion.toLowerCase();
+
+  if (vibe.toLowerCase().contains(productStyle) ||
       vibe.toLowerCase().contains(productOccasion)) {
     return {
       'label': 'Matches your $vibe vibe',
@@ -356,18 +344,9 @@ Map<String, dynamic>? _getVibeInsight(ProductModel product, String vibe) {
 }
 
 String generateSessionSummary(List<ProductModel> liked, List<ProductModel> disliked) {
-  final likedStyles = liked
-      .where((p) => p.style != null)
-      .map((p) => p.style!)
-      .toList();
-  final likedColors = liked
-      .where((p) => p.color != null)
-      .map((p) => p.color!)
-      .toList();
-  final likedCategories = liked
-      .where((p) => p.category != null)
-      .map((p) => p.category!)
-      .toList();
+  final likedStyles = liked.map((p) => p.style).toList();
+  final likedColors = liked.map((p) => p.color).toList();
+  final likedCategories = liked.map((p) => p.category).toList();
 
   final styleFreq = _frequency(likedStyles);
   final colorFreq = _frequency(likedColors);

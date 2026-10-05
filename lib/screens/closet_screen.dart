@@ -290,7 +290,7 @@ class _AiOutfitMatchBanner extends ConsumerWidget {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          outfits.first.title.isNotEmpty ? outfits.first.title : 'Matches your wardrobe perfectly',
+                          (outfits.first.title?.isNotEmpty == true) ? outfits.first.title! : 'Matches your wardrobe perfectly',
                           style: TextStyle(
                             fontFamily: GlassTypography.bodyFont,
                             fontSize: 12,
@@ -326,7 +326,7 @@ class _WardrobeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = item.imageUrl;
     final name = item.name;
-    final category = item.category ?? '';
+    final category = item.category;
     final isFavorite = item.isFavorite;
 
     return GestureDetector(
@@ -349,7 +349,7 @@ class _WardrobeCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  imageUrl != null && imageUrl.isNotEmpty
+                  imageUrl.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
@@ -370,7 +370,7 @@ class _WardrobeCard extends StatelessWidget {
                           child: Icon(Icons.checkroom_rounded,
                               color: context.trenzyColors.mutedFg),
                         ),
-                  if (isFavorite)
+                  if (isFavorite == true)
                     Positioned(
                       top: 6,
                       right: 6,

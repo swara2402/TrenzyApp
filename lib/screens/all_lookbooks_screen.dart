@@ -136,7 +136,7 @@ class _LookbookCard extends StatelessWidget {
           // Image grid (top section)
           Expanded(
             flex: 3,
-            child: outfit.items.isNotEmpty
+            child: (outfit.items.isNotEmpty == true)
                 ? _buildImageGrid(outfit.items)
                 : Container(
                     decoration: BoxDecoration(
@@ -179,7 +179,7 @@ class _LookbookCard extends StatelessWidget {
                     ),
                   ),
                   Spacer(),
-                  if (outfit.occasion != null && outfit.occasion!.isNotEmpty)
+                  if (outfit.occasion.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -187,7 +187,7 @@ class _LookbookCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        outfit.occasion!,
+                        outfit.occasion,
                         style: TextStyle(
                           color: context.trenzyColors.primary,
                           fontSize: 10,
@@ -220,9 +220,9 @@ class _LookbookCard extends StatelessWidget {
         physics: NeverScrollableScrollPhysics(),
         childAspectRatio: 1,
         children: displayItems.map((item) {
-          return item.imageUrl != null && item.imageUrl!.isNotEmpty
+          return item.imageUrl.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: item.imageUrl!,
+                  imageUrl: item.imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: context.trenzyColors.background,
@@ -245,9 +245,9 @@ class _LookbookCard extends StatelessWidget {
   Widget _buildSingleImage(WardrobeItem item) {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+      child: item.imageUrl.isNotEmpty
           ? CachedNetworkImage(
-              imageUrl: item.imageUrl!,
+              imageUrl: item.imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               placeholder: (context, url) => Container(

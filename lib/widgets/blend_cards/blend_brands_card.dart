@@ -14,7 +14,7 @@ class BlendBrandsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brands = results.sharedBrands;
+    final brands = results.sharedBrands ?? [];
 
     if (brands.isEmpty) {
       return _buildEmptyState();
@@ -100,8 +100,6 @@ class BlendBrandsCard extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
 class _BrandChip extends StatelessWidget {

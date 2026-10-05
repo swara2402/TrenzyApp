@@ -247,13 +247,8 @@ class SettingsScreen extends ConsumerWidget {
                         CircleAvatar(
                           radius: 24,
                           backgroundColor: context.trenzyColors.primary.withValues(alpha: 0.15),
-                          backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                          child: user.avatarUrl == null
-                              ? Text(
-                                  (user.name.isNotEmpty ? user.name[0] : 'U').toUpperCase(),
-                                  style: TextStyle(color: context.trenzyColors.primary, fontSize: 18, fontWeight: FontWeight.bold),
-                                )
-                              : null,
+                          backgroundImage: NetworkImage(user.avatarUrl),
+                          child: null,
                         ),
                         SizedBox(width: 12),
                         Expanded(
@@ -265,7 +260,7 @@ class SettingsScreen extends ConsumerWidget {
                                 style: TextStyle(color: context.trenzyColors.foreground, fontSize: 16, fontWeight: FontWeight.w700),
                               ),
                               Text(
-                                user.email ?? '',
+                                user.email,
                                 style: TextStyle(color: context.trenzyColors.mutedFg.withValues(alpha: 0.7), fontSize: 12),
                               ),
                             ],

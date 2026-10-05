@@ -1,14 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/blend_model.dart';
+import '../models/blend_dashboard_models.dart';
 import '../services/api_service_base.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
 
 final blendDashboardProvider = FutureProvider.autoDispose
     .family<BlendDashboard, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
-      if (uid == null) return BlendDashboard(id: blendId, name: '', memberCount: 0);
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
+      if (uid == null) {
+        return BlendDashboard(id: blendId, name: '', memberCount: 0);
+      }
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendDashboard(blendId);
@@ -17,56 +21,76 @@ final blendDashboardProvider = FutureProvider.autoDispose
 
 final sharedWishlistProvider = FutureProvider.autoDispose
     .family<List<SharedWishlistItem>, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <SharedWishlistItem>[];
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getSharedWishlist(blendId);
       return data
-          .map((e) => SharedWishlistItem.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => SharedWishlistItem.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
           .toList();
     });
 
 final moodboardProvider = FutureProvider.autoDispose
     .family<List<MoodboardItem>, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <MoodboardItem>[];
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getMoodboard(blendId);
       return data
-          .map((e) => MoodboardItem.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => MoodboardItem.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
     });
 
 final blendInsightsProvider = FutureProvider.autoDispose
     .family<List<BlendInsight>, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <BlendInsight>[];
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendInsights(blendId);
       return data
-          .map((e) => BlendInsight.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => BlendInsight.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
     });
 
 final blendActivityProvider = FutureProvider.autoDispose
     .family<List<ActivityEvent>, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <ActivityEvent>[];
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendActivity(blendId);
       final events = data['events'] as List<dynamic>? ?? [];
       return events
-          .map((e) => ActivityEvent.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => ActivityEvent.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
     });
 
 final blendSettingsProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, blendId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <String, dynamic>{};
 
       final api = ref.watch(apiServiceProvider);
@@ -90,7 +114,8 @@ class BlendWishlistNotifier extends StateNotifier<AsyncValue<void>> {
     String? notes,
   }) async {
     try {
-      await _api.addToSharedWishlist(blendId,
+      await _api.addToSharedWishlist(
+        blendId,
         productId: productId,
         productName: productName,
         productPrice: productPrice,
@@ -114,7 +139,9 @@ class BlendWishlistNotifier extends StateNotifier<AsyncValue<void>> {
     String? purchaseLink,
   }) async {
     try {
-      await _api.updateWishlistItem(blendId, itemId,
+      await _api.updateWishlistItem(
+        blendId,
+        itemId,
         notes: notes,
         isFavorite: isFavorite,
         purchaseLink: purchaseLink,
@@ -140,8 +167,8 @@ class BlendWishlistNotifier extends StateNotifier<AsyncValue<void>> {
 
 final blendWishlistNotifierProvider =
     StateNotifierProvider<BlendWishlistNotifier, AsyncValue<void>>((ref) {
-  return BlendWishlistNotifier(ref.watch(apiServiceProvider));
-});
+      return BlendWishlistNotifier(ref.watch(apiServiceProvider));
+    });
 
 class BlendInsightNotifier extends StateNotifier<AsyncValue<void>> {
   BlendInsightNotifier(this._api) : super(const AsyncData(null));
@@ -160,8 +187,8 @@ class BlendInsightNotifier extends StateNotifier<AsyncValue<void>> {
 
 final blendInsightNotifierProvider =
     StateNotifierProvider<BlendInsightNotifier, AsyncValue<void>>((ref) {
-  return BlendInsightNotifier(ref.watch(apiServiceProvider));
-});
+      return BlendInsightNotifier(ref.watch(apiServiceProvider));
+    });
 
 class MoodboardNotifier extends StateNotifier<AsyncValue<void>> {
   MoodboardNotifier(this._api) : super(const AsyncData(null));
@@ -176,7 +203,8 @@ class MoodboardNotifier extends StateNotifier<AsyncValue<void>> {
     String? caption,
   }) async {
     try {
-      await _api.addToMoodboard(blendId,
+      await _api.addToMoodboard(
+        blendId,
         itemType: itemType,
         content: content,
         imageUrl: imageUrl,
@@ -203,5 +231,5 @@ class MoodboardNotifier extends StateNotifier<AsyncValue<void>> {
 
 final moodboardNotifierProvider =
     StateNotifierProvider<MoodboardNotifier, AsyncValue<void>>((ref) {
-  return MoodboardNotifier(ref.watch(apiServiceProvider));
-});
+      return MoodboardNotifier(ref.watch(apiServiceProvider));
+    });

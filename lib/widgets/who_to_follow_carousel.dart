@@ -393,7 +393,7 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
     final name = widget.user.name;
     final initials = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
 
-    if (imageUrl != null && imageUrl.isNotEmpty) {
+    if (imageUrl.isNotEmpty) {
       return ClipOval(
         child: CachedNetworkImage(
           imageUrl: imageUrl,
