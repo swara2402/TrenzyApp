@@ -39,7 +39,7 @@ class EnvConfig {
         'or --dart-define=FF_API_URL_OVERRIDE=https://<host>.',
       );
     }
-    // Debug mode: use HTTPS when possible, fall back to localhost for local dev
-    return 'http://localhost:8000';
+    // Debug mode: use http://127.0.0.1:8000 (with adb reverse tcp:8000 tcp:8000 on Android)
+    return 'http://127.0.0.1:8000';
   }
 }

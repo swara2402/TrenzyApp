@@ -36,7 +36,7 @@ class FeedItem {
       content: json['content'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       likes: json['likes'] as int?,
       comments: json['comments'] as int?,
       createdAt: json['createdAt'] != null

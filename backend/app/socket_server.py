@@ -768,7 +768,18 @@ async def join_blend(sid, data):
                 )
                 return
 
-        # Authorization must complete BEFORE the socket joins the room.\n        # Otherwise an unauthorized client can briefly subscribe to blend\n        # broadcasts even though the request is rejected afterward.\n        await sio.enter_room(sid, group_id)\n        _sessions[sid].update(\n            {\n                "groupId": group_id,\n                "kind": "blend",\n            }\n        )\n\n        existing = (
+        # Authorization must complete BEFORE the socket joins the room.
+        # Otherwise an unauthorized client can briefly subscribe to blend
+        # broadcasts even though the request is rejected afterward.
+        await sio.enter_room(sid, group_id)
+        _sessions[sid].update(
+            {
+                "groupId": group_id,
+                "kind": "blend",
+            }
+        )
+
+        existing = (
             db.query(BlendMember)
             .filter(
                 BlendMember.blend_id == group_id,

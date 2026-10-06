@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class FeatureFlags {
   const FeatureFlags._();
 
@@ -39,6 +41,9 @@ class FeatureFlags {
   
   static const bool devAuthBypass = bool.fromEnvironment(
     'FF_DEV_AUTH_BYPASS',
-    defaultValue: false,
+    defaultValue: bool.fromEnvironment(
+      'DEV_AUTH_BYPASS',
+      defaultValue: kDebugMode,
+    ),
   );
 }

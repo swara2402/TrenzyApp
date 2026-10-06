@@ -53,15 +53,16 @@ os.environ.setdefault(
     "http://localhost:5174",
 )
 
-# Patch PostgreSQL TSVECTOR type for SQLite compatibility before importing models
-import sqlalchemy.dialects.postgresql as _pg_dialect
-from sqlalchemy import Text as _Text
-_pg_dialect.TSVECTOR = _Text
-sys.modules.setdefault("sqlalchemy.dialects.postgresql.types", _pg_dialect)
+# Patch PostgreSQL TSVECTOR type for SQLite compatibility only when TRENZY_TEST_DB=1
+if os.getenv("TRENZY_TEST_DB") == "1":
+    import sqlalchemy.dialects.postgresql as _pg_dialect
+    from sqlalchemy import Text as _Text
+    _pg_dialect.TSVECTOR = _Text
+    sys.modules.setdefault("sqlalchemy.dialects.postgresql.types", _pg_dialect)
 
-# Set up SQLite database
+# Set up database path
 sqlite_path = backend_dir / "trenzy_dev.db"
-os.environ["TRENZY_TEST_DB"] = "1"
+os.environ.setdefault("TRENZY_TEST_DB", "0")
 
 import uvicorn
 from app.db import Base, engine, SessionLocal
@@ -124,12 +125,13 @@ def _ensure_blends_deck_column():
     """Add the blends.deck_json column to existing dev DBs (idempotent)."""
     from sqlalchemy import text
     try:
-        with engine.connect() as conn:
-            cols = [row[1] for row in conn.execute(text("PRAGMA table_info(blends)"))]
-            if "deck_json" not in cols:
-                conn.execute(text("ALTER TABLE blends ADD COLUMN deck_json TEXT"))
-                conn.commit()
-                print("[*] Added blends.deck_json column.")
+        if engine.dialect.name == "sqlite":
+            with engine.connect() as conn:
+                cols = [row[1] for row in conn.execute(text("PRAGMA table_info(blends)"))]
+                if "deck_json" not in cols:
+                    conn.execute(text("ALTER TABLE blends ADD COLUMN deck_json TEXT"))
+                    conn.commit()
+                    print("[*] Added blends.deck_json column.")
     except Exception as e:
         print(f"[!] Note on blends.deck_json: {e}")
 
@@ -301,13 +303,14 @@ def _refresh_dev_member_names():
 
 
 def setup_database():
-    print(f"[*] Initializing development database at: {sqlite_path}")
+    print(f"[*] Initializing development database (dialect={engine.dialect.name})")
     Base.metadata.create_all(bind=engine)
     _ensure_blends_deck_column()
-    try:
-        load_products_data()
-    except Exception as e:
-        print(f"[!] Note on loading products: {e}")
+    if engine.dialect.name == "sqlite" or os.getenv("TRENZY_TEST_DB") == "1":
+        try:
+            load_products_data()
+        except Exception as e:
+            print(f"[!] Note on loading products: {e}")
     seed_demo_trends()
     seed_demo_social()
     _refresh_dev_member_names()
@@ -318,7 +321,7 @@ if __name__ == "__main__":
     print("[*] Starting Trenzy Backend on http://localhost:8000 ...")
     uvicorn.run(
         "app.main:api",
-        host="::",
+        host="0.0.0.0",
         port=8000,
         reload=False,
         log_level="info",

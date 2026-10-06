@@ -92,7 +92,7 @@ class ProductModel {
       id: json['id'] as String?,
       name: json['name'] as String?,
       description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       price: (json['price'] as num?)?.toDouble(),
       category: json['category'] as String?,
       subcategory: json['subcategory'] as String?,

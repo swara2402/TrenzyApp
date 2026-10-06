@@ -196,6 +196,16 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       final synced = await _syncBackendUser(user);
       state = AsyncValue.data(synced);
     } catch (e, st) {
+      if (FeatureFlags.devAuthBypass) {
+        final devUser = UserModel(
+          id: DevAuth.currentDevUid(),
+          name: 'Dev User',
+          email: trimmedEmail,
+          emailVerified: true,
+        );
+        state = AsyncValue.data(devUser);
+        return;
+      }
       final msg = friendlyFirebaseError(e);
       state = AsyncValue.error(ApiException(msg), st);
       rethrow;
@@ -394,9 +404,19 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
   }
 
   Future<bool> checkEmailVerification() async {
+    if (FeatureFlags.devAuthBypass) {
+      if (state.value == null) {
+        state = AsyncValue.data(UserModel(
+          id: DevAuth.currentDevUid(),
+          name: 'Dev User',
+          email: 'dev@trenzy.local',
+          emailVerified: true,
+        ));
+      }
+      return true;
+    }
     final user = _auth.currentUser;
     if (user == null) return false;
-    if (FeatureFlags.devAuthBypass) return true;
     try {
       await user.reload();
       final updated = _auth.currentUser;

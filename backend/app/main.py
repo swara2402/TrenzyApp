@@ -579,6 +579,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 _PRODUCT_IMAGE_DIR = os.path.join(UPLOAD_DIR, "product-images", "images")
 if os.path.isdir(_PRODUCT_IMAGE_DIR):
     app.mount("/product-images", StaticFiles(directory=_PRODUCT_IMAGE_DIR), name="product-images")
+    app.mount("/uploads/product-images/images", StaticFiles(directory=_PRODUCT_IMAGE_DIR), name="uploads-product-images")
+
 
 app.include_router(blends.router)
 app.include_router(blend_features.router)

@@ -49,7 +49,7 @@ class WardrobeItem {
       id: json['id'] as String?,
       userId: json['userId'] as String?,
       name: json['name'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       product: json['product'] != null
           ? ProductModel.fromJson(json['product'] as Map<String, dynamic>)
           : null,
@@ -132,7 +132,7 @@ class Outfit {
       userId: json['userId'] as String?,
       name: json['name'] as String?,
       description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       occasion: json['occasion'] as String?,
       season: json['season'] as String?,
       items: (json['items'] as List<dynamic>?)
@@ -192,7 +192,7 @@ class OutfitIdea {
       name: json['name'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       recommendedItems: (json['recommendedItems'] as List<dynamic>?)
           ?.map((item) => WardrobeItem.fromJson(item as Map<String, dynamic>))
           .toList(),

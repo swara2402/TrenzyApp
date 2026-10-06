@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/product_model.dart';
+import '../services/api_service.dart';
 import '../providers/wishlist_provider.dart';
 import '../theme/glass_theme.dart';
 
@@ -78,7 +79,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.card)),
                         child: widget.product.imageUrl.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: widget.product.imageUrl,
+                                imageUrl: ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 memCacheWidth: 400,
@@ -264,7 +265,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         child: Stack(
           children: [
             CachedNetworkImage(
-              imageUrl: widget.product.imageUrl,
+              imageUrl: ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
@@ -338,7 +339,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(widget.product.imageUrl),
+                  image: CachedNetworkImageProvider(ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl),
                   fit: BoxFit.cover,
                 ),
                 border: Border.all(color: context.trenzyColors.glassBorder),
