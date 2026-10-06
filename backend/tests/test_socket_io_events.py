@@ -14,7 +14,7 @@ import pytest
 from unittest.mock import patch, AsyncMock
 
 # Import models and handlers
-from app.models import Blend, BlendMember, BlendInvitation, BlendSwipe
+from app.models import Blend, BlendMember, BlendInvitation, BlendSwipe, Friend
 from app.socket_server import (
     connect, disconnect, join_blend, blend_swipe, leave_blend, get_blend_state,
     _sessions, _blend_presence,
@@ -364,6 +364,11 @@ class TestPrivateBlendAuthorization:
                 blend = Blend(id="blend-private", name="Private Blend", is_private=True, user_firebase_uid="creator-uid")
                 db_session.add(blend)
                 db_session.commit()
+
+                # Product rule: blend participants must be friends with the owner
+                # before the invitation check is reached on the socket join path.
+                db_session.add(Friend(user_firebase_uid="test-user-uid", friend_firebase_uid="creator-uid", friend_name="Creator"))
+                db_session.commit()
                 
                 # Connect
                 sid = "test-sid-private"
@@ -400,6 +405,10 @@ class TestPrivateBlendAuthorization:
                 # Create private blend
                 blend = Blend(id="blend-private-invited", name="Private Blend", is_private=True, user_firebase_uid="creator-uid")
                 db_session.add(blend)
+                db_session.commit()
+
+                # Product rule: socket join requires friendship with the owner.
+                db_session.add(Friend(user_firebase_uid="test-user-uid", friend_firebase_uid="creator-uid", friend_name="Creator"))
                 db_session.commit()
                 
                 # Create pending invitation for this exact user

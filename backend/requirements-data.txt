@@ -7,3 +7,5 @@
 #
 datasets>=2.18.0
 huggingface-hub>=0.23.0
+# ml/evaluation (offline recommendation gates) needs pandas; not a prod dep.
+pandas>=2.0.0

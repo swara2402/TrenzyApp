@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from datetime import date
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -14,7 +15,8 @@ def test_user_profile_update(client: TestClient, db_session: Session, auth_heade
     uid = "test-user-1"
     headers = auth_headers
 
-    user = User(firebase_uid=uid, email="prof1@example.com", name="Old Name")
+    user = User(firebase_uid=uid, email="prof1@example.com", name="Old Name",
+                date_of_birth=date(1995, 1, 1))
     db_session.add(user)
     db_session.commit()
 
@@ -36,7 +38,8 @@ def test_user_account_deletion_with_financial_preservation(
     uid = "test-user-1"
     headers = auth_headers
 
-    user = User(firebase_uid=uid, email="del1@example.com", name="Delete Me")
+    user = User(firebase_uid=uid, email="del1@example.com", name="Delete Me",
+                date_of_birth=date(1995, 1, 1))
     db_session.add(user)
 
     # Seed product first so FK is satisfied

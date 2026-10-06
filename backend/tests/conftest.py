@@ -22,6 +22,11 @@ os.environ["DEV_AUTH_UID"] = "test-user-1"
 os.environ["DEV_AUTH_SECRET"] = "test-dev-secret"
 os.environ["FIREBASE_SERVICE_ACCOUNT_FILE"] = "/dev/null"
 os.environ["TRENZY_TEST_DB"] = "1"  # app.db builds a shared in-memory SQLite engine
+# The functional suite exercises the cart/checkout code paths, so the beta
+# commerce launch gate is enabled here. The disabled (fail-closed) posture is
+# validated separately by scripts/go_live_gate.py, not by these tests. Must be
+# set before app modules import launch_flags, which reads it at import time.
+os.environ["TRENZY_BETA_COMMERCE_ENABLED"] = "true"
 
 # ── Patch TSVECTOR → Text BEFORE any app module imports ───────────────────────
 # This must happen before `from app.models import ...` resolves TSVECTOR.
@@ -129,6 +134,37 @@ def _clear_tables():
         db.commit()
     finally:
         db.close()
+
+
+@pytest.fixture(autouse=True)
+def _age_gate_allows_absent_profile(monkeypatch):
+    """Harness concession for the launch age gate.
+
+    ``auth_deps._enforce_age_verification`` fails closed in production when a
+    caller has no age-verified profile. Many functional tests authenticate as
+    the shared dev identity (or transient blend participants) that deliberately
+    have no ``users`` row, so treat an *absent* profile as verified to let those
+    tests exercise their feature logic. When a profile row DOES exist but lacks
+    ``date_of_birth`` the fail-closed behaviour is preserved verbatim — that is
+    exactly what tests/test_age_gate.py asserts through its fake DB.
+    """
+    from fastapi import HTTPException
+
+    from app import auth_deps
+    from app.models import User
+
+    def _patched(request, uid, db):
+        if request.url.path in auth_deps._AGE_EXEMPT_PATHS:
+            return
+        user = db.query(User).filter(User.firebase_uid == uid).first()
+        if user is None:
+            return  # no profile row → treated as verified in the test harness
+        if user.date_of_birth is None:
+            raise HTTPException(
+                status_code=403, detail="AGE_VERIFICATION_REQUIRED"
+            )
+
+    monkeypatch.setattr(auth_deps, "_enforce_age_verification", _patched)
 
 
 @pytest.fixture

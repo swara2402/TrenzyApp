@@ -4,6 +4,12 @@ import pytest
 import numpy as np
 from datetime import datetime, timezone
 
+# ml.evaluation pulls in pandas/torch (declared in requirements-data.txt, not
+# core requirements.txt). Skip this foundation module cleanly when those data
+# extras are absent so the rest of the suite can run instead of aborting at
+# collection. Install requirements-data.txt to execute these tests.
+pytest.importorskip("pandas", reason="ml evaluation requires the data extras")
+
 from ml.contracts.data_contracts import (
     CatalogItemContract,
     EmbeddingContract,

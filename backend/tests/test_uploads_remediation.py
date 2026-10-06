@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import pytest
+from datetime import date
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -14,7 +15,8 @@ def test_upload_valid_jpeg_avatar(client: TestClient, db_session: Session, auth_
     uid = "test-user-1"
     headers = auth_headers
 
-    user = User(firebase_uid=uid, email="upload1@example.com", name="Upload User")
+    user = User(firebase_uid=uid, email="upload1@example.com", name="Upload User",
+                date_of_birth=date(1995, 1, 1))
     db_session.add(user)
     db_session.commit()
 
@@ -34,7 +36,8 @@ def test_upload_magic_bytes_mismatch_rejected(client: TestClient, db_session: Se
     uid = "test-user-1"
     headers = auth_headers
 
-    user = User(firebase_uid=uid, email="upload2@example.com", name="Upload User 2")
+    user = User(firebase_uid=uid, email="upload2@example.com", name="Upload User 2",
+                date_of_birth=date(1995, 1, 1))
     db_session.add(user)
     db_session.commit()
 
@@ -51,7 +54,8 @@ def test_upload_disallowed_extension_rejected(client: TestClient, db_session: Se
     uid = "test-user-1"
     headers = auth_headers
 
-    user = User(firebase_uid=uid, email="upload3@example.com", name="Upload User 3")
+    user = User(firebase_uid=uid, email="upload3@example.com", name="Upload User 3",
+                date_of_birth=date(1995, 1, 1))
     db_session.add(user)
     db_session.commit()
 

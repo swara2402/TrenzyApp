@@ -74,16 +74,34 @@ def _check_catalog(session: Session) -> dict[str, Any]:
 
 
 def _check_embeddings(session: Session) -> dict[str, Any]:
-    """Return embedding health: how many ProductEmbedding rows exist."""
-    try:
-        from ..ai.models_ai import ProductEmbedding  # type: ignore
+    """Return embedding health.
 
-        count = (
-            session.query(func.count(ProductEmbedding.id))
-            .filter(ProductEmbedding.combined_embedding.isnot(None))
+    The live search / recommendation path reads the per-product FashionCLIP
+    columns (``Product.image_embedding_vector`` / ``text_embedding_vector``),
+    so the probe counts those. It also checks the legacy
+    ``ProductEmbedding.combined_embedding`` table and reports the larger of the
+    two so deployments using either storage path are reflected correctly.
+    """
+    try:
+        column_count = (
+            session.query(func.count(Product.id))
+            .filter(Product.image_embedding_vector.isnot(None))
             .scalar()
             or 0
         )
+        legacy_count = 0
+        try:
+            from ..ai.models_ai import ProductEmbedding  # type: ignore
+
+            legacy_count = (
+                session.query(func.count(ProductEmbedding.id))
+                .filter(ProductEmbedding.combined_embedding.isnot(None))
+                .scalar()
+                or 0
+            )
+        except Exception:
+            legacy_count = 0
+        count = max(column_count, legacy_count)
         return {
             "embeddings": "ready" if count >= _MIN_EMBEDDINGS else "not_generated",
             "embedding_count": count,
@@ -242,18 +260,16 @@ async def readiness_check(session: Session = Depends(get_session)) -> dict[str, 
     # 5. Embeddings (production only — dev can run without ML weights)
     if IS_PRODUCTION:
         try:
-            from ..ai.models_ai import ProductEmbedding  # type: ignore
-
             emb_count = (
-                session.query(func.count(ProductEmbedding.id))
-                .filter(ProductEmbedding.combined_embedding.isnot(None))
+                session.query(func.count(Product.id))
+                .filter(Product.image_embedding_vector.isnot(None))
                 .scalar()
                 or 0
             )
             if emb_count < _MIN_EMBEDDINGS:
                 failures.append(
                     f"embeddings: {emb_count} valid embeddings found "
-                    f"(need ≥ {_MIN_EMBEDDINGS}). Run the embedding pipeline."
+                    f"(need >= {_MIN_EMBEDDINGS}). Run the embedding pipeline."
                 )
         except Exception as exc:
             failures.append(f"embeddings: {str(exc)[:80]}")

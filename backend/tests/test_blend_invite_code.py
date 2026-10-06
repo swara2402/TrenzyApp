@@ -10,12 +10,22 @@ driven fake (the dev bypass is locked to a single UID).
 import uuid
 
 import pytest
-from app.models import Blend, BlendMember, User
+from app.models import Blend, BlendMember, Friend, User
 
 
 CODE_ALPHABET = set("23456789ABCDEFGHJKLMNPQRSTUVWXYZ")
 
 OWNER_UID = "blend-test-owner"
+
+
+def _seed_friendship(db, a: str, b: str) -> None:
+    """Establish the mutual friendship the blend-join product rule requires.
+
+    ``POST /api/blends/join`` rejects non-friends with 403; joiners in these
+    tests are otherwise transient uids with no relationship to the owner.
+    """
+    db.add(Friend(user_firebase_uid=a, friend_firebase_uid=b, friend_name="f"))
+    db.commit()
 
 
 @pytest.fixture
@@ -102,6 +112,7 @@ def test_create_blend_returns_real_invite_code(client, db_session, multi_user_au
 
 def test_join_by_invite_code(client, db_session, multi_user_auth):
     joiner = _new_uid("joiner")
+    _seed_friendship(db_session, joiner, OWNER_UID)
 
     created = _create_blend(client, "Joinable Crew")
     code = created["inviteCode"]
@@ -142,6 +153,7 @@ def test_join_by_unknown_code_returns_404(client, multi_user_auth):
 def test_join_by_blend_id_still_works(client, db_session, multi_user_auth):
     """Back-compat: existing flows pass the blend id directly."""
     joiner = _new_uid("joiner")
+    _seed_friendship(db_session, joiner, OWNER_UID)
 
     created = _create_blend(client, "Id Join Crew")
 
@@ -175,10 +187,11 @@ def test_private_blend_rejects_code_join_without_invitation(client, multi_user_a
 # Per-user join rate limit (in-memory only; see note in blends.py)
 # ────────────────────────────────────────────────────────────
 
-def test_join_rate_limit_per_user(client, multi_user_auth):
+def test_join_rate_limit_per_user(client, db_session, multi_user_auth):
     from app.routes import blends as blends_module
 
     spammer = _new_uid("spammer")  # unique uid → isolated in-memory bucket
+    _seed_friendship(db_session, spammer, OWNER_UID)
 
     created = _create_blend(client, "Rate Limited Crew")
 

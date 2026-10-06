@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from datetime import date
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -243,7 +244,8 @@ def test_webhook_status_requires_admin(client: TestClient, db_session: Session, 
     uid = "test-user-1"
     user = db_session.query(User).filter(User.firebase_uid == uid).first()
     if not user:
-        user = User(firebase_uid=uid, name="testuser", is_admin=False)
+        user = User(firebase_uid=uid, name="testuser", is_admin=False,
+                    date_of_birth=date(1995, 1, 1))
         db_session.add(user)
     else:
         user.is_admin = False
