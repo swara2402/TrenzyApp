@@ -1,5 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+class ProductLoadException implements Exception {
+  const ProductLoadException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 import '../models/product_model.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
@@ -35,7 +42,9 @@ final productsProvider = FutureProvider.autoDispose
             )
             .toList();
       } catch (_) {
-        return const <ProductModel>[];
+        throw const ProductLoadException(
+          'Unable to load products right now. Please try again.',
+        );
       }
     });
 
