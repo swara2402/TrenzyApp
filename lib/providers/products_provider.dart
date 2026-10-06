@@ -1,16 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/product_model.dart';
+import 'api_service_provider.dart';
+import 'auth_provider.dart' as auth_p;
+import 'wishlist_provider.dart';
+
 class ProductLoadException implements Exception {
   const ProductLoadException(this.message);
   final String message;
   @override
   String toString() => message;
 }
-
-import '../models/product_model.dart';
-import 'api_service_provider.dart';
-import 'auth_provider.dart' as auth_p;
-import 'wishlist_provider.dart';
 
 /// Products list provider with pagination support.
 ///
