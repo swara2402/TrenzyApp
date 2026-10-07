@@ -119,15 +119,11 @@ def setup_logging() -> None:
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    # File handler (in production)
+    # Render and other container platforms collect stdout/stderr directly.
+    # Avoid filesystem logging in production so the non-root runtime user does
+    # not need write access to /var/log and logs remain visible in the platform.
     if IS_PRODUCTION:
-        log_dir = "/var/log/trenzy"
-        os.makedirs(log_dir, exist_ok=True)
-        file_handler = logging.FileHandler(f"{log_dir}/backend.log")
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
-        get_logger(__name__).info("File logging enabled: %s", f"{log_dir}/backend.log")
+        get_logger(__name__).info("File logging disabled in production; using stdout")
 
     # Configure specific loggers
     _configure_component_loggers()
