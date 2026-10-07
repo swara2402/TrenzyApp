@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
 from ..models import Brand, Product, ProductImage, ProductVariant, Wishlist
+from ..launch_flags import BETA_COMMERCE_ENABLED
 
 router = APIRouter(prefix="/api", tags=["products"])
 
@@ -65,7 +66,7 @@ def _product_payload(product):
         "rating": product.rating,
         "image_url": product.image_url,
         "tags": product.tags,
-        "affiliate_links": product.affiliate_links,
+        "affiliate_links": product.affiliate_links if BETA_COMMERCE_ENABLED else None,
         "outfit_role": getattr(product, "outfit_role", None),
         "style": getattr(product, "style", None),
         "occasion": getattr(product, "occasion", None),
