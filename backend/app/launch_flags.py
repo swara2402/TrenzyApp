@@ -1,8 +1,8 @@
 """Server-side launch gates for features intentionally deferred past beta.
 
-Beta is affiliate-first. Direct cart/checkout and purchase history remain in the
-repository for the post-launch commerce phase, but are disabled unless explicitly
-enabled in the deployment environment.
+Beta is discovery/inspiration-only. Affiliate links, cart/checkout, purchases,
+and other commerce flows remain in the repository for a later phase, but are
+disabled unless explicitly enabled in the deployment environment.
 """
 from __future__ import annotations
 
