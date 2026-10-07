@@ -9,6 +9,7 @@ Three probes:
 from __future__ import annotations
 
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -257,8 +258,16 @@ async def readiness_check(session: Session = Depends(get_session)) -> dict[str, 
     except Exception as exc:
         failures.append(f"catalog: {str(exc)[:80]}")
 
-    # 5. Embeddings (production only — dev can run without ML weights)
-    if IS_PRODUCTION:
+    # 5. Embeddings are an optional acceleration layer for the beta.
+    # Do not make the public service unready merely because FashionCLIP
+    # weights/embeddings are intentionally disabled on a memory-constrained
+    # staging instance. Enable this gate explicitly when vector search becomes
+    # a hard launch dependency.
+    require_embeddings = (
+        os.getenv("TRENZY_REQUIRE_EMBEDDINGS_READY", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    if IS_PRODUCTION and require_embeddings:
         try:
             emb_count = (
                 session.query(func.count(Product.id))
