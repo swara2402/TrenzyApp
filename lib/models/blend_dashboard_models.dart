@@ -53,7 +53,7 @@ class BlendDashboard {
 
   factory BlendDashboard.fromJson(Map<String, dynamic> json) {
     return BlendDashboard(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       blendId: json['blendId'] as String?,
       name: json['name'] as String?,
       description: json['description'] as String?,
@@ -158,7 +158,7 @@ class SharedWishlistItem {
 
   factory SharedWishlistItem.fromJson(Map<String, dynamic> json) {
     return SharedWishlistItem(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       product: json['product'] != null
           ? ProductModel.fromJson(json['product'] as Map<String, dynamic>)
           : null,
@@ -222,7 +222,7 @@ class MoodboardItem {
 
   factory MoodboardItem.fromJson(Map<String, dynamic> json) {
     return MoodboardItem(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       imageUrl: json['imageUrl'] as String?,
       caption: json['caption'] as String?,
       content: json['content'] as String?,
@@ -280,7 +280,7 @@ class BlendInsight {
 
   factory BlendInsight.fromJson(Map<String, dynamic> json) {
     return BlendInsight(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       title: json['title'] as String?,
       description: json['description'] as String?,
       type: json['type'] as String?,
@@ -332,7 +332,7 @@ class ActivityEvent {
 
   factory ActivityEvent.fromJson(Map<String, dynamic> json) {
     return ActivityEvent(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       type: json['type'] as String?,
       description: json['description'] as String?,
       user: json['user'] != null

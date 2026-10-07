@@ -74,6 +74,7 @@ from .routes import (
 
 # Import all remaining route modules directly (they don't have _router exports yet)
 from .routes import (
+    activity,
     blends,
     blend_features,
     brands,
@@ -584,6 +585,7 @@ if os.path.isdir(_PRODUCT_IMAGE_DIR):
 
 app.include_router(blends.router)
 app.include_router(blend_features.router)
+app.include_router(activity.router)
 app.include_router(brands.router)
 app.include_router(cart.router)
 app.include_router(categories.router)

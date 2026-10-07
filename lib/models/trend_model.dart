@@ -51,7 +51,7 @@ class TrendModel {
 
   factory TrendModel.fromJson(Map<String, dynamic> json) {
     return TrendModel(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       name: json['name'] as String?,
       description: json['description'] as String?,
       imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,

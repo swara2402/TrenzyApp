@@ -142,7 +142,7 @@ class BlendGroup {
 
   factory BlendGroup.fromJson(Map<String, dynamic> json) {
     return BlendGroup(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       name: json['name'] as String?,
       description: json['description'] as String?,
       inviteCode: json['inviteCode'] as String?,
@@ -199,15 +199,21 @@ class BlendRankedProduct {
   });
 
   factory BlendRankedProduct.fromJson(Map<String, dynamic> json) {
+    final productJson = json['product'];
     return BlendRankedProduct(
-      product: json['product'] != null
-          ? ProductModel.fromJson(json['product'] as Map<String, dynamic>)
-          : null,
+      // The backend wraps winner entries as {"product": {...}, "score": ...},
+      // while some payloads send the bare product object.
+      product: productJson is Map
+          ? ProductModel.fromJson(Map<String, dynamic>.from(productJson))
+          : (json['id'] != null
+              ? ProductModel.fromJson(json)
+              : null),
       score: (json['score'] as num?)?.toDouble(),
       matchScore: (json['matchScore'] as num?)?.toDouble(),
       rank: json['rank'] as int?,
       likeCount: json['likeCount'] as int?,
       loveCount: json['loveCount'] as int?,
+      isTie: json['isTie'] as bool?,
     );
   }
 
@@ -271,7 +277,11 @@ class BlendResults {
   final double? wardrobeOverlap;
   final double? fashionScore;
   final String? groupName;
-  final double? compatibilityLevel;
+
+  /// Human readable compatibility label (e.g. "High"). The backend and the
+  /// mock service both send a string; older payloads used a number, so the
+  /// parser accepts either.
+  final String? compatibilityLevel;
   final int? totalSwipes;
   final int? memberCount;
   final List<BlendRankedProduct>? recommendations;
@@ -297,27 +307,106 @@ class BlendResults {
     this.recommendations,
   });
 
+  static List<BlendRankedProduct>? _rankedList(dynamic value) {
+    if (value is! List) return null;
+    return value
+        .whereType<Map>()
+        .map(
+          (item) =>
+              BlendRankedProduct.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList();
+  }
+
   factory BlendResults.fromJson(Map<String, dynamic> json) {
+    // The live backend returns `winners` as a map keyed by category
+    // ({"dresses": {"products": [...], "isTie": false}}) while legacy payloads
+    // used a flat list of ranked products. Accept both, otherwise the cast
+    // throws and the whole results screen fails to load.
+    List<BlendRankedProduct>? winners;
+    List<BlendCategoryWinner>? categoryWinners;
+    final categoryRaw = json['categoryWinners'];
+    if (categoryRaw is List) {
+      categoryWinners = categoryRaw
+          .whereType<Map>()
+          .map(
+            (item) => BlendCategoryWinner.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList();
+    }
+
+    final winnersRaw = json['winners'];
+    if (winnersRaw is List) {
+      winners = _rankedList(winnersRaw);
+    } else if (winnersRaw is Map) {
+      final flat = <BlendRankedProduct>[];
+      final derived = <BlendCategoryWinner>[];
+      winnersRaw.forEach((key, value) {
+        if (value is! Map) return;
+        final isTie = value['isTie'] == true;
+        final ranked = <BlendRankedProduct>[];
+        final products = value['products'];
+        if (products is List) {
+          for (final item in products) {
+            if (item is! Map) continue;
+            ranked.add(
+              BlendRankedProduct.fromJson({
+                ...Map<String, dynamic>.from(item),
+                'isTie': isTie,
+              }),
+            );
+          }
+        }
+        if (ranked.isEmpty) return;
+        derived.add(
+          BlendCategoryWinner(
+            category: key.toString(),
+            winner: ranked.first,
+            products: ranked,
+          ),
+        );
+        flat.add(ranked.first);
+      });
+      if (derived.isNotEmpty) categoryWinners = derived;
+      winners = flat.isEmpty ? null : flat;
+    }
+
+    var recommendations = _rankedList(json['recommendations']);
+    final recsRaw = json['blendRecommendations'];
+    if (recommendations == null && recsRaw is Map) {
+      final flat = <BlendRankedProduct>[];
+      for (final value in recsRaw.values) {
+        if (value is! List) continue;
+        for (final item in value) {
+          if (item is! Map) continue;
+          flat.add(
+            BlendRankedProduct.fromJson(Map<String, dynamic>.from(item)),
+          );
+        }
+      }
+      if (flat.isNotEmpty) recommendations = flat;
+    }
+
+    final overallRaw = json['overallWinner'];
+    final compatRaw = json['compatibilityLevel'];
+
     return BlendResults(
-      groups: (json['groups'] as List<dynamic>?)
-          ?.map((item) => BlendGroup.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      topProducts: (json['topProducts'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendRankedProduct.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      winners: (json['winners'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendRankedProduct.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      overallWinner: json['overallWinner'] != null
-          ? BlendRankedProduct.fromJson(
-              json['overallWinner'] as Map<String, dynamic>)
+      groups: json['groups'] is List
+          ? (json['groups'] as List)
+              .whereType<Map>()
+              .map(
+                (item) => BlendGroup.fromJson(Map<String, dynamic>.from(item)),
+              )
+              .toList()
           : null,
-      categoryWinners: (json['categoryWinners'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendCategoryWinner.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      topProducts: _rankedList(json['topProducts']),
+      winners: winners,
+      overallWinner: overallRaw is Map
+          ? BlendRankedProduct.fromJson(Map<String, dynamic>.from(overallRaw))
+          : null,
+      categoryWinners: categoryWinners,
       summary: json['summary'] as String?,
       groupId: json['groupId'] as String?,
       sharedBrands: (json['sharedBrands'] as List<dynamic>?)?.cast<String>(),
@@ -328,13 +417,14 @@ class BlendResults {
       wardrobeOverlap: (json['wardrobeOverlap'] as num?)?.toDouble(),
       fashionScore: (json['fashionScore'] as num?)?.toDouble(),
       groupName: json['groupName'] as String?,
-      compatibilityLevel: (json['compatibilityLevel'] as num?)?.toDouble(),
-      totalSwipes: json['totalSwipes'] as int?,
-      memberCount: json['memberCount'] as int?,
-      recommendations: (json['recommendations'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendRankedProduct.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      compatibilityLevel: compatRaw is String
+          ? compatRaw
+          : compatRaw is num
+          ? compatRaw.toString()
+          : null,
+      totalSwipes: (json['totalSwipes'] as num?)?.toInt(),
+      memberCount: (json['memberCount'] as num?)?.toInt(),
+      recommendations: recommendations,
     );
   }
 

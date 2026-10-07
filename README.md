@@ -12,6 +12,23 @@ Trenzy is a cutting-edge fashion discovery platform that combines intelligent pr
 - **Production target:** AWS Mumbai (ap-south-1) with managed PostgreSQL/Redis and demand-driven container scaling.
 - **Age:** 13+ with additional protections for minors.
 
+### Android beta release
+
+Android beta builds must use a deployed HTTPS staging backend that passes
+`/api/health/ready`, the Firebase Android app registered as
+`com.trenzy.trenzy`, and a release keystore configured in the ignored
+`android/key.properties`. The Android Firebase configuration belongs at
+`android/app/google-services.json`; Google/Firebase Console must also have the
+release keystore SHA-1 and SHA-256 fingerprints registered for Google sign-in.
+
+```bash
+./scripts/build_flutter_prod.sh android https://<your-staging-api-host>
+```
+
+The script verifies staging readiness, disables mock API and dev-auth bypass,
+and builds a release-signed APK. Android release builds fail rather than
+falling back to debug signing when signing configuration is missing.
+
 ## Technology Stack
 
 **Backend:**

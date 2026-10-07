@@ -114,11 +114,11 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
 
       if (backendUser != null) {
         final synced = UserModel.fromJson(backendUser);
-
-
+        debugPrint('[DEBUG] _syncBackendUser raw=$backendUser');
+        debugPrint('[DEBUG] _syncBackendUser model ageVerified=${synced.ageVerified}');
         return synced.copyWith(emailVerified: _isVerified(user));
       }
-
+      debugPrint('[DEBUG] _syncBackendUser backendUser=null');
     } on FirebaseAuthException catch (e) {
       // Handle token expired error specifically
       if (e.code == 'user-token-expired') {
@@ -133,7 +133,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     } catch (e) {
       // Fall back to Firebase profile when backend is unreachable / other token
       // retrieval fails. Do NOT rethrow — the user is still authenticated.
-
+      debugPrint('[DEBUG] _syncBackendUser fell back: $e');
     }
     // Keep a previously synced age verification for the same user so a
     // transient backend failure can't dump a verified user back onto the age
@@ -147,7 +147,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       emailVerified: _isVerified(user),
       ageVerified: keepVerified,
     );
-
+    debugPrint('[DEBUG] _syncBackendUser fallback ageVerified=${fallback.ageVerified}');
     return fallback;
   }
 

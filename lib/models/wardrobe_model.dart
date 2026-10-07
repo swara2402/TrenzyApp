@@ -1,5 +1,20 @@
 import 'product_model.dart';
 
+/// Backend ids may arrive as ints (SQLite autoincrement) or strings.
+/// Coerce to String so `as String?` casts never throw a TypeError.
+String? _idToString(dynamic value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  if (value is num) return value.toInt().toString();
+  return value.toString();
+}
+
+/// Accepts both camelCase and snake_case date fields from the API.
+DateTime? _parseDate(dynamic value) {
+  if (value is! String || value.isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
 class WardrobeItem {
   final String id;
   final String userId;
@@ -46,17 +61,15 @@ class WardrobeItem {
 
   factory WardrobeItem.fromJson(Map<String, dynamic> json) {
     return WardrobeItem(
-      id: json['id'] as String?,
-      userId: json['userId'] as String?,
+      id: _idToString(json['id']),
+      userId: _idToString(json['userId'] ?? json['user_id']),
       name: json['name'] as String?,
       imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       product: json['product'] != null
           ? ProductModel.fromJson(json['product'] as Map<String, dynamic>)
           : null,
-      addedAt: json['addedAt'] != null
-          ? DateTime.parse(json['addedAt'] as String)
-          : null,
-      isFavorite: json['isFavorite'] as bool?,
+      addedAt: _parseDate(json['addedAt'] ?? json['created_at']),
+      isFavorite: (json['isFavorite'] ?? json['is_favorite']) as bool?,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>(),
       category: json['category'] as String?,
       brand: json['brand'] as String?,
@@ -127,9 +140,11 @@ class Outfit {
         isLoaded = isLoaded ?? false;
 
   factory Outfit.fromJson(Map<String, dynamic> json) {
+    final rawItemIds = (json['wardrobeItemIds'] ?? json['wardrobe_item_ids'])
+        as List<dynamic>?;
     return Outfit(
-      id: json['id'] as String?,
-      userId: json['userId'] as String?,
+      id: _idToString(json['id']),
+      userId: _idToString(json['userId'] ?? json['user_id']),
       name: json['name'] as String?,
       description: json['description'] as String?,
       imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
@@ -138,11 +153,9 @@ class Outfit {
       items: (json['items'] as List<dynamic>?)
           ?.map((item) => WardrobeItem.fromJson(item as Map<String, dynamic>))
           .toList(),
-      wardrobeItemIds: (json['wardrobeItemIds'] as List<dynamic>?)?.cast<String>(),
-      isFavorite: json['isFavorite'] as bool?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : null,
+      wardrobeItemIds: rawItemIds?.map((e) => e.toString()).toList(),
+      isFavorite: (json['isFavorite'] ?? json['is_favorite']) as bool?,
+      createdAt: _parseDate(json['createdAt'] ?? json['created_at']),
       isLoaded: json['isLoaded'] as bool?,
     );
   }
@@ -188,7 +201,7 @@ class OutfitIdea {
 
   factory OutfitIdea.fromJson(Map<String, dynamic> json) {
     return OutfitIdea(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       name: json['name'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,

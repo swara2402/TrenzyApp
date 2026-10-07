@@ -16,6 +16,22 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
   bool _loading = false;
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    // Already-verified users (resumed session, restored state) must never sit
+    // on this screen — the router alone can miss the window before the auth
+    // sync resolves, so bail out here as well.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _leaveIfVerified());
+  }
+
+  void _leaveIfVerified() {
+    if (!mounted) return;
+    final verified =
+        ref.read(authProvider).valueOrNull?.ageVerified ?? false;
+    if (verified) context.go(AppRoutes.home);
+  }
+
   DateTime _latestAllowedDob() {
     final n = DateTime.now();
     return DateTime(n.year - 13, n.month, n.day);

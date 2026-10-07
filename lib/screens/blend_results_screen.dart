@@ -98,7 +98,16 @@ class _BlendResultsContent extends StatelessWidget {
             ),
             pinned: true,
             elevation: 0,
-            leading: GlassBackButton(),
+            leading: GlassBackButton(
+              onTap: () {
+                final id = results.groupId;
+                context.go(
+                  id == null || id.isEmpty
+                      ? AppRoutes.blendHub
+                      : '${AppRoutes.blendDashboard}?groupId=$id',
+                );
+              },
+            ),
             title: DisplayText(
               results.groupName?.isNotEmpty == true
                   ? results.groupName!

@@ -29,7 +29,7 @@ class SocialActivity {
 
   factory SocialActivity.fromJson(Map<String, dynamic> json) {
     return SocialActivity(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       type: json['type'] as String?,
       description: json['description'] as String?,
       user: json['user'] != null
@@ -108,7 +108,7 @@ class PredictionModel {
 
   factory PredictionModel.fromJson(Map<String, dynamic> json) {
     return PredictionModel(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       trendId: json['trendId'] as String?,
       productId: json['productId'] as String?,
       productName: json['productName'] as String?,

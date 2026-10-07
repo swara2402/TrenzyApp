@@ -45,7 +45,7 @@ class PostModel {
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final images = (json['imageUrls'] as List<dynamic>?)?.cast<String>();
     return PostModel(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       author: json['author'] != null
           ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
           : null,

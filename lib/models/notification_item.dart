@@ -43,7 +43,7 @@ class NotificationItem {
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) {
     return NotificationItem(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       userId: json['userId'] as String?,
       type: json['type'] as String?,
       kind: json['kind'] as String?,

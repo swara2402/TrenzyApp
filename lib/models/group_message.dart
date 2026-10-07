@@ -61,7 +61,7 @@ class GroupMessage {
 
   factory GroupMessage.fromJson(Map<String, dynamic> json) {
     return GroupMessage(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       roomId: json['roomId'] as String?,
       groupId: json['groupId'] as String?,
       senderId: json['senderId'] as String?,

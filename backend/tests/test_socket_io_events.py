@@ -17,6 +17,7 @@ from unittest.mock import patch, AsyncMock
 from app.models import Blend, BlendMember, BlendInvitation, BlendSwipe, Friend
 from app.socket_server import (
     connect, disconnect, join_blend, blend_swipe, leave_blend, get_blend_state,
+    send_message,
     _sessions, _blend_presence,
     SCORE_MAP
 )
@@ -96,6 +97,57 @@ def valid_environ():
         "REMOTE_ADDR": "127.0.0.1",
         "HTTP_X_FORWARDED_FOR": None,
     }
+
+
+class TestSendMessagePersistence:
+    @pytest.mark.asyncio
+    async def test_send_message_is_committed_before_broadcast(
+        self, mock_sio, monkeypatch, db_session
+    ):
+        from app.models import BlendMessage
+
+        sid = "message-persistence-sid"
+        _sessions[sid] = {"userId": "test-user-uid", "userName": "Test User"}
+
+        async def allow_member(_user_id, _blend_id):
+            return True
+
+        async def allow_rate(_sid):
+            return True
+
+        monkeypatch.setattr("app.socket_server._check_socket_rate", allow_rate)
+        monkeypatch.setattr("app.socket_server.require_blend_member_async", allow_member)
+
+        await send_message(
+            sid,
+            {"groupId": "message-persistence-blend", "message": "Persist this message"},
+        )
+
+        persisted = (
+            db_session.query(BlendMessage)
+            .filter(BlendMessage.blend_id == "message-persistence-blend")
+            .one()
+        )
+        assert persisted.sender_firebase_uid == "test-user-uid"
+        assert persisted.sender_name == "Test User"
+        assert persisted.content == "Persist this message"
+        mock_sio.emit.assert_awaited_once()
+        assert mock_sio.emit.await_args.args[:2] == (
+            "message_created",
+            {
+                "id": persisted.id,
+                "groupId": "message-persistence-blend",
+                "senderId": "test-user-uid",
+                "senderName": "Test User",
+                "message": "Persist this message",
+                "createdAt": persisted.created_at.isoformat(),
+                "attachedProductId": None,
+                "attachedProductTitle": None,
+                "attachedProductImage": None,
+                "attachedProductPrice": None,
+            },
+        )
+        _sessions.pop(sid, None)
 
 
 # ============================================================================

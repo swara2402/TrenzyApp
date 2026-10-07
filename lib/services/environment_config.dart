@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 
 import 'feature_flags.dart' show FeatureFlags;
@@ -39,7 +40,13 @@ class EnvConfig {
         'or --dart-define=FF_API_URL_OVERRIDE=https://<host>.',
       );
     }
-    // Debug mode: use http://127.0.0.1:8000 (with adb reverse tcp:8000 tcp:8000 on Android)
+    // Debug mode: use 10.0.2.2 for Android emulator to reach host localhost
+    // (127.0.0.1 on the emulator points to the emulator itself). iOS Simulator
+    // can also use 127.0.0.1; desktop too. If adb reverse is set up this may
+    // vary, but 10.0.2.2 is the most reliable for Android emulator.
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    }
     return 'http://127.0.0.1:8000';
   }
 }

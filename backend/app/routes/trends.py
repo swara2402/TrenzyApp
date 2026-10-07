@@ -98,12 +98,15 @@ def get_trending_products(
         .where(TrendMetric.window_start >= window_start)
         .where(TrendMetric.timeframe == timeframe)
     )
+    # Filter on the product's category (not TrendMetric.category): seeded
+    # metrics carry a stale bucket value, and the client sends display labels
+    # ("Tops") while products store lowercase values ("tops").
     if categories:
-        cat_list = [c.strip() for c in categories.split(",") if c.strip()]
+        cat_list = [c.strip().lower() for c in categories.split(",") if c.strip()]
         if cat_list:
-            stmt = stmt.where(TrendMetric.category.in_(cat_list))
+            stmt = stmt.where(func.lower(Product.category).in_(cat_list))
     elif category:
-        stmt = stmt.where(TrendMetric.category == category)
+        stmt = stmt.where(func.lower(Product.category) == category.strip().lower())
 
     stmt = stmt.order_by(TrendMetric.trending_score.desc()).limit(limit)
     results = session.execute(stmt).all()
@@ -447,6 +450,9 @@ def aggregate_trends(
             metric.click_count = click_count
             metric.trending_score = trending_score
             metric.momentum = momentum
+            # Keep the denormalized category in sync with the product so
+            # category-filtered trend queries stop returning nothing.
+            metric.category = product.category
         else:
             metric = TrendMetric(
                 product_id=vc.product_id,

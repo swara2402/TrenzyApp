@@ -71,6 +71,73 @@ def check_firebase_config() -> None:
     except json.JSONDecodeError as exc:
         BLOCKERS.append(f"[Firebase] firebase_options.json is invalid JSON: {exc}")
 
+    android_json = ROOT / "android" / "app" / "google-services.json"
+    if not android_json.is_file():
+        BLOCKERS.append(
+            "[Firebase] android/app/google-services.json is missing; "
+            "Android Firebase and Google sign-in resources cannot be generated."
+        )
+        return
+    try:
+        android_cfg = json.loads(android_json.read_text())
+        clients = android_cfg.get("client", [])
+        matching_client = any(
+            client.get("client_info", {}).get("android_client_info", {}).get("package_name")
+            == "com.trenzy.trenzy"
+            for client in clients
+        )
+        if not matching_client:
+            BLOCKERS.append(
+                "[Firebase] google-services.json has no Android client registered "
+                "for applicationId com.trenzy.trenzy."
+            )
+        has_web_oauth_client = any(
+            oauth.get("client_type") == 3
+            for client in clients
+            for oauth in client.get("oauth_client", [])
+        )
+        if not has_web_oauth_client:
+            BLOCKERS.append(
+                "[Firebase] google-services.json is missing a Web OAuth client "
+                "required for Android Google sign-in."
+            )
+    except (json.JSONDecodeError, AttributeError, TypeError) as exc:
+        BLOCKERS.append(f"[Firebase] android/app/google-services.json is invalid: {exc}")
+
+
+def check_android_release_signing() -> None:
+    properties_path = ROOT / "android" / "key.properties"
+    if not properties_path.is_file():
+        BLOCKERS.append(
+            "[Android] android/key.properties is missing; a beta APK must use "
+            "the release keystore and may not use the debug key."
+        )
+        return
+
+    properties: dict[str, str] = {}
+    for line in properties_path.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith(("#", "!")) and "=" in line:
+            key, value = line.split("=", 1)
+            properties[key.strip()] = value.strip()
+
+    required = ("storeFile", "keyAlias", "keyPassword", "storePassword")
+    missing = [key for key in required if not properties.get(key)]
+    if missing:
+        BLOCKERS.append(
+            "[Android] key.properties is missing required release signing "
+            f"entries: {', '.join(missing)}."
+        )
+        return
+
+    keystore = Path(properties["storeFile"])
+    if not keystore.is_absolute():
+        keystore = ROOT / "android" / keystore
+    if not keystore.is_file():
+        BLOCKERS.append(
+            "[Android] Release keystore configured in key.properties is not present."
+        )
+
 
 # ──────────────────────────────────────────────────────────────
 # 2. Search routes – no stub placeholders
@@ -207,6 +274,7 @@ def check_prod_env_example() -> None:
 
 def main() -> None:
     check_firebase_config()
+    check_android_release_signing()
     check_search_stubs()
     check_health_gates()
     check_auth_rate_limit()

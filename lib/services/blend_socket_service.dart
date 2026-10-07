@@ -81,6 +81,8 @@ class BlendSocketService {
 
     final idToken = await _getIdToken();
     if (idToken == null) {
+      // ignore: avoid_print
+      print('[DEBUG] socket connect aborted: no id token');
       if (!_errorController.isClosed) {
         _errorController.add(
           'Couldn\'t get an auth token. Please sign in again.',
@@ -104,11 +106,15 @@ class BlendSocketService {
 
     _socket = socket;
     _wireListeners(socket);
+    // ignore: avoid_print
+    print('[DEBUG] socket connecting tokenLen=${idToken.length}');
     socket.connect();
   }
 
   void _wireListeners(io.Socket socket) {
     socket.onConnect((_) {
+      // ignore: avoid_print
+      print('[DEBUG] socket connected');
       _reconnectAttempts = 0;
       if (!_connectionController.isClosed) {
         _connectionController.add(true);
@@ -170,6 +176,8 @@ class BlendSocketService {
     });
 
     socket.onConnectError((error) {
+      // ignore: avoid_print
+      print('[DEBUG] socket connect_error: $error');
       if (!_errorController.isClosed) {
         _errorController.add('Connection failed: $error');
       }
@@ -310,6 +318,8 @@ class BlendSocketService {
     // messages when the socket was disconnected (or had only just connected).
     await connect();
     if (!isConnected) {
+      // ignore: avoid_print
+      print('[DEBUG] sendMessage dropped: socket not connected');
       if (!_errorController.isClosed) {
         _errorController.add(
           'You\'re offline. Message couldn\'t be sent — try again when connected.',

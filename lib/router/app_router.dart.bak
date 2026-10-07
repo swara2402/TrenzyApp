@@ -212,7 +212,7 @@ GoRouter createRouter({
       // want onboarding to be treated as a path-prefix match (query-agnostic).
       final location = state.matchedLocation;
       debugPrint(
-
+        '[DEBUG] redirect loc=$location loggedIn=$isLoggedIn '
         'ageVerified=${ageVerifiedNotifier.value} onboarding=$isOnboardingDone',
       );
 

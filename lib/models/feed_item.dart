@@ -31,7 +31,7 @@ class FeedItem {
 
   factory FeedItem.fromJson(Map<String, dynamic> json) {
     return FeedItem(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       userId: json['userId'] as String?,
       content: json['content'] as String?,
       title: json['title'] as String?,

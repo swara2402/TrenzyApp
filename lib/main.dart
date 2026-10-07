@@ -14,6 +14,9 @@ Future<void> main() async {
     final options = await FirebaseOptionsLoader.loadForCurrentPlatform();
     await Firebase.initializeApp(options: options);
   } catch (e) {
+    if (kReleaseMode) {
+      rethrow;
+    }
     debugPrint('Firebase initialization note: $e');
   }
 
@@ -62,8 +65,6 @@ Future<void> main() async {
       // If Crashlytics isn't available/configured, keep the app running.
     }
   }
-
-
 
   runApp(ProviderScope(child: TrenzyApp()));
 }

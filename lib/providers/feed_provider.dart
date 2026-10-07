@@ -21,7 +21,7 @@ class FeedSection {
 
   factory FeedSection.fromJson(Map<String, dynamic> json) {
     return FeedSection(
-      id: json['id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] as String? ?? '',
       type: json['type'] as String? ?? 'products',
       products:

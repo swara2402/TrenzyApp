@@ -4,24 +4,29 @@ import java.io.File
 
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Release signing is read from android/key.properties (git-ignored). When the
-// file or keystore is absent the release build falls back to the debug signing
-// config so `flutter run --release` and CI build checks keep working.
+// Release signing is read from android/key.properties (git-ignored).
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
-val storeFileProp = keystoreProperties["storeFile"]?.toString()?.takeIf { it.isNotBlank() }
+val requiredSigningProperties = listOf("storeFile", "keyAlias", "keyPassword", "storePassword")
+val missingSigningProperties = requiredSigningProperties.filter {
+    keystoreProperties.getProperty(it).isNullOrBlank()
+}
+val storeFileProp = keystoreProperties.getProperty("storeFile")?.takeIf { it.isNotBlank() }
 val resolvedStoreFile = storeFileProp?.let {
     if (File(it).isAbsolute) File(it) else File(rootProject.projectDir, it)
 }
 val hasReleaseKeystore = keystorePropertiesFile.exists() &&
-    resolvedStoreFile != null && resolvedStoreFile.exists()
+    missingSigningProperties.isEmpty() &&
+    resolvedStoreFile != null &&
+    resolvedStoreFile.isFile
 
 android {
     namespace = "com.example.trenzy"
@@ -35,12 +40,10 @@ android {
 
     signingConfigs {
         create("release") {
-            if (hasReleaseKeystore) {
-                keyAlias = keystoreProperties["keyAlias"]?.toString()
-                keyPassword = keystoreProperties["keyPassword"]?.toString()
-                storeFile = resolvedStoreFile
-                storePassword = keystoreProperties["storePassword"]?.toString()
-            }
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = resolvedStoreFile
+            storePassword = keystoreProperties.getProperty("storePassword")
         }
     }
 
@@ -63,12 +66,26 @@ android {
 
     buildTypes {
         release {
-            // Sign with the release keystore when android/key.properties + the
-            // keystore exist; otherwise fall back to debug so builds never break.
             signingConfig = if (hasReleaseKeystore) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
+            }
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "validateSigningRelease") {
+        doFirst {
+            check(keystorePropertiesFile.exists()) {
+                "Release signing requires android/key.properties; refusing to create a debug-signed release APK."
+            }
+            check(missingSigningProperties.isEmpty()) {
+                "Release signing is missing required android/key.properties entries: ${missingSigningProperties.joinToString()}"
+            }
+            check(resolvedStoreFile != null && resolvedStoreFile.isFile) {
+                "Release signing keystore does not exist at the path configured by android/key.properties."
             }
         }
     }

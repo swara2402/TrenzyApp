@@ -141,7 +141,7 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     ref.listen(authProvider, (prev, next) {
       _ageVerifiedNotifier.value = next.valueOrNull?.ageVerified ?? false;
       debugPrint(
-
+        '[DEBUG] authProvider -> status=${next.isLoading ? "loading" : (next.hasError ? "error" : "data")} '
         'ageVerified=${next.valueOrNull?.ageVerified} '
         'notifier=${_ageVerifiedNotifier.value}',
       );

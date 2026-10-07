@@ -19,7 +19,7 @@ class DecisionFlow {
 
   factory DecisionFlow.fromJson(Map<String, dynamic> json) {
     return DecisionFlow(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       name: json['name'] as String?,
       description: json['description'] as String?,
       steps: (json['steps'] as List<dynamic>?)
@@ -63,7 +63,7 @@ class DecisionStep {
 
   factory DecisionStep.fromJson(Map<String, dynamic> json) {
     return DecisionStep(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       title: json['title'] as String?,
       question: json['question'] as String?,
       options: (json['options'] as List<dynamic>?)?.cast<String>(),

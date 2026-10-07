@@ -19,7 +19,7 @@ class Friend {
 
   factory Friend.fromJson(Map<String, dynamic> json) {
     return Friend(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       name: json['name'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       firebaseUid: json['firebaseUid'] as String?,
@@ -63,7 +63,7 @@ class FriendRequestItem {
 
   factory FriendRequestItem.fromJson(Map<String, dynamic> json) {
     return FriendRequestItem(
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
       fromFirebaseUid: json['fromFirebaseUid'] as String?,
       fromName: json['fromName'] as String?,
       toFirebaseUid: json['toFirebaseUid'] as String?,
