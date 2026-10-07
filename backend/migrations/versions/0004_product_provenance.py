@@ -1,4 +1,4 @@
-"""Add provenance, hashing, attribution, and currency columns to products table.
+""""Add provenance, hashing, attribution, and currency columns to products table.
 
 Revision ID: 0004_product_provenance
 Revises: 0003_model_versions
@@ -13,6 +13,10 @@ revision: str = "0004_product_provenance"
 down_revision: Union[str, None] = "0003_model_versions"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+
+
+def _table_exists(conn, table: str) -> bool:
+    return table in sa.inspect(conn).get_table_names()
 
 
 def _column_exists(conn, table: str, column: str) -> bool:
@@ -94,3 +98,4 @@ def downgrade() -> None:
     for col_name in columns_to_drop:
         if _column_exists(conn, "products", col_name):
             op.drop_column("products", col_name)
+"
