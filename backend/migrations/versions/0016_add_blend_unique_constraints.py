@@ -40,6 +40,14 @@ def _constraint_exists(connection: sa.Connection, name: str) -> bool:
 
 def upgrade() -> None:
     connection = op.get_bind()
+    existing_tables = set(sa.inspect(connection).get_table_names())
+
+    # On a fresh database, 0017_schema_sync creates the complete current
+    # schema. These historical constraints are applied only when their
+    # tables already exist.
+    if not {table for _, table, _ in _CONSTRAINTS}.issubset(existing_tables):
+        return
+
     for name, table, columns in _CONSTRAINTS:
         if not _constraint_exists(connection, name):
             op.create_unique_constraint(name, table, list(columns))
