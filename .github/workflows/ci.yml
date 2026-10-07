@@ -10,6 +10,25 @@ permissions:
   contents: read
 
 jobs:
+  flutter-beta:
+    name: Flutter beta quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.6"
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze Flutter app
+        run: flutter analyze
+      - name: Run Flutter tests
+        run: flutter test
+      - name: Build Android debug artifact
+        run: flutter build apk --debug
+
   flutter-chat:
     name: Flutter direct-chat verification
     runs-on: ubuntu-latest
