@@ -39,6 +39,12 @@ def _index_exists(conn, name: str) -> bool:
 def upgrade() -> None:
     conn = op.get_bind()
 
+    # Fresh databases start from the historical empty baseline. The full
+    # current schema is created later by 0017_schema_sync, so this legacy
+    # provenance migration must be a no-op until the products table exists.
+    if not _table_exists(conn, "products"):
+        return
+
     columns_to_add = [
         ("source_page", sa.Column("source_page", sa.String(), nullable=True)),
         ("license_attribution", sa.Column("license_attribution", sa.String(), nullable=True)),
