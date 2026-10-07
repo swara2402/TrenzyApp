@@ -52,7 +52,12 @@ def _map_fields(p: dict) -> dict:
     image_url = p.get("image_url") or p.get("image") or p.get("mainImage")
     image_base_url = os.getenv("TRENZY_IMAGE_BASE_URL", "").strip().rstrip("/")
     if image_base_url and isinstance(image_url, str) and image_url.startswith("/"):
-        image_url = f"{image_base_url}{image_url}"
+        # The static image host serves the catalog files from /images/.
+        image_path = image_url
+        prefix = "/uploads/product-images/images/"
+        if image_path.startswith(prefix):
+            image_path = "/images/" + image_path[len(prefix):]
+        image_url = f"{image_base_url}{image_path}"
     colors = p.get("colors") or (p.get("color") if isinstance(p.get("color"), list) else None)
     color = p.get("color")
     if isinstance(color, list):
