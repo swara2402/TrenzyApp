@@ -26,9 +26,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY migrations ./migrations
 COPY alembic.ini ./alembic.ini
-# Seed product catalog + ML artifacts are required at runtime so a fresh
-# production database boots with a populated catalog and real model artifacts
-# (not an empty catalog with rule-based-only fallbacks).
 COPY data ./data
 COPY ml ./ml
 
@@ -40,6 +37,8 @@ USER trenzy
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:${PORT}/api/health/live || exit 1
+  CMD curl -fsS http://127.0.0.1:\${PORT}/api/health/live || exit 1
 
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:api --host 0.0.0.0 --port ${PORT} --workers 2"]
+# One worker is intentional for the 512 MB beta instance. Multiple workers
+# duplicate Python/ML memory and can exceed the free Render memory limit.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:api --host 0.0.0.0 --port \${PORT} --workers 1"]
