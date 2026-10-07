@@ -1,4 +1,4 @@
-""""Add provenance, hashing, attribution, and currency columns to products table.
+"""Add provenance, hashing, attribution, and currency columns to products table.
 
 Revision ID: 0004_product_provenance
 Revises: 0003_model_versions
@@ -98,4 +98,3 @@ def downgrade() -> None:
     for col_name in columns_to_drop:
         if _column_exists(conn, "products", col_name):
             op.drop_column("products", col_name)
-"
