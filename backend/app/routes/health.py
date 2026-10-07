@@ -25,7 +25,13 @@ from ..models import Product
 from .. import firebase_auth
 from ..config import IS_PRODUCTION
 
-router = APIRouter(tags=["health"])\n\n@router.get("/")\ndef root_status() -> dict[str, str]:\n    """Simple public service status endpoint for Render/browser probes."""\n    return {"service": "trenzy-api", "status": "ok"}\n
+router = APIRouter(tags=["health"])
+
+
+@router.get("/")
+def root_status() -> dict[str, str]:
+    """Simple public service status endpoint for Render/browser probes."""
+    return {"service": "trenzy-api", "status": "ok"}
 
 # Minimum catalog size required for the /ready probe to pass in production.
 _MIN_CATALOG_SIZE: int = 1          # at least one product with an image
