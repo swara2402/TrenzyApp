@@ -265,7 +265,10 @@ async def _init_ai_models() -> None:
     fallbacks, so constrained staging can disable model loading without
     disabling the AI endpoints themselves.
     """
-    enabled = os.getenv(\n        "TRENZY_LOAD_ML_MODELS",\n        "true" if not IS_PRODUCTION else "false",\n    ).strip().lower() in {
+    enabled = os.getenv(
+        "TRENZY_LOAD_ML_MODELS",
+        "true" if not IS_PRODUCTION else "false",
+    ).strip().lower() in {
         "1", "true", "yes", "on"
     }
     if not enabled:
