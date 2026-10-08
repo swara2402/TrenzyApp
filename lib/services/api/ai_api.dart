@@ -33,7 +33,7 @@ class AiApi {
     final data = await _client.post('/ai/outfits/generate', body: {
       'prompt': prompt,
       'num_options': numOptions,
-      if (context case final value?) 'context': value,
+      'context': context,
     });
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
@@ -44,7 +44,7 @@ class AiApi {
   }) async {
     final data = await _client.post('/ai/stylist/chat', body: {
       'message': message,
-      if (conversationId != null) 'conversation_id': conversationId,
+      'conversation_id': conversationId,
     });
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }

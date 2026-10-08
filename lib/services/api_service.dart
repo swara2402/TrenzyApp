@@ -740,15 +740,23 @@ class ApiService implements ApiServiceBase {
       _recommendationApi.getFeaturedCampaign();
 
   // ---------- AI ----------
+  @override
   Future<Map<String, dynamic>> getStyleDna() => _aiApi.getStyleDna();
+  @override
   Future<Map<String, dynamic>> refreshStyleDna() => _aiApi.refreshStyleDna();
+  @override
   Future<Map<String, dynamic>> getAiModelHealth() => _aiApi.getModelHealth();
+  @override
   Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) => _aiApi.getAiRecommendations(limit: limit);
+  @override
   Future<Map<String, dynamic>> generateAiOutfits({required String prompt, int numOptions = 3, Map<String, dynamic>? context}) =>
       _aiApi.generateOutfits(prompt: prompt, numOptions: numOptions, context: context);
+  @override
   Future<Map<String, dynamic>> aiStylistChat({required String message, int? conversationId}) =>
       _aiApi.stylistChat(message: message, conversationId: conversationId);
+  @override
   Future<Map<String, dynamic>> aiStylistOutfit(String prompt) => _aiApi.stylistOutfit(prompt);
+  @override
   Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) => _aiApi.visualSearch(image, limit: limit);
 
   // ---------- Notifications ----------
