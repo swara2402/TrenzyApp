@@ -288,37 +288,24 @@ class ApiClient {
     }
   }
 
-  Future<String> uploadMultipart(String endpoint, XFile file, {String fieldName = 'file'}) async {
+  Future<dynamic> uploadMultipart(String endpoint, XFile file, {String fieldName = 'file'}) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final token = await getIdToken();
-
     final request = http.MultipartRequest('POST', uri);
     if (token != null && token.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer $token';
     }
-
-    final bytes = await file.readAsBytes();
-    final multipartFile = http.MultipartFile.fromBytes(
+    request.files.add(http.MultipartFile.fromBytes(
       fieldName,
-      bytes,
+      await file.readAsBytes(),
       filename: file.name,
-    );
-    request.files.add(multipartFile);
-
+    ));
     try {
       final streamedResponse = await request.send().timeout(const Duration(seconds: 45));
       final response = await http.Response.fromStream(streamedResponse);
-      final decoded = handleResponse(response, endpoint: endpoint);
-      if (decoded is Map<String, dynamic>) {
-        return decoded['image_url']?.toString() ??
-            decoded['imageUrl']?.toString() ??
-            decoded['avatar_url']?.toString() ??
-            decoded['avatarUrl']?.toString() ??
-            '';
-      }
-      return '';
+      return handleResponse(response, endpoint: endpoint);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw ApiException('Upload failed: $e', details: endpoint);
     }
-  }
-}
+  }}
