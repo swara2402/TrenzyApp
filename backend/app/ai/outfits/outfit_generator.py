@@ -12,6 +12,7 @@ Generates outfit combinations based on:
 from __future__ import annotations
 
 from typing import List, Dict, Optional, Tuple
+from itertools import product
 import logging
 import numpy as np
 
@@ -339,62 +340,46 @@ class AIOutfitBuilder:
                 context["occasion"] = occasion
                 break
 
-        # Generate outfit options
+        # Generate and rank real combinations deterministically. The previous
+        # implementation sampled random combinations, which could return the
+        # same outfit repeatedly and made beta behavior impossible to reproduce.
+        upper_candidates = self._get_candidates_by_role(db, user_id, "upper", context)
+        bottom_candidates = self._get_candidates_by_role(db, user_id, "bottom", context)
+        footwear_candidates = self._get_candidates_by_role(db, user_id, "footwear", context)
+
+        if not upper_candidates or not bottom_candidates or not footwear_candidates:
+            return []
+
+        ranked = []
+        for items in product(upper_candidates, bottom_candidates, footwear_candidates):
+            score = self.compatibility_scorer.score_outfit(db, list(items))
+            ranked.append((float(score), list(items)))
+
+        ranked.sort(
+            key=lambda entry: (-entry[0], tuple(str(item.id) for item in entry[1]))
+        )
+
+        # Deduplicate by product ids and keep the strongest combinations.
         options = []
-
-        for _ in range(num_options):
-            outfit_items = []
-
-            # Get candidates for each role
-            upper_candidates = self._get_candidates_by_role(
-                db, user_id, "upper", context
-            )
-            bottom_candidates = self._get_candidates_by_role(
-                db, user_id, "bottom", context
-            )
-            footwear_candidates = self._get_candidates_by_role(
-                db, user_id, "footwear", context
-            )
-
-            if not upper_candidates or not bottom_candidates or not footwear_candidates:
+        seen: set[tuple[str, ...]] = set()
+        for score, items in ranked:
+            key = tuple(str(item.id) for item in items)
+            if key in seen:
                 continue
-
-            # Select items with compatibility scoring
-            best_score = 0
-            best_combination = None
-
-            # Try a few combinations
-            for _ in range(5):
-                upper = np.random.choice(upper_candidates)
-                bottom = np.random.choice(bottom_candidates)
-                footwear = np.random.choice(footwear_candidates)
-
-                items = [upper, bottom, footwear]
-                score = self.compatibility_scorer.score_outfit(db, items)
-
-                if score > best_score:
-                    best_score = score
-                    best_combination = items
-
-            if best_combination:
-                outfit_items = [
-                    {"product_id": p.id, "role": p.outfit_role}
-                    for p in best_combination
-                ]
-
-                # Generate explanation
-                explanation = self._generate_explanation(
-                    db, user_id, best_combination, prompt
-                )
-
-                options.append({
-                    "items": outfit_items,
-                    "compatibility_score": best_score,
-                    "explanation": explanation,
-                })
-
-        # Sort by compatibility
-        options.sort(key=lambda x: x["compatibility_score"], reverse=True)
+            seen.add(key)
+            outfit_items = [
+                {"product_id": p.id, "role": p.outfit_role}
+                for p in items
+            ]
+            options.append({
+                "items": outfit_items,
+                "compatibility_score": score,
+                "explanation": self._generate_explanation(
+                    db, user_id, items, prompt
+                ),
+            })
+            if len(options) >= num_options:
+                break
 
         return options
 
