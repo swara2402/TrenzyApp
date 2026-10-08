@@ -9,8 +9,10 @@ from typing import List, Optional, Tuple
 import logging
 import numpy as np
 
+from io import BytesIO
 from PIL import Image
-from sentence_transformers import SentenceTransformer
+from ..ml_config import EMBEDDING_DIM
+from .fashionclip import get_fashionclip_model
 from sqlalchemy.orm import Session
 
 from ...models import Product
@@ -24,7 +26,7 @@ class VisualFashionSearch:
 
     def __init__(
         self,
-        image_model_name: str = "clip-ViT-B-32",
+        image_model_name: str = "Marqo/marqo-fashionCLIP",
         device: str = "cpu",
     ):
         """Initialize visual search.
@@ -34,8 +36,13 @@ class VisualFashionSearch:
             device: Device to run on
         """
         self.device = device
-        logger.info(f"Loading image model: {image_model_name}")
-        self.image_model = SentenceTransformer(image_model_name, device=device)
+        logger.info("Loading canonical FashionCLIP model: %s", image_model_name)
+        self.image_model = get_fashionclip_model(model_name=image_model_name, device=device)
+        if self.image_model.embedding_dim != EMBEDDING_DIM:
+            raise RuntimeError(
+                f"Visual-search embedding dimension {self.image_model.embedding_dim} "
+                f"does not match EMBEDDING_DIM={EMBEDDING_DIM}"
+            )
 
     def encode_image(self, image_path: str) -> np.ndarray:
         """Encode an image to embedding vector.
@@ -50,8 +57,7 @@ class VisualFashionSearch:
             image = Image.open(image_path)
             if image.mode != "RGB":
                 image = image.convert("RGB")
-            embedding = self.image_model.encode(image, convert_to_numpy=True)
-            return embedding
+            return self.image_model.encode_image(image)
         except Exception as e:
             logger.error(f"Failed to encode image: {e}")
             # Never return zero vector - raise exception to prevent embedding contamination
@@ -67,11 +73,8 @@ class VisualFashionSearch:
             Image embedding vector
         """
         try:
-            image = Image.open(image_bytes)
-            if image.mode != "RGB":
-                image = image.convert("RGB")
-            embedding = self.image_model.encode(image, convert_to_numpy=True)
-            return embedding
+            image = Image.open(BytesIO(image_bytes)).convert("RGB")
+            return self.image_model.encode_image(image)
         except Exception as e:
             logger.error(f"Failed to encode image bytes: {e}")
             # Never return zero vector - raise exception to prevent embedding contamination
@@ -198,9 +201,9 @@ class VisualFashionSearch:
 
         # For now, return placeholder
         return {
-            "dominant_colors": ["black", "white"],
-            "style": "casual",
-            "garment_type": "top",
-            "pattern": "solid",
-            "confidence": 0.7,
+            "dominant_colors": [],
+            "style": None,
+            "garment_type": None,
+            "pattern": None,
+            "confidence": 0.0,
         }
