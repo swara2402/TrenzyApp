@@ -6,7 +6,7 @@ on:
       embed:
         description: "Generate FashionCLIP embeddings after catalog import"
         required: true
-        default: false
+        default: true
         type: boolean
       batch_size:
         description: "Database/embedding batch size"
@@ -43,6 +43,18 @@ jobs:
           image_count=$(find "$IMAGE_DIR" -type f \( -iname 'TRZ-*.jpg' -o -iname 'TRZ-*.jpeg' -o -iname 'TRZ-*.png' -o -iname 'TRZ-*.webp' \) | wc -l | tr -d ' ')
           echo "Catalog image count: $image_count"
           test "$image_count" -eq 2000
+
+      - name: Verify FashionCLIP prerequisites
+        if: ${{ inputs.embed }}
+        run: |
+          python - <<'PY'
+          import importlib.util
+          required = ("torch", "open_clip", "PIL")
+          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          if missing:
+              raise SystemExit(f"Missing embedding dependencies: {missing}")
+          print("FashionCLIP dependencies available.")
+          PY
 
       - name: Prepare Python
         uses: actions/setup-python@v5
@@ -164,5 +176,19 @@ jobs:
           assert image_count == 2000, f"Expected 2000 catalog images, got {image_count}"
           assert trz_count == 2000, f"Expected 2000 TRZ products, got {trz_count}"
           assert duplicate_ids == 0, f"Found {duplicate_ids} duplicate TRZ IDs"
+
+          if "${{ inputs.embed }}" == "true":
+              cur.execute(
+                  "SELECT COUNT(*) FROM products "
+                  "WHERE source = 'trenzy_generated_catalog' "
+                  "AND image_embedding_status = 'completed' "
+                  "AND image_embedding_vector IS NOT NULL"
+              )
+              embedding_count = cur.fetchone()[0]
+              print(f"Image embeddings: {embedding_count}")
+              assert embedding_count == 2000, (
+                  f"Expected 2000 completed image embeddings, got {embedding_count}"
+              )
+
           print("2,000-product catalog verification PASSED.")
           PY
