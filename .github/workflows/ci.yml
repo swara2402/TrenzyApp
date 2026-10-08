@@ -97,20 +97,16 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
           python - <<'PY'
-          import os, subprocess, sys
-          # The command must be able to parse the migration graph. A real
-          # database upgrade is still performed in the deployment environment.
-          result = subprocess.run(
-              [sys.executable, "-m", "alembic", "heads"],
-              capture_output=True, text=True
-          )
-          print(result.stdout)
-          print(result.stderr)
-          if result.returncode != 0:
-              raise SystemExit(result.returncode)
-          heads = [line for line in result.stdout.splitlines() if line.strip() and not line.startswith("INFO")]
+          from alembic.config import Config
+          from alembic.script import ScriptDirectory
+
+          config = Config("alembic.ini")
+          heads = ScriptDirectory.from_config(config).get_heads()
+          print("Alembic heads:", heads)
           if len(heads) != 1:
-              raise SystemExit(f"Expected exactly one Alembic head, found {len(heads)}")
+              raise SystemExit(
+                  f"Expected exactly one Alembic head, found {len(heads)}: {heads}"
+              )
           PY
 
       - name: Verify beta commerce UI is not exposed
