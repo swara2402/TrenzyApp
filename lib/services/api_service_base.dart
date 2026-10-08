@@ -126,6 +126,23 @@ abstract class ApiServiceBase {
     String? attachedProductPrice,
   });
 
+  // ---------- AI ----------
+  Future<Map<String, dynamic>> getStyleDna();
+  Future<Map<String, dynamic>> refreshStyleDna();
+  Future<Map<String, dynamic>> getAiModelHealth();
+  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20});
+  Future<Map<String, dynamic>> generateAiOutfits({
+    required String prompt,
+    int numOptions = 3,
+    Map<String, dynamic>? context,
+  });
+  Future<Map<String, dynamic>> aiStylistChat({
+    required String message,
+    int? conversationId,
+  });
+  Future<Map<String, dynamic>> aiStylistOutfit(String prompt);
+  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20});
+
   // ---------- Notifications ----------
   Future<Map<String, dynamic>> getNotifications();
   Future<void> markNotificationRead(String notificationId);
