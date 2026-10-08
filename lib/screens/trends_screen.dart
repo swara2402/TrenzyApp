@@ -56,7 +56,7 @@ class TrendsScreen extends ConsumerWidget {
                     DisplayText('What\'s Hot Right Now', fontSize: 24),
                     SizedBox(height: 4),
                     Text(
-                      'AI-powered trend analysis and predictions',
+                      'Trend analysis and forward-looking predictions',
                       style: GlassTypography.body(
                         color: context.trenzyColors.mutedFg,
                         fontSize: 13,
@@ -212,7 +212,7 @@ class TrendsScreen extends ConsumerWidget {
                 );
               },
             ),
-            // AI Predictions Section
+            // Trend Predictions Section
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
@@ -253,7 +253,7 @@ class TrendsScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'AI',
+                        'PREDICTION',
                         style: TextStyle(
                           color: context.trenzyColors.primary,
                           fontSize: 10,
