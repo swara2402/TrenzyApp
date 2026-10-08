@@ -22,12 +22,12 @@ jobs:
     name: Local Mac catalog migration + import
     runs-on: [self-hosted, macOS, ARM64]
     env:
-      DB_HOST: ${{ secrets.TRENZY_DB_HOST }}
-      DB_PORT: ${{ secrets.TRENZY_DB_PORT }}
-      POSTGRES_DB: trenzy
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${{ secrets.TRENZY_POSTGRES_PASSWORD }}
-      APP_ENV: development
+      DB_HOST: ${{ secrets.RENDER_DB_HOST }}
+      DB_PORT: ${{ secrets.RENDER_DB_PORT }}
+      POSTGRES_DB: ${{ secrets.RENDER_POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.RENDER_POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.RENDER_POSTGRES_PASSWORD }}
+      APP_ENV: production
       IMAGE_DIR: /Users/sam/trenzy-data/Trenzy/images
       CATALOG_FILE: /Users/sam/trenzy-data/Trenzy/catalog.csv
     steps:
