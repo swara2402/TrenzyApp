@@ -43,6 +43,23 @@ MIN_DIMENSION = 64
 MAX_PIXELS = 4096 * 4096
 CATALOG_SOURCE = "trenzy_generated_catalog"
 
+def _outfit_role(category: Any, product_type: Any) -> str | None:
+    value = _clean(product_type) or _clean(category)
+    value = value.lower()
+    if any(k in value for k in ("shoe", "sneaker", "boot", "sandal", "footwear", "flat", "heel")):
+        return "footwear"
+    if any(k in value for k in ("pant", "jean", "bottom", "short", "skirt", "trouser", "legging")):
+        return "bottom"
+    if any(k in value for k in ("jacket", "coat", "cardigan", "blazer", "outerwear")):
+        return "outerwear"
+    if any(k in value for k in ("dress", "one-piece", "gown")):
+        return "dress"
+    if any(k in value for k in ("bag", "jewel", "accessory", "hat", "belt", "watch")):
+        return "accessory"
+    if any(k in value for k in ("top", "shirt", "blouse", "sweater", "hoodie", "tee", "polo")):
+        return "upper"
+    return None
+
 
 def _clean(value: Any) -> str:
     return str(value or "").strip()
@@ -124,6 +141,7 @@ def _product_from_row(row: dict[str, str], image_url: str, image_sha256: str) ->
         ],
         style_tags=[_clean(row.get("style"))] if _clean(row.get("style")) else None,
         color_tags=[_clean(row.get("color"))] if _clean(row.get("color")) else None,
+        outfit_role=_outfit_role(row.get("category"), row.get("product_type")),
     )
 
 
@@ -154,6 +172,9 @@ def _apply_row(product: Product, row: dict[str, str], image_url: str, digest: st
     ]
     product.style_tags = [_clean(row.get("style"))] if _clean(row.get("style")) else None
     product.color_tags = [_clean(row.get("color"))] if _clean(row.get("color")) else None
+    role = _outfit_role(row.get("category"), row.get("product_type"))
+    if role:
+        product.outfit_role = role
 
     if image_changed:
         product.image_embedding_status = "pending"
