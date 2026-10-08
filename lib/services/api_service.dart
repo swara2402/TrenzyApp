@@ -14,6 +14,7 @@ import 'api/blend_api.dart';
 import 'api/social_api.dart';
 import 'api/payment_api.dart';
 import 'api/recommendation_api.dart';
+import 'api/ai_api.dart';
 import 'api/notification_api.dart';
 import 'api/user_api.dart';
 
@@ -81,6 +82,8 @@ class ApiService implements ApiServiceBase {
   RecommendationApi get recommendations => _recommendationApi;
   NotificationApi get notifications => _notificationApi;
   UserApi get user => _userApi;
+  late final AiApi _aiApi = AiApi(_client);
+  AiApi get ai => _aiApi;
 
   // Global static hooks & utilities
   static void Function()? get onSessionExpired => ApiClient.onSessionExpired;
@@ -735,6 +738,18 @@ class ApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>?> getFeaturedCampaign() =>
       _recommendationApi.getFeaturedCampaign();
+
+  // ---------- AI ----------
+  Future<Map<String, dynamic>> getStyleDna() => _aiApi.getStyleDna();
+  Future<Map<String, dynamic>> refreshStyleDna() => _aiApi.refreshStyleDna();
+  Future<Map<String, dynamic>> getAiModelHealth() => _aiApi.getModelHealth();
+  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) => _aiApi.getAiRecommendations(limit: limit);
+  Future<Map<String, dynamic>> generateAiOutfits({required String prompt, int numOptions = 3, Map<String, dynamic>? context}) =>
+      _aiApi.generateOutfits(prompt: prompt, numOptions: numOptions, context: context);
+  Future<Map<String, dynamic>> aiStylistChat({required String message, int? conversationId}) =>
+      _aiApi.stylistChat(message: message, conversationId: conversationId);
+  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) => _aiApi.stylistOutfit(prompt);
+  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) => _aiApi.visualSearch(image, limit: limit);
 
   // ---------- Notifications ----------
   @override
