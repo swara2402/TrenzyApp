@@ -193,6 +193,16 @@ class _StylePersonaAppBar extends StatelessWidget implements PreferredSizeWidget
           ),
           actions: [
             IconButton(
+              tooltip: 'AI Stylist',
+              icon: const Icon(Icons.auto_awesome, color: Color(0xFFEAE1D4)),
+              onPressed: () => context.push(AppRoutes.aiStylist),
+            ),
+            IconButton(
+              tooltip: 'Style DNA',
+              icon: const Icon(Icons.insights_outlined, color: Color(0xFFEAE1D4)),
+              onPressed: () => context.push(AppRoutes.aiStyleDna),
+            ),
+            IconButton(
               icon: const Icon(Icons.notifications_outlined, color: Color(0xFFEAE1D4)),
               onPressed: () => context.push(AppRoutes.notifications),
             ),
