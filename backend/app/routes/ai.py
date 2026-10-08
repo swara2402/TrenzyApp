@@ -562,8 +562,29 @@ async def visual_search(
     
     # Read image bytes
     image_bytes = await image.read()
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="Image file is empty")
 
-    # Encode image
+    # Vector search requires catalog embeddings generated with the same
+    # FashionCLIP model as the uploaded query image.
+    from sqlalchemy import func
+    from ..models import Product
+    embedding_count = (
+        db.query(func.count(Product.id))
+        .filter(
+            Product.image_embedding_vector.isnot(None),
+            Product.is_archived.is_(False),
+        )
+        .scalar()
+        or 0
+    )
+    if embedding_count == 0:
+        raise HTTPException(
+            status_code=503,
+            detail="Visual search is temporarily unavailable while catalog embeddings are being prepared.",
+        )
+
+    # Encode image using the canonical FashionCLIP encoder.
     image_embedding = visual_search.encode_image_bytes(image_bytes)
 
     # Search for similar products
