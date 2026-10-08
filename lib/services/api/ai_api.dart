@@ -33,7 +33,7 @@ class AiApi {
     final data = await _client.post('/ai/outfits/generate', body: {
       'prompt': prompt,
       'num_options': numOptions,
-      if (context != null) 'context': context,
+      if (context case final value?) 'context': value,
     });
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
@@ -50,7 +50,8 @@ class AiApi {
   }
 
   Future<Map<String, dynamic>> stylistOutfit(String prompt) async {
-    final data = await _client.post('/ai/stylist/outfit', body: {'prompt': prompt});
+    final encodedPrompt = Uri.encodeQueryComponent(prompt);
+    final data = await _client.post('/ai/stylist/outfit?prompt=$encodedPrompt');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
