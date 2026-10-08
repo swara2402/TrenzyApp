@@ -82,7 +82,12 @@ class WardrobeApi {
   }
 
   Future<String> uploadImage(XFile imageFile) async {
-    return _client.uploadMultipart('/uploads/image', imageFile);
+    final data = await _client.uploadMultipart('/uploads/image', imageFile);
+    if (data is Map<String, dynamic>) {
+      final imageUrl = data['image_url']?.toString() ?? data['imageUrl']?.toString();
+      if (imageUrl != null && imageUrl.isNotEmpty) return imageUrl;
+    }
+    throw StateError('Image upload response did not contain an image URL.');
   }
 
   Future<Map<String, dynamic>> getOutfits() async {
