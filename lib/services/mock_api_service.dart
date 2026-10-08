@@ -511,6 +511,27 @@ class MockApiService implements ApiServiceBase {
     await _delay(const Duration(milliseconds: 200));
   }
 
+  // ---------- AI ----------
+  @override
+  Future<Map<String, dynamic>> getStyleDna() async {
+    await _delay(const Duration(milliseconds: 150));
+    return {'style_scores': {'casual': 0.8}, 'color_scores': {'neutrals': 0.75}, 'fit_scores': {'relaxed': 0.7}, 'brand_scores': {}, 'category_scores': {'tops': 0.8}, 'occasion_scores': {'college': 0.85}, 'material_scores': {}, 'price_sensitivity': 0.5, 'confidence': 0.6, 'interaction_count': 12, 'explanation': 'Mock Style DNA'};
+  }
+  @override
+  Future<Map<String, dynamic>> refreshStyleDna() async { await _delay(const Duration(milliseconds: 100)); return {'message': 'Style DNA refreshed', 'confidence': 0.6}; }
+  @override
+  Future<Map<String, dynamic>> getAiModelHealth() async { await _delay(const Duration(milliseconds: 100)); return {'status': 'degraded', 'models': {}}; }
+  @override
+  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) async { await _delay(const Duration(milliseconds: 100)); return {'products': [], 'explanations': [], 'source': 'mock', 'limit': limit}; }
+  @override
+  Future<Map<String, dynamic>> generateAiOutfits({required String prompt, int numOptions = 3, Map<String, dynamic>? context}) async { await _delay(const Duration(milliseconds: 100)); return {'success': true, 'outfits': [], 'message': 'No mock outfits available.'}; }
+  @override
+  Future<Map<String, dynamic>> aiStylistChat({required String message, int? conversationId}) async { await _delay(const Duration(milliseconds: 100)); return {'conversation_id': conversationId ?? 1, 'message': 'Mock stylist response', 'mentioned_products': []}; }
+  @override
+  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) async { await _delay(const Duration(milliseconds: 100)); return {'success': true, 'outfits': []}; }
+  @override
+  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) async { await _delay(const Duration(milliseconds: 100)); return {'products': [], 'similarities': []}; }
+
   @override
   Future<Map<String, dynamic>> getNotifications() async {
     await _delay(const Duration(milliseconds: 200));
