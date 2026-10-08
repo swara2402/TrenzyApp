@@ -694,8 +694,8 @@ async def user_onboarding(
         existing_profile.additional_preferences = request.preferences
         existing_profile.style_scores = style_dna
         # Generate and store embedding vector if pgvector is available
-        from ..ai.vision.fashionclip import FashionCLIPModel
-        fashionclip = FashionCLIPModel()
+        from ..ai.vision.fashionclip import get_fashionclip_model
+        fashionclip = get_fashionclip_model()
         profile_text = f"{request.aesthetic} {', '.join(request.colors)} {request.fit} {request.occasion} {', '.join(request.preferences)}"
         embedding = fashionclip.encode_text(profile_text)
         existing_profile.embedding_vector = embedding.tolist()
@@ -715,8 +715,8 @@ async def user_onboarding(
             style_scores=style_dna,
         )
         # Generate and store embedding vector if pgvector is available
-        from ..ai.vision.fashionclip import FashionCLIPModel
-        fashionclip = FashionCLIPModel()
+        from ..ai.vision.fashionclip import get_fashionclip_model
+        fashionclip = get_fashionclip_model()
         profile_text = f"{request.aesthetic} {', '.join(request.colors)} {request.fit} {request.occasion} {', '.join(request.preferences)}"
         embedding = fashionclip.encode_text(profile_text)
         new_profile.embedding_vector = embedding.tolist()
