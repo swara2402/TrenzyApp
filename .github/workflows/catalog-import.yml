@@ -44,22 +44,22 @@ jobs:
           echo "Catalog image count: $image_count"
           test "$image_count" -eq 2000
 
-      - name: Prepare Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Verify local Python environment
+        run: |
+          python3 --version
+          which python3
 
       - name: Install backend dependencies
         working-directory: backend
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
 
       - name: Verify FashionCLIP prerequisites
         if: ${{ inputs.embed }}
         working-directory: backend
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import importlib.util
           required = ("torch", "open_clip", "PIL")
           missing = [name for name in required if importlib.util.find_spec(name) is None]
@@ -72,17 +72,17 @@ jobs:
       - name: Verify Alembic has one head
         working-directory: backend
         run: |
-          python -m alembic heads
-          heads=$(python -m alembic heads | awk 'NF')
+          python3 -m alembic heads
+          heads=$(python3 -m alembic heads | awk 'NF')
           test "$(printf '%s\n' "$heads" | wc -l | tr -d ' ')" -eq 1
 
       - name: Upgrade local database
         working-directory: backend
-        run: python -m alembic upgrade head
+        run: python3 -m alembic upgrade head
 
       - name: Verify catalog schema
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import os
           import psycopg
           required = {
@@ -116,7 +116,7 @@ jobs:
       - name: Validate 2,000 catalog rows and images
         working-directory: backend
         run: |
-          python -m app.scripts.import_image_catalog             --image-dir "$IMAGE_DIR"             --catalog-file "$CATALOG_FILE"             --dry-run
+          python3 -m app.scripts.import_image_catalog             --image-dir "$IMAGE_DIR"             --catalog-file "$CATALOG_FILE"             --dry-run
 
       - name: Import 2,000 catalog products
         working-directory: backend
@@ -129,11 +129,11 @@ jobs:
           if [ "${{ inputs.embed }}" = "true" ]; then
             args+=(--embed)
           fi
-          python -m app.scripts.import_image_catalog "${args[@]}"
+          python3 -m app.scripts.import_image_catalog "${args[@]}"
 
       - name: Verify imported catalog
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import os
           import psycopg
 
