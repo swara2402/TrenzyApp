@@ -169,28 +169,28 @@ jobs:
                   )
                   duplicate_ids = cur.fetchone()[0]
 
-          print(f"Catalog products: {catalog_count}")
-          print(f"Catalog products with image_url: {image_count}")
-          print(f"TRZ products: {trz_count}")
-          print(f"Duplicate TRZ IDs: {duplicate_ids}")
+                  print(f"Catalog products: {catalog_count}")
+                  print(f"Catalog products with image_url: {image_count}")
+                  print(f"TRZ products: {trz_count}")
+                  print(f"Duplicate TRZ IDs: {duplicate_ids}")
 
-          assert catalog_count == 2000, f"Expected 2000 catalog products, got {catalog_count}"
-          assert image_count == 2000, f"Expected 2000 catalog images, got {image_count}"
-          assert trz_count == 2000, f"Expected 2000 TRZ products, got {trz_count}"
-          assert duplicate_ids == 0, f"Found {duplicate_ids} duplicate TRZ IDs"
+                  assert catalog_count == 2000, f"Expected 2000 catalog products, got {catalog_count}"
+                  assert image_count == 2000, f"Expected 2000 catalog images, got {image_count}"
+                  assert trz_count == 2000, f"Expected 2000 TRZ products, got {trz_count}"
+                  assert duplicate_ids == 0, f"Found {duplicate_ids} duplicate TRZ IDs"
 
-          if "${{ inputs.embed }}" == "true":
-              cur.execute(
-                  "SELECT COUNT(*) FROM products "
-                  "WHERE source = 'trenzy_generated_catalog' "
-                  "AND image_embedding_status = 'completed' "
-                  "AND image_embedding_vector IS NOT NULL"
-              )
-              embedding_count = cur.fetchone()[0]
-              print(f"Image embeddings: {embedding_count}")
-              assert embedding_count == 2000, (
-                  f"Expected 2000 completed image embeddings, got {embedding_count}"
-              )
+                  if "${{ inputs.embed }}" == "true":
+                      cur.execute(
+                          "SELECT COUNT(*) FROM products "
+                          "WHERE source = 'trenzy_generated_catalog' "
+                          "AND image_embedding_status = 'completed' "
+                          "AND image_embedding_vector IS NOT NULL"
+                      )
+                      embedding_count = cur.fetchone()[0]
+                      print(f"Image embeddings: {embedding_count}")
+                      assert embedding_count == 2000, (
+                          f"Expected 2000 completed image embeddings, got {embedding_count}"
+                      )
 
           print("2,000-product catalog verification PASSED.")
           PY
