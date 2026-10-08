@@ -68,15 +68,32 @@ class OutfitCompatibilityScorer:
         Returns:
             Similarity score (0-1, normalized from cosine [-1,1])
         """
-        # Get embeddings for both products
-        if self._embedding_service is None:
-            self._embedding_service = get_embedding_service()
-        emb1 = self._embedding_service.get_product_embedding(db, item1.id)
-        emb2 = self._embedding_service.get_product_embedding(db, item2.id)
-        
-        # If either embedding is missing, use neutral score
+        # Catalog import stores canonical FashionCLIP vectors directly on
+        # Product.image_embedding_vector. Prefer those vectors so outfit
+        # compatibility uses the same embeddings as visual search.
+        emb1 = (
+            np.asarray(item1.image_embedding_vector, dtype=np.float32)
+            if item1.image_embedding_vector is not None
+            else None
+        )
+        emb2 = (
+            np.asarray(item2.image_embedding_vector, dtype=np.float32)
+            if item2.image_embedding_vector is not None
+            else None
+        )
+
+        # Backward-compatible fallback for older rows stored in ProductEmbedding.
         if emb1 is None or emb2 is None:
-            logger.warning("Missing embedding for outfit item - using neutral similarity")
+            if self._embedding_service is None:
+                self._embedding_service = get_embedding_service()
+            if emb1 is None:
+                emb1 = self._embedding_service.get_product_embedding(db, item1.id)
+            if emb2 is None:
+                emb2 = self._embedding_service.get_product_embedding(db, item2.id)
+
+        # If either embedding is genuinely missing, use a neutral score.
+        if emb1 is None or emb2 is None:
+            logger.warning("Missing FashionCLIP embedding for outfit item - using neutral similarity")
             return 0.5
         
         # Compute cosine similarity (dot product since embeddings are already L2-normalized)
