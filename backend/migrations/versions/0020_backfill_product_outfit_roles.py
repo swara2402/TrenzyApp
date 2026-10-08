@@ -1,13 +1,13 @@
 """backfill product outfit roles
 
-Revision ID: 0020_backfill_product_outfit_roles
+Revision ID: 0020_outfit_roles
 Revises: bd6b596a5943
 """
 
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0020_backfill_product_outfit_roles"
+revision = "0020_outfit_roles"
 down_revision = "bd6b596a5943"
 branch_labels = None
 depends_on = None
