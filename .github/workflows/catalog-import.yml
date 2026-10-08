@@ -44,18 +44,6 @@ jobs:
           echo "Catalog image count: $image_count"
           test "$image_count" -eq 2000
 
-      - name: Verify FashionCLIP prerequisites
-        if: ${{ inputs.embed }}
-        run: |
-          python - <<'PY'
-          import importlib.util
-          required = ("torch", "open_clip", "PIL")
-          missing = [name for name in required if importlib.util.find_spec(name) is None]
-          if missing:
-              raise SystemExit(f"Missing embedding dependencies: {missing}")
-          print("FashionCLIP dependencies available.")
-          PY
-
       - name: Prepare Python
         uses: actions/setup-python@v5
         with:
@@ -66,6 +54,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+
+      - name: Verify FashionCLIP prerequisites
+        if: ${{ inputs.embed }}
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          import importlib.util
+          required = ("torch", "open_clip", "PIL")
+          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          if missing:
+              raise SystemExit(f"Missing embedding dependencies after requirements install: {missing}")
+          from app.ai.ml_config import EMBEDDING_DIM
+          print(f"FashionCLIP dependencies available; expected dimension={EMBEDDING_DIM}.")
+          PY
 
       - name: Verify Alembic has one head
         working-directory: backend
