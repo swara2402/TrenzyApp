@@ -32,12 +32,17 @@ load_dotenv(_dotenv_path)
 # ──────────────────────────────────────────────────────────────
 # DB_HOST defaults to 'localhost' for local dev, but docker-compose
 # overrides it to 'db' (the PostgreSQL container name).
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
-POSTGRES_DB = os.getenv("POSTGRES_DB", "trenzy")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+DB_HOST = os.getenv("DB_HOST") or "localhost"
+# Handle empty string case (common when GitHub secrets are missing)
+db_port_str = os.getenv("DB_PORT")
+try:
+    DB_PORT = int(db_port_str) if db_port_str and db_port_str.strip() else 5432
+except (ValueError, TypeError):
+    DB_PORT = 5432
+POSTGRES_DB = os.getenv("POSTGRES_DB") or "trenzy"
+POSTGRES_USER = os.getenv("POSTGRES_USER") or "postgres"
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-if not POSTGRES_PASSWORD:
+if not POSTGRES_PASSWORD or not POSTGRES_PASSWORD.strip():
     raise RuntimeError("POSTGRES_PASSWORD environment variable is required.")
 
 # Firebase Admin SDK
