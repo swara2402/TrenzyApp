@@ -14,19 +14,15 @@ final trendingProductsProvider = FutureProvider.autoDispose
       if (uid == null) return const <TrendModel>[];
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final trends = await api.getTrendingProducts(
-          category: params.category,
-          categories: params.categories,
-          timeframe: params.timeframe,
-          limit: params.limit,
-        );
-        return trends
-            .map((e) => TrendModel.fromJson(Map<String, dynamic>.from(e as Map)))
-            .toList();
-      } catch (_) {
-        return const <TrendModel>[];
-      }
+      final trends = await api.getTrendingProducts(
+        category: params.category,
+        categories: params.categories,
+        timeframe: params.timeframe,
+        limit: params.limit,
+      );
+      return trends
+          .map((e) => TrendModel.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
     });
 
 /// Prediction provider for AI-driven trend predictions.
@@ -36,20 +32,15 @@ final trendPredictionsProvider = FutureProvider.autoDispose
       if (uid == null) return const <PredictionModel>[];
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final predictions = await api.getTrendPredictions(
-          category: params.category,
-          limit: params.limit,
-        );
-        return predictions
-            .map(
-              (e) =>
-                  PredictionModel.fromJson(Map<String, dynamic>.from(e as Map)),
-            )
-            .toList();
-      } catch (_) {
-        return const <PredictionModel>[];
-      }
+      final predictions = await api.getTrendPredictions(
+        category: params.category,
+        limit: params.limit,
+      );
+      return predictions
+          .map(
+            (e) => PredictionModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
     });
 
 // Parameter classes for the providers
