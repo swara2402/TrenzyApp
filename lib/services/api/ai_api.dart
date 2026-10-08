@@ -55,7 +55,7 @@ class AiApi {
   }
 
   Future<Map<String, dynamic>> visualSearch(XFile image, {int limit = 20}) async {
-    return _client.uploadMultipart('/ai/visual-search?limit=$limit', image, fieldName: 'image')
-        .then((_) => <String, dynamic>{});
+    final data = await _client.uploadMultipart('/ai/visual-search?limit=$limit', image, fieldName: 'image');
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 }
