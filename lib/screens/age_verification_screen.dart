@@ -49,6 +49,21 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
     if (picked != null) setState(() { _dob = picked; _error = null; });
   }
 
+  String _friendlyError(Object error) {
+    final message = error.toString().toLowerCase();
+    if (message.contains('timeout') ||
+        message.contains('connection failed') ||
+        message.contains('socketexception') ||
+        message.contains('clientexception') ||
+        message.contains('failed host lookup')) {
+      return "We couldn't connect to Trenzy right now. Check your internet connection and try again.";
+    }
+    if (message.contains('13 and older') || message.contains('13+')) {
+      return 'Trenzy is available to users aged 13 and older.';
+    }
+    return 'We couldn’t verify your age right now. Please try again.';
+  }
+
   Future<void> _submit() async {
     final dob = _dob;
     if (dob == null) {
@@ -64,7 +79,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
       await ref.read(authProvider.notifier).verifyAge(dob);
       if (mounted) context.go(AppRoutes.onboarding);
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = _friendlyError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -127,9 +142,9 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: GlowButton(
-                      label: _loading ? 'Verifying...' : 'Continue',
+                      label: _loading ? 'Verifying...' : (_error == null ? 'Continue' : 'Try again'),
                       onTap: _loading ? null : _submit,
-                      icon: Icons.arrow_forward,
+                      icon: _loading ? Icons.hourglass_top : Icons.arrow_forward,
                     ),
                   ),
                 ],
