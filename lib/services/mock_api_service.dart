@@ -797,6 +797,7 @@ class MockApiService implements ApiServiceBase {
     List<String>? discoverPreferences,
     List<String>? productInterests,
     List<String>? shoppingPriorities,
+    int? onboardingStep,
   }) async {
     await _delay(const Duration(milliseconds: 300));
   }

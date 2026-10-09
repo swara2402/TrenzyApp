@@ -30,6 +30,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   bool _videoReady = false;
   bool _navigated = false;
+  bool _routingError = false;
+  bool _retrying = false;
 
   @override
   void initState() {
@@ -130,7 +132,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
   }
 
-  void _navigateAfterSplash() async {
+  Future<void> _navigateAfterSplash() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && !user.emailVerified && !FeatureFlags.devAuthBypass) {
       if (!mounted) return;
@@ -147,14 +149,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // Check if user has completed onboarding by looking for saved
     // preferences. Goes through the shared serverPreferencesProvider so
     // this check and the auth hydration listener issue a single request.
+    if (mounted) {
+      setState(() {
+        _routingError = false;
+        _retrying = true;
+      });
+    }
     try {
-      // Add 3 second timeout to prevent app from freezing if API hangs.
-      // On a temporary failure we should not force the user to Home or log them
-      // out; resume the first incomplete onboarding step instead.
-      final prefs = await ref.read(serverPreferencesProvider.future).timeout(
-        const Duration(seconds: 3),
-        onTimeout: () => null,
-      );
+      final prefs = await ref
+          .read(serverPreferencesProvider.future)
+          .timeout(
+            const Duration(seconds: 3),
+            onTimeout: () =>
+                throw TimeoutException('Loading account progress timed out'),
+          );
 
       if (!mounted) return;
 
@@ -162,21 +170,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         preferences: prefs,
         source: 'onboarding',
       );
-      context.go(route == AppRoutes.home ? AppRoutes.home : route);
+      context.go(route);
     } on ApiException catch (e) {
-      if (!mounted) return;
       if (e.statusCode == 401) {
-        await FirebaseAuth.instance.signOut();
-        if (mounted) {
-          context.go(AppRoutes.welcome);
-        }
+        // ApiClient's session-expired callback owns sign-out and routing.
+        return;
       } else {
-        context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'onboarding'));
+        if (e.statusCode == 403 && e.message == 'AGE_VERIFICATION_REQUIRED') {
+          if (mounted) context.go(AppRoutes.ageVerification);
+          return;
+        }
+        _showRoutingError();
       }
     } catch (_) {
-      if (!mounted) return;
-      context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'onboarding'));
+      _showRoutingError();
+    } finally {
+      if (mounted) {
+        setState(() => _retrying = false);
+      }
     }
+  }
+
+  void _showRoutingError() {
+    if (!mounted) return;
+    setState(() => _routingError = true);
+  }
+
+  Future<void> _retryRouting() async {
+    if (_retrying) return;
+    ref.invalidate(serverPreferencesProvider);
+    await _navigateAfterSplash();
   }
 
   void _videoListener() {
@@ -241,6 +264,61 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     width: _controller.value.size.width,
                     height: _controller.value.size.height,
                     child: VideoPlayer(_controller),
+                  ),
+                ),
+              ),
+            ),
+          if (_routingError)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.78),
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 420),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.cloud_off_rounded,
+                                  color: Colors.white,
+                                  size: 44,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Could not check your account progress.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Check your connection and try again.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                                const SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: _retrying ? null : _retryRouting,
+                                  child: Text(
+                                    _retrying ? 'Retrying...' : 'Retry',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -125,15 +125,9 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       discoverPreferences: _stringList(prefs['discover_preferences']),
       productInterests: _stringList(prefs['product_interests']),
       shoppingPriorities: _stringList(prefs['shopping_priorities']),
-      onboardingCompleted: _hasAnySavedPrefs(prefs),
+      onboardingCompleted:
+          prefs['onboarding_step'] is num && (prefs['onboarding_step'] as num) >= 5,
     );
-  }
-
-  static bool _hasAnySavedPrefs(Map<String, dynamic> prefs) {
-    return _stringList(prefs['preferred_categories']).isNotEmpty ||
-        _stringList(prefs['preferred_styles']).isNotEmpty ||
-        _stringList(prefs['shopping_priorities']).isNotEmpty ||
-        _stringList(prefs['product_interests']).isNotEmpty;
   }
 
   static List<String> _stringList(dynamic value) {

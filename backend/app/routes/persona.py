@@ -188,6 +188,7 @@ async def get_preferences(
                 "budget_max": prefs.budget_max,
                 "shopping_priorities": prefs.shopping_priorities or [],
                 "discover_preferences": prefs.discover_preferences or [],
+                "onboarding_step": prefs.onboarding_step,
             }
         }
     except Exception:
@@ -206,6 +207,7 @@ class SavePreferencesRequest(BaseModel):
     budget_max: Optional[int] = None
     shopping_priorities: Optional[list[str]] = None
     discover_preferences: Optional[list[str]] = None
+    onboarding_step: Optional[int] = None
 
 
 @router.post("/preferences")
@@ -248,6 +250,8 @@ async def save_preferences(
         prefs.shopping_priorities = payload.shopping_priorities
     if payload.discover_preferences is not None:
         prefs.discover_preferences = payload.discover_preferences
+    if payload.onboarding_step is not None:
+        prefs.onboarding_step = max(0, min(payload.onboarding_step, 5))
     
     session.commit()
     return {"ok": True}

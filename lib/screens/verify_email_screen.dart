@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trenzy/models/api_exception.dart';
 import 'package:trenzy/providers/auth_provider.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/router/app_router.dart';
@@ -81,37 +82,58 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
   /// Checks whether the user has completed onboarding (has saved preferences)
   /// and redirects accordingly. Matches the logic in [SplashScreen].
   Future<void> _redirectAfterVerification() async {
+    if (!mounted) return;
+
     final user = ref.read(authProvider).valueOrNull;
     if (user == null) {
       context.go(AppRoutes.welcome);
       return;
     }
+    if (!user.ageVerified) {
+      context.go(AppRoutes.ageVerification);
+      return;
+    }
 
     try {
       final api = ref.read(apiServiceProvider);
-      final prefs = await api.getPreferences().timeout(const Duration(seconds: 12));
-      final prefData = prefs['preferences'] as Map<String, dynamic>?;
-      final hasPreferences =
-          prefs.isNotEmpty &&
-          ((prefData?['preferred_styles'] as List?)?.isNotEmpty == true ||
-              (prefData?['preferred_categories'] as List?)?.isNotEmpty ==
-                  true ||
-              (prefData?['shopping_priorities'] as List?)?.isNotEmpty == true);
+      final prefs = await api
+          .getPreferences()
+          .timeout(const Duration(seconds: 12));
 
       if (!mounted) return;
-      if (hasPreferences) {
-        context.go(AppRoutes.home);
-      } else {
-        // Start onboarding preference flow from Step 1, mark source for back-navigation
-        context.go('${AppRoutes.favoriteCategories}?source=signup');
-      }
-    } catch (_) {
-      if (!mounted) return;
-      // Do not guess onboarding state when the backend is unreachable.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not check your setup. Please try again.')),
+      context.go(
+        AppRoutes.routeFromPreferencesResponse(prefs, source: 'signup'),
       );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+
+      if (error.statusCode == 401) {
+        // ApiClient's session-expired callback owns sign-out and routing.
+        return;
+      }
+
+      if (error.statusCode == 403 &&
+          error.message == 'AGE_VERIFICATION_REQUIRED') {
+        context.go(AppRoutes.ageVerification);
+        return;
+      }
+
+      _showProgressRetry(error);
+    } catch (error) {
+      if (mounted) _showProgressRetry(error);
     }
+  }
+
+  void _showProgressRetry(Object error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not load your account progress: $error'),
+        action: SnackBarAction(
+          label: 'Retry',
+          onPressed: () => _redirectAfterVerification(),
+        ),
+      ),
+    );
   }
 
   Future<void> _handleResend() async {

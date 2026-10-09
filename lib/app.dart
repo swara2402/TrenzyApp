@@ -57,7 +57,9 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     );
     ApiService.onSessionExpired = () {
       _authNotifier.value = false;
-      _router.go(AppRoutes.login);
+      ApiService.clearCache();
+      unawaited(FirebaseAuth.instance.signOut());
+      _router.go(AppRoutes.welcome);
     };
 
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {

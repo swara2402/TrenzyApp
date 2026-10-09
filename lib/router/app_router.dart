@@ -96,36 +96,39 @@ class AppRoutes {
     Map<String, dynamic>? preferences,
     String source = 'onboarding',
   }) {
-    final data = <String, dynamic>{};
-    if (preferences != null) {
-      for (final entry in preferences.entries) {
-        data[entry.key.toString()] = entry.value;
-      }
+    final step = preferences?['onboarding_step'];
+    final currentStep = step is int ? step : int.tryParse(step?.toString() ?? '') ?? 0;
+    switch (currentStep) {
+      case 0:
+        return onboarding;
+      case 1:
+        return '$favoriteCategories?source=$source';
+      case 2:
+        return '$preferredStyles?source=$source';
+      case 3:
+        return '$discoveryPreferences?source=$source';
+      case 4:
+        return persona;
+      default:
+        return home;
     }
-
-    final categories = _asStringList(data['preferred_categories']);
-    if (categories.isEmpty) {
-      return '$favoriteCategories?source=$source';
-    }
-
-    final styles = _asStringList(data['preferred_styles']);
-    if (styles.isEmpty) {
-      return '$preferredStyles?source=$source';
-    }
-
-    final discovery = _asStringList(data['discover_preferences']);
-    if (discovery.isEmpty) {
-      return '$discoveryPreferences?source=$source';
-    }
-
-    return home;
   }
 
-  static List<String> _asStringList(dynamic value) {
-    if (value is List) {
-      return value.map((e) => e.toString()).toList();
+  static String routeFromPreferencesResponse(
+    Map<String, dynamic> response, {
+    String source = 'onboarding',
+  }) {
+    final rawPreferences = response['preferences'];
+    final preferences = <String, dynamic>{};
+    if (rawPreferences is Map) {
+      for (final entry in rawPreferences.entries) {
+        preferences[entry.key.toString()] = entry.value;
+      }
     }
-    return const <String>[];
+    return firstIncompleteOnboardingRoute(
+      preferences: preferences,
+      source: source,
+    );
   }
 
   static const wishlist = '/wishlist';

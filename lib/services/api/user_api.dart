@@ -69,6 +69,7 @@ class UserApi {
     List<String>? discoverPreferences,
     List<String>? productInterests,
     List<String>? shoppingPriorities,
+    int? onboardingStep,
   }) async {
     final body = <String, dynamic>{};
     if (preferredCategories != null) body['preferred_categories'] = preferredCategories;
@@ -82,6 +83,7 @@ class UserApi {
     if (discoverPreferences != null) body['discover_preferences'] = discoverPreferences;
     if (productInterests != null) body['product_interests'] = productInterests;
     if (shoppingPriorities != null) body['shopping_priorities'] = shoppingPriorities;
+    if (onboardingStep != null) body['onboarding_step'] = onboardingStep;
 
     await _client.post('/persona/preferences', body: body);
   }

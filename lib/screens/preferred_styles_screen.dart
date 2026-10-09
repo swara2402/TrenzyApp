@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/providers/discover_providers.dart';
 import 'package:trenzy/providers/user_preferences_provider.dart';
+import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
@@ -16,8 +17,34 @@ class PreferredStylesScreen extends ConsumerStatefulWidget {
 
 class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
   final List<String> selectedStyles = [];
+  bool _isSaving = false;
 
   bool get canContinue => selectedStyles.length <= 5; // Allow 0-5 styles (no minimum requirement)
+
+  Future<void> _continueToDiscovery() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(apiServiceProvider).savePreferences(
+        preferredStyles: selectedStyles,
+        onboardingStep: 3,
+      );
+      if (mounted) context.go(AppRoutes.discoveryPreferences);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save your progress: $error'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _continueToDiscovery(),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   void initState() {
@@ -123,25 +150,14 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
             SizedBox(
               width: double.infinity,
               child: GlowButton(
-                label: 'CONTINUE',
-                onTap: canContinue
-                    ? () {
-                        if (context.mounted) {
-                          context.go(AppRoutes.discoveryPreferences);
-                        }
-                      }
-                    : null,
+                label: _isSaving ? 'SAVING...' : 'CONTINUE',
+                onTap: canContinue && !_isSaving ? _continueToDiscovery : null,
               ),
             ),
             SizedBox(height: 16),
             Center(
               child: TextButton(
-                onPressed: () {
-                  // Skip and continue to next step
-                  if (context.mounted) {
-                    context.go(AppRoutes.discoveryPreferences);
-                  }
-                },
+                onPressed: _isSaving ? null : _continueToDiscovery,
                 child: Text(
                   'Skip for now',
                   style: TextStyle(

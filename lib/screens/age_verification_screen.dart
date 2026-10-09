@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../providers/api_service_provider.dart';
 import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
 
 class AgeVerificationScreen extends ConsumerStatefulWidget {
   const AgeVerificationScreen({super.key});
   @override
-  ConsumerState<AgeVerificationScreen> createState() => _AgeVerificationScreenState();
+  ConsumerState<AgeVerificationScreen> createState() =>
+      _AgeVerificationScreenState();
 }
 
 class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
   DateTime? _dob;
   bool _loading = false;
+  bool _ageVerified = false;
   String? _error;
 
   @override
@@ -27,8 +30,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
 
   void _leaveIfVerified() {
     if (!mounted) return;
-    final verified =
-        ref.read(authProvider).valueOrNull?.ageVerified ?? false;
+    final verified = ref.read(authProvider).valueOrNull?.ageVerified ?? false;
     if (verified) context.go(AppRoutes.home);
   }
 
@@ -46,27 +48,63 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
       helpText: 'Date of birth',
       confirmText: 'Continue',
     );
-    if (picked != null) setState(() { _dob = picked; _error = null; });
+    if (picked != null)
+      setState(() {
+        _dob = picked;
+        _error = null;
+      });
   }
 
   Future<void> _submit() async {
+    if (_ageVerified) {
+      await _continueToOnboarding();
+      return;
+    }
     final dob = _dob;
     if (dob == null) {
       setState(() => _error = 'Please select your date of birth.');
       return;
     }
     if (dob.isAfter(_latestAllowedDob())) {
-      setState(() => _error = 'Trenzy is available to users aged 13 and older.');
+      setState(
+        () => _error = 'Trenzy is available to users aged 13 and older.',
+      );
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(authProvider.notifier).verifyAge(dob);
-      if (mounted) context.go(AppRoutes.onboarding);
+      if (!mounted) return;
+      setState(() => _ageVerified = true);
+      await _continueToOnboarding();
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _continueToOnboarding() async {
+    try {
+      final preferences = await ref.read(apiServiceProvider).getPreferences();
+      if (mounted) {
+        context.go(
+          AppRoutes.routeFromPreferencesResponse(
+            preferences,
+            source: 'onboarding',
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _error =
+              'Age verified. Could not load your saved progress. Retry when connected.';
+        });
+      }
     }
   }
 
@@ -112,7 +150,15 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
                         children: [
                           Icon(Icons.cake_outlined, color: c.primary),
                           const SizedBox(width: 16),
-                          Expanded(child: Text(label, style: GlassTypography.body(color: c.foreground, fontSize: 16))),
+                          Expanded(
+                            child: Text(
+                              label,
+                              style: GlassTypography.body(
+                                color: c.foreground,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
                           Icon(Icons.calendar_month_outlined, color: c.mutedFg),
                         ],
                       ),
@@ -122,12 +168,22 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(_error!, style: GlassTypography.body(color: c.crimson, fontSize: 14)),
+                      child: Text(
+                        _error!,
+                        style: GlassTypography.body(
+                          color: c.crimson,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   SizedBox(
                     width: double.infinity,
                     child: GlowButton(
-                      label: _loading ? 'Verifying...' : 'Continue',
+                      label: _loading
+                          ? 'Verifying...'
+                          : _ageVerified
+                          ? 'Retry'
+                          : 'Continue',
                       onTap: _loading ? null : _submit,
                       icon: Icons.arrow_forward,
                     ),

@@ -410,14 +410,24 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
     setState(() => _isSaving = true);
 
     try {
+      await ref.read(apiServiceProvider).savePreferences(onboardingStep: 5);
       ref.read(userPreferencesProvider.notifier).completeOnboarding();
       if (context.mounted) {
         context.go(AppRoutes.home);
       }
-    } catch (_) {
-      if (context.mounted) {
-        context.go(AppRoutes.home);
-      }
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not finish saving your onboarding: $error'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _onContinue(),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 

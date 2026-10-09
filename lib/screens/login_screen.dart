@@ -111,39 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (user != null && !isEmailVerified) {
         context.go(AppRoutes.verifyEmail);
       } else {
-        // Check if user has completed onboarding preferences. If the server is
-        // temporarily unavailable we should not silently log them out or send
-        // them to Home; resume onboarding instead and let the user retry.
-        try {
-          final api = ref.read(apiServiceProvider);
-          final prefs = await api.getPreferences();
-          final saved = prefs['preferences'];
-          final preferenceMap = saved is Map ? Map<String, dynamic>.from(saved) : const <String, dynamic>{};
-
-          if (!mounted) return;
-          final nextRoute = AppRoutes.firstIncompleteOnboardingRoute(
-            preferences: preferenceMap,
-            source: 'signup',
-          );
-          if (nextRoute == AppRoutes.home) {
-            context.go(AppRoutes.home);
-          } else {
-            context.go(nextRoute);
-          }
-        } on ApiException catch (e) {
-          if (!mounted) return;
-          if (e.statusCode == 401) {
-            // Session is genuinely invalid; sign the user out and send them back
-            // through the auth flow.
-            await ref.read(authProvider.notifier).logout();
-            context.go(AppRoutes.welcome);
-            return;
-          }
-          context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'signup'));
-        } catch (_) {
-          if (!mounted) return;
-          context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'signup'));
-        }
+        await _routeAfterLogin();
       }
     } catch (e) {
       if (!mounted) return;
@@ -160,6 +128,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _routeAfterLogin() async {
+    try {
+      final preferences = await ref.read(apiServiceProvider).getPreferences();
+      if (!mounted) return;
+      context.go(
+        AppRoutes.routeFromPreferencesResponse(preferences, source: 'signup'),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      if (error.statusCode == 401) {
+        // ApiClient's session-expired callback owns sign-out and routing.
+        return;
+      }
+      if (error.statusCode == 403 &&
+          error.message == 'AGE_VERIFICATION_REQUIRED') {
+        context.go(AppRoutes.ageVerification);
+        return;
+      }
+      _showPreferencesRetry(error);
+    } catch (error) {
+      if (mounted) _showPreferencesRetry(error);
+    }
+  }
+
+  void _showPreferencesRetry(Object error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not load your account progress: $error'),
+        action: SnackBarAction(
+          label: 'Retry',
+          onPressed: () => _routeAfterLogin(),
+        ),
+      ),
+    );
   }
 
   @override

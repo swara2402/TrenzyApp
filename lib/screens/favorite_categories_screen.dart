@@ -26,6 +26,7 @@ class FavoriteCategoriesScreen extends ConsumerStatefulWidget {
 class _FavoriteCategoriesScreenState
     extends ConsumerState<FavoriteCategoriesScreen> {
   final List<String> _selectedCategories = [];
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -52,6 +53,31 @@ class _FavoriteCategoriesScreenState
   }
 
   bool get canContinue => _selectedCategories.isNotEmpty;
+
+  Future<void> _continueToStyles() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(apiServiceProvider).savePreferences(
+        preferredCategories: _selectedCategories,
+        onboardingStep: 2,
+      );
+      if (mounted) context.go(AppRoutes.preferredStyles);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save your progress: $error'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _continueToStyles(),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   void _onBack() {
     final source = GoRouterState.of(context).uri.queryParameters['source'] ?? 'onboarding';
@@ -135,23 +161,14 @@ class _FavoriteCategoriesScreenState
             SizedBox(
               width: double.infinity,
               child: GlowButton(
-                label: 'CONTINUE',
-                onTap: () { // Remove canContinue check to always allow continuing
-                  if (context.mounted) {
-                    context.go(AppRoutes.preferredStyles);
-                  }
-                },
+                label: _isSaving ? 'SAVING...' : 'CONTINUE',
+                onTap: _isSaving ? null : _continueToStyles,
               ),
             ),
             SizedBox(height: 16),
             Center(
               child: TextButton(
-                onPressed: () {
-                  // Skip and continue to next step
-                  if (context.mounted) {
-                    context.go(AppRoutes.preferredStyles);
-                  }
-                },
+                onPressed: _isSaving ? null : _continueToStyles,
                 child: Text(
                   'Skip for now',
                   style: TextStyle(

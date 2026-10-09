@@ -20,6 +20,7 @@ class _DiscoveryPreferencesScreenState
   final List<String> _selectedPriorities = [];
   final List<String> _selectedColors = [];
   int? _selectedBudgetIndex;
+  bool _isSaving = false;
 
   static const _budgetTiers = [
     (label: 'Under ₹1,000', maxSpend: 1000),
@@ -139,6 +140,8 @@ class _DiscoveryPreferencesScreenState
   }
 
   Future<void> _finishOnboarding() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
     final prefs = ref.read(userPreferencesProvider);
     try {
       await ref
@@ -155,12 +158,22 @@ class _DiscoveryPreferencesScreenState
             discoverPreferences: prefs.discoverPreferences,
             productInterests: prefs.productInterests,
             shoppingPriorities: prefs.shoppingPriorities,
+            onboardingStep: 4,
           );
-    } catch (_) {
-      // Non-blocking — persona generation will retry with local prefs.
-    }
-    if (mounted) {
-      context.go(AppRoutes.persona);
+      if (mounted) context.go(AppRoutes.persona);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save your preferences: $error'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _finishOnboarding(),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -496,12 +509,14 @@ class _DiscoveryPreferencesScreenState
               child: SizedBox(
                 width: double.infinity,
                 child: GlowButton(
-                  label: canContinue
-                      ? 'FINISH'
-                      : 'Select budget and priorities',
+                  label: _isSaving
+                      ? 'SAVING...'
+                      : canContinue
+                          ? 'FINISH'
+                          : 'Select budget and priorities',
                   icon: Icons.auto_awesome_rounded,
-                  enabled: canContinue,
-                  onTap: canContinue ? _finishOnboarding : null,
+                  enabled: canContinue && !_isSaving,
+                  onTap: canContinue && !_isSaving ? _finishOnboarding : null,
                 ),
               ),
             ),

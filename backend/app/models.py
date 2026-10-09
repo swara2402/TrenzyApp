@@ -755,6 +755,7 @@ class UserPreference(Base):
     budget_max: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     shopping_priorities: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     discover_preferences: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    onboarding_step: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 class TrendingProduct(Base):

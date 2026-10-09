@@ -255,6 +255,7 @@ abstract class ApiServiceBase {
     List<String>? discoverPreferences,
     List<String>? productInterests,
     List<String>? shoppingPriorities,
+    int? onboardingStep,
   });
 
   // ---------- Posts ----------

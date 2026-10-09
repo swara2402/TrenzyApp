@@ -125,14 +125,49 @@ class ApiClient {
       return _cachedToken;
     }
 
-    try {
-      final token = await user.getIdToken(forceRefresh);
-      _cachedToken = token;
-      _tokenExpiry = DateTime.now().add(const Duration(minutes: 50));
-      return token;
-    } catch (e) {
-      _log('getIdToken error: $e');
+    final token = await user.getIdToken(forceRefresh);
+    _cachedToken = token;
+    _tokenExpiry = DateTime.now().add(const Duration(minutes: 50));
+    return token;
+  }
+
+  Future<String?> _refreshAfterUnauthorized() async {
+    final user = firebaseAuth.currentUser;
+    if (user == null) {
       return null;
+    }
+
+    try {
+      final token = await getIdToken(forceRefresh: true);
+      if (token == null || token.isEmpty) {
+        throw ApiException(
+          'Could not refresh the authentication session. Please retry.',
+          statusCode: 503,
+        );
+      }
+      return token;
+    } on FirebaseAuthException catch (error) {
+      const invalidSessionCodes = {
+        'user-disabled',
+        'user-not-found',
+        'user-token-expired',
+        'invalid-user-token',
+      };
+      if (invalidSessionCodes.contains(error.code)) {
+        return null;
+      }
+      throw ApiException(
+        'Could not refresh the authentication session. Please retry.',
+        statusCode: 503,
+        details: error,
+      );
+    } catch (error) {
+      _log('Token refresh failed temporarily: $error');
+      throw ApiException(
+        'Could not refresh the authentication session. Please retry.',
+        statusCode: 503,
+        details: error,
+      );
     }
   }
 
@@ -218,7 +253,7 @@ class ApiClient {
         return result;
       } on ApiException catch (e) {
         if (e.statusCode == 401 && attempts == 1) {
-          final refreshed = await getIdToken(forceRefresh: true);
+          final refreshed = await _refreshAfterUnauthorized();
           if (refreshed == null || refreshed.isEmpty) {
             onSessionExpired?.call();
             rethrow;
@@ -253,7 +288,7 @@ class ApiClient {
         return result;
       } on ApiException catch (e) {
         if (e.statusCode == 401 && refreshOn401 && attempts == 1) {
-          final refreshed = await getIdToken(forceRefresh: true);
+          final refreshed = await _refreshAfterUnauthorized();
           if (refreshed == null || refreshed.isEmpty) {
             onSessionExpired?.call();
             rethrow;

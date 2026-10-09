@@ -825,6 +825,7 @@ class ApiService implements ApiServiceBase {
     List<String>? discoverPreferences,
     List<String>? productInterests,
     List<String>? shoppingPriorities,
+    int? onboardingStep,
   }) =>
       _userApi.savePreferences(
         preferredCategories: preferredCategories,
@@ -838,6 +839,7 @@ class ApiService implements ApiServiceBase {
         discoverPreferences: discoverPreferences,
         productInterests: productInterests,
         shoppingPriorities: shoppingPriorities,
+        onboardingStep: onboardingStep,
       );
 
   @override
