@@ -148,7 +148,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // preferences. Goes through the shared serverPreferencesProvider so
     // this check and the auth hydration listener issue a single request.
     try {
-      // Add 3 second timeout to prevent app from freezing if API hangs
+      // Add 3 second timeout to prevent app from freezing if API hangs.
+      // On a temporary failure we should not force the user to Home or log them
+      // out; resume the first incomplete onboarding step instead.
       final prefs = await ref.read(serverPreferencesProvider.future).timeout(
         const Duration(seconds: 3),
         onTimeout: () => null,
@@ -156,29 +158,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
       if (!mounted) return;
 
-      final hasPreferences =
-          prefs != null &&
-          prefs.isNotEmpty &&
-          ((prefs['preferred_styles'] as List?)?.isNotEmpty == true ||
-              (prefs['preferred_categories'] as List?)?.isNotEmpty == true ||
-              (prefs['shopping_priorities'] as List?)?.isNotEmpty == true);
-      context.go(hasPreferences ? AppRoutes.home : AppRoutes.onboarding);
+      final route = AppRoutes.firstIncompleteOnboardingRoute(
+        preferences: prefs,
+        source: 'onboarding',
+      );
+      context.go(route == AppRoutes.home ? AppRoutes.home : route);
     } on ApiException catch (e) {
       if (!mounted) return;
-      // If we get a 401 (invalid/expired token), sign out and send to welcome screen
       if (e.statusCode == 401) {
         await FirebaseAuth.instance.signOut();
         if (mounted) {
           context.go(AppRoutes.welcome);
         }
       } else {
-        // For other API errors, send to onboarding so they can set preferences
-        context.go(AppRoutes.onboarding);
+        context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'onboarding'));
       }
     } catch (_) {
       if (!mounted) return;
-      // On network error or timeout, default to home
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'onboarding'));
     }
   }
 

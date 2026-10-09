@@ -152,7 +152,9 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 final serverPreferencesProvider = FutureProvider<Map<String, dynamic>?>((
   ref,
 ) async {
-  ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+  final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+  if (uid == null || uid.isEmpty) return null;
+
   final api = ref.read(apiServiceProvider);
   final res = await api.getPreferences();
   final prefs = res['preferences'];
@@ -163,14 +165,21 @@ final userPreferencesProvider =
     StateNotifierProvider<UserPreferencesNotifier, UserPreferences>((ref) {
       final notifier = UserPreferencesNotifier();
 
-      // Auto-hydrate from server when auth state changes
+      // Auto-hydrate from server when auth state changes.
+      // Clear the in-memory state immediately when the user signs out so the
+      // router doesn't keep driving a stale onboarding completion value.
       ref.listen(auth_p.authProvider, (prev, next) async {
         final uid = next.valueOrNull?.id;
-        if (uid == null) return;
+        if (uid == null) {
+          notifier.reset();
+          return;
+        }
         try {
           final prefs = await ref.read(serverPreferencesProvider.future);
           if (prefs != null) {
             notifier.hydrateFromServer(prefs);
+          } else {
+            notifier.reset();
           }
         } catch (_) {
           // Silently fail — preferences will be empty until next retry

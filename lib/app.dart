@@ -66,9 +66,12 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
         _ageVerifiedNotifier.value = true;
         _onboardingCompleteNotifier.value = true;
       }
-      // Invalidate all user-specific providers on logout
+      // Invalidate all user-specific providers on logout and clear any stale
+      // onboarding/age state so the router never keeps a previous account's
+      // completion flags after a sign-out or failed refresh.
       if (user == null && !FeatureFlags.devAuthBypass) {
         _ageVerifiedNotifier.value = false;
+        _onboardingCompleteNotifier.value = false;
         ref.invalidate(cartProvider);
         ref.invalidate(wishlistProvider);
         ref.invalidate(wardrobeProvider);

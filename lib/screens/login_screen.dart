@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../models/api_exception.dart';
 import '../providers/auth_provider.dart';
 import '../providers/api_service_provider.dart';
 import '../router/app_router.dart';
@@ -110,27 +111,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (user != null && !isEmailVerified) {
         context.go(AppRoutes.verifyEmail);
       } else {
-        // Check if user has completed onboarding preferences
+        // Check if user has completed onboarding preferences. If the server is
+        // temporarily unavailable we should not silently log them out or send
+        // them to Home; resume onboarding instead and let the user retry.
         try {
           final api = ref.read(apiServiceProvider);
           final prefs = await api.getPreferences();
           final saved = prefs['preferences'];
-          final hasPreferences = saved is Map &&
-              ((saved['preferred_categories'] as List?)?.isNotEmpty == true ||
-                  (saved['preferred_styles'] as List?)?.isNotEmpty == true ||
-                  (saved['shopping_priorities'] as List?)?.isNotEmpty == true);
+          final preferenceMap = saved is Map ? Map<String, dynamic>.from(saved) : const <String, dynamic>{};
 
           if (!mounted) return;
-          if (hasPreferences) {
+          final nextRoute = AppRoutes.firstIncompleteOnboardingRoute(
+            preferences: preferenceMap,
+            source: 'signup',
+          );
+          if (nextRoute == AppRoutes.home) {
             context.go(AppRoutes.home);
           } else {
-            // Start onboarding preference flow from Step 1
-            context.go('${AppRoutes.favoriteCategories}?source=signup');
+            context.go(nextRoute);
           }
+        } on ApiException catch (e) {
+          if (!mounted) return;
+          if (e.statusCode == 401) {
+            // Session is genuinely invalid; sign the user out and send them back
+            // through the auth flow.
+            await ref.read(authProvider.notifier).logout();
+            context.go(AppRoutes.welcome);
+            return;
+          }
+          context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'signup'));
         } catch (_) {
           if (!mounted) return;
-          // If we can't fetch preferences, default to home for existing users
-          context.go(AppRoutes.home);
+          context.go(AppRoutes.firstIncompleteOnboardingRoute(source: 'signup'));
         }
       }
     } catch (e) {

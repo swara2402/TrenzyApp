@@ -92,6 +92,42 @@ class AppRoutes {
   static String productDetailsFor(String productId) =>
       '$productDetails?productId=${Uri.encodeComponent(productId)}';
 
+  static String firstIncompleteOnboardingRoute({
+    Map<String, dynamic>? preferences,
+    String source = 'onboarding',
+  }) {
+    final data = <String, dynamic>{};
+    if (preferences != null) {
+      for (final entry in preferences.entries) {
+        data[entry.key.toString()] = entry.value;
+      }
+    }
+
+    final categories = _asStringList(data['preferred_categories']);
+    if (categories.isEmpty) {
+      return '$favoriteCategories?source=$source';
+    }
+
+    final styles = _asStringList(data['preferred_styles']);
+    if (styles.isEmpty) {
+      return '$preferredStyles?source=$source';
+    }
+
+    final discovery = _asStringList(data['discover_preferences']);
+    if (discovery.isEmpty) {
+      return '$discoveryPreferences?source=$source';
+    }
+
+    return home;
+  }
+
+  static List<String> _asStringList(dynamic value) {
+    if (value is List) {
+      return value.map((e) => e.toString()).toList();
+    }
+    return const <String>[];
+  }
+
   static const wishlist = '/wishlist';
 
   static const blendHub = '/blend';
@@ -281,7 +317,7 @@ GoRouter createRouter({
         path: AppRoutes.ageVerification,
         builder: (context, state) => const AgeVerificationScreen(),
       ),
-      GoRoute(path: AppRoutes.root, redirect: (_, s) => AppRoutes.home),
+      GoRoute(path: AppRoutes.root, redirect: (_, __) => AppRoutes.splash),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {

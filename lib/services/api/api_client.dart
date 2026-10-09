@@ -179,11 +179,6 @@ class ApiClient {
 
     _log('Error $endpoint [${response.statusCode}]: $message');
 
-    if (response.statusCode == 401) {
-      onSessionExpired?.call();
-      throw ApiException(message, statusCode: 401, details: endpoint);
-    }
-
     throw ApiException(
       message,
       statusCode: response.statusCode,
@@ -223,8 +218,15 @@ class ApiClient {
         return result;
       } on ApiException catch (e) {
         if (e.statusCode == 401 && attempts == 1) {
-          await getIdToken(forceRefresh: true);
+          final refreshed = await getIdToken(forceRefresh: true);
+          if (refreshed == null || refreshed.isEmpty) {
+            onSessionExpired?.call();
+            rethrow;
+          }
           continue;
+        }
+        if (e.statusCode == 401) {
+          onSessionExpired?.call();
         }
         rethrow;
       } catch (e) {
@@ -234,6 +236,39 @@ class ApiClient {
         await Future.delayed(Duration(milliseconds: 300 * attempts));
       }
     }
+    throw ApiException('Request failed after retries', details: endpoint);
+  }
+
+  Future<dynamic> _sendWithRetry(
+    String endpoint,
+    Future<http.Response> Function() request, {
+    bool refreshOn401 = true,
+  }) async {
+    int attempts = 0;
+    while (attempts < maxRetries) {
+      attempts++;
+      try {
+        final response = await request();
+        final result = handleResponse(response, endpoint: endpoint);
+        return result;
+      } on ApiException catch (e) {
+        if (e.statusCode == 401 && refreshOn401 && attempts == 1) {
+          final refreshed = await getIdToken(forceRefresh: true);
+          if (refreshed == null || refreshed.isEmpty) {
+            onSessionExpired?.call();
+            rethrow;
+          }
+          continue;
+        }
+        if (e.statusCode == 401) {
+          onSessionExpired?.call();
+        }
+        rethrow;
+      } catch (e) {
+        throw ApiException('Connection failed: $e', details: endpoint);
+      }
+    }
+    throw ApiException('Request failed after retries', details: endpoint);
   }
 
   Future<dynamic> post(
@@ -242,81 +277,64 @@ class ApiClient {
     Map<String, String>? extraHeaders,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers = await authHeaders(extra: extraHeaders);
     final jsonBody = body != null ? jsonEncode(body) : null;
 
-    try {
-      final response = await client.post(uri, headers: headers, body: jsonBody).timeout(timeout);
-      return handleResponse(response, endpoint: endpoint);
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw ApiException('Connection failed: $e', details: endpoint);
-    }
+    return _sendWithRetry(endpoint, () async {
+      final headers = await authHeaders(extra: extraHeaders);
+      return client.post(uri, headers: headers, body: jsonBody).timeout(timeout);
+    });
   }
 
   Future<dynamic> put(String endpoint, {dynamic body}) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers = await authHeaders();
     final jsonBody = body != null ? jsonEncode(body) : null;
 
-    try {
-      final response = await client.put(uri, headers: headers, body: jsonBody).timeout(timeout);
-      return handleResponse(response, endpoint: endpoint);
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw ApiException('Connection failed: $e', details: endpoint);
-    }
+    return _sendWithRetry(endpoint, () async {
+      final headers = await authHeaders();
+      return client.put(uri, headers: headers, body: jsonBody).timeout(timeout);
+    });
   }
 
   Future<dynamic> patch(String endpoint, {dynamic body}) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers = await authHeaders();
     final jsonBody = body != null ? jsonEncode(body) : null;
 
-    try {
-      final response = await client.patch(uri, headers: headers, body: jsonBody).timeout(timeout);
-      return handleResponse(response, endpoint: endpoint);
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw ApiException('Connection failed: $e', details: endpoint);
-    }
+    return _sendWithRetry(endpoint, () async {
+      final headers = await authHeaders();
+      return client.patch(uri, headers: headers, body: jsonBody).timeout(timeout);
+    });
   }
 
   Future<dynamic> delete(String endpoint) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers = await authHeaders();
 
-    try {
-      final response = await client.delete(uri, headers: headers).timeout(timeout);
-      return handleResponse(response, endpoint: endpoint);
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw ApiException('Connection failed: $e', details: endpoint);
-    }
+    return _sendWithRetry(endpoint, () async {
+      final headers = await authHeaders();
+      return client.delete(uri, headers: headers).timeout(timeout);
+    });
   }
 
-  Future<dynamic> uploadMultipart(String endpoint, XFile file, {String fieldName = 'file'}) async {
+  Future<dynamic> uploadMultipart(
+    String endpoint,
+    XFile file, {
+    String fieldName = 'file',
+  }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final token = await getIdToken();
-    final request = http.MultipartRequest('POST', uri);
-    if (token != null && token.isNotEmpty) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
-    request.files.add(http.MultipartFile.fromBytes(
-      fieldName,
-      await file.readAsBytes(),
-      filename: file.name,
-    ));
-    try {
+    return _sendWithRetry(endpoint, () async {
+      final token = await getIdToken(forceRefresh: false);
+      final request = http.MultipartRequest('POST', uri);
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fieldName,
+          await file.readAsBytes(),
+          filename: file.name,
+        ),
+      );
       final streamedResponse = await request.send().timeout(const Duration(seconds: 45));
-      final response = await http.Response.fromStream(streamedResponse);
-      return handleResponse(response, endpoint: endpoint);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Upload failed: $e', details: endpoint);
-    }
-  }}
+      return http.Response.fromStream(streamedResponse);
+    });
+  }
+}
