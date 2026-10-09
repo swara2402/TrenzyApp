@@ -87,7 +87,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
 
     try {
       final api = ref.read(apiServiceProvider);
-      final prefs = await api.getPreferences();
+      final prefs = await api.getPreferences().timeout(const Duration(seconds: 12));
       final prefData = prefs['preferences'] as Map<String, dynamic>?;
       final hasPreferences =
           prefs.isNotEmpty &&
@@ -105,8 +105,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
       }
     } catch (_) {
       if (!mounted) return;
-      // If we can't fetch preferences, still start the onboarding flow to be safe
-      context.go('${AppRoutes.favoriteCategories}?source=signup');
+      // Do not guess onboarding state when the backend is unreachable.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not check your setup. Please try again.')),
+      );
     }
   }
 
