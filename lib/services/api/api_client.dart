@@ -46,7 +46,7 @@ class ApiClient {
   static const Duration timeout = Duration(seconds: 20);
   static const int maxRetries = 2;
 
-  static String get baseUrl => EnvConfig.apiBaseUrl;
+  static String get baseUrl => '${EnvConfig.apiBaseUrl}/api';
   static String get socketBaseUrl => EnvConfig.socketBaseUrl;
 
   static String? resolveImageUrl(String? imageUrl) {

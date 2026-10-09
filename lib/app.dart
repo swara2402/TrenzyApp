@@ -144,9 +144,12 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (prev, next) {
-      _ageVerifiedNotifier.value = next.valueOrNull?.ageVerified ?? false;
+      final newAgeVerified = next.valueOrNull?.ageVerified;
+      // Only update ageVerified if we get an explicit non-null value from the backend
+      if (newAgeVerified != null) {
+        _ageVerifiedNotifier.value = newAgeVerified;
+      }
       debugPrint(
-
         'ageVerified=${next.valueOrNull?.ageVerified} '
         'notifier=${_ageVerifiedNotifier.value}',
       );
