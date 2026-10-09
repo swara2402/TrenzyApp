@@ -175,6 +175,12 @@ class ApiClient {
     bool forceRefresh = false,
     Map<String, String>? extra,
   }) async {
+    final user = firebaseAuth.currentUser;
+    if (user != null && _cachedTokenUid != null && _cachedTokenUid != user.uid) {
+      _cachedToken = null;
+      _tokenExpiry = null;
+      _cachedTokenUid = null;
+    }
     final token = await getIdToken(forceRefresh: forceRefresh);
     final headers = <String, String>{
       'Content-Type': 'application/json',

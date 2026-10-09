@@ -53,8 +53,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller = VideoPlayerController.asset('assets/videos/splash.mp4');
 
-    // Global safety net: navigate regardless of video state after 6 seconds.
-    _safetyTimer = Timer(const Duration(seconds: 6), () {
+    // Global safety net: navigate regardless of video state after 4 seconds (removed last 2s).
+    _safetyTimer = Timer(const Duration(seconds: 4), () {
       if (mounted && !_navigated) {
         _navigated = true;
         _navigateAfterSplash();
@@ -99,10 +99,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           },
         );
       } else {
-        _navigationTimer = Timer(const Duration(seconds: 5), () {
+        _navigationTimer = Timer(const Duration(seconds: 3), () {
           if (mounted && !_navigated) {
             if (kDebugMode) {
-              debugPrint("⏰ Fallback timer (5s) triggered - navigating.");
+              debugPrint("⏰ Fallback timer (3s) triggered - navigating.");
             }
             _navigated = true;
             _navigateAfterSplash();

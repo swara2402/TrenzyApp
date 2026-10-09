@@ -139,8 +139,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       );
     } on ApiException catch (error) {
       if (!mounted) return;
+      // For post-login 401s: don't trigger session-expired (we just logged in!)
       if (error.statusCode == 401) {
-        // ApiClient's session-expired callback owns sign-out and routing.
+        _showPreferencesRetry(error);
         return;
       }
       if (error.statusCode == 403 &&
