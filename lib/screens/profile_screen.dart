@@ -282,7 +282,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Row(
             children: [
               _buildStatItem(Icons.article_outlined, 'Posts', '$postsCount'),
