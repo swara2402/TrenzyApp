@@ -59,13 +59,22 @@ class ApiClient {
       return raw;
     }
 
-    final path = raw.replaceFirst(RegExp(r'^\./+'), '');
+    final path = raw.replaceFirst(RegExp(r'^\\./+'), '');
     final segments = path.split('/');
     final filename = segments.isNotEmpty ? segments.last : '';
 
-    // The catalog's TRZ product photos are deployed to Cloudflare Pages
-    // under /images. Keep other relative uploads on the configured API host.
-    if (RegExp(r'^TRZ-\d+\.jpg
+    // Catalog product photos are hosted on Cloudflare Pages under /images.
+    if (RegExp(r'^TRZ-\\d+\\.jpg$', caseSensitive: false)
+        .hasMatch(filename)) {
+      return 'https://e507cfa3.trenzy-images.pages.dev/images/$filename';
+    }
+
+    // Keep non-catalog uploads on the configured backend host.
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    return Uri.parse(EnvConfig.apiBaseUrl)
+        .resolve(normalizedPath)
+        .toString();
+  }
 
   static void clearCache() {
     _requestCache.clear();
