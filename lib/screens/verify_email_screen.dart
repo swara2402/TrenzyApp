@@ -51,20 +51,22 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
   }
 
   void _pollEmailVerification() {
-    _timer = Timer.periodic(Duration(seconds: 5), (_) async {
-      bool verified = false;
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_isChecking || !mounted) return;
+      _isChecking = true;
       try {
-        verified = await ref
+        final verified = await ref
             .read(authProvider.notifier)
-            .checkEmailVerification();
+            .checkEmailVerification()
+            .timeout(const Duration(seconds: 10));
+        if (verified && mounted) {
+          _timer?.cancel();
+          await _redirectAfterVerification();
+        }
       } catch (_) {
-        // Transient check failures are retried on the next tick; the
-        // explicit "I've verified" button surfaces errors to the user.
-        return;
-      }
-      if (verified && mounted) {
-        _timer?.cancel();
-        _redirectAfterVerification();
+        // A transient poll failure is retried on the next tick.
+      } finally {
+        _isChecking = false;
       }
     });
   }
@@ -87,7 +89,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
 
     try {
       final api = ref.read(apiServiceProvider);
-      final prefs = await api.getPreferences();
+      final prefs = await api.getPreferences().timeout(const Duration(seconds: 12));
       final prefData = prefs['preferences'] as Map<String, dynamic>?;
       final hasPreferences =
           prefs.isNotEmpty &&
@@ -105,8 +107,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
       }
     } catch (_) {
       if (!mounted) return;
-      // If we can't fetch preferences, still start the onboarding flow to be safe
-      context.go('${AppRoutes.favoriteCategories}?source=signup');
+      // Do not guess onboarding state when the backend is unreachable.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not check your setup. Please try again.')),
+      );
     }
   }
 
@@ -180,10 +184,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
   }
 
   Future<void> _handleCheckVerification() async {
+    if (_isChecking) return;
     setState(() => _isChecking = true);
     bool verified;
     try {
-      verified = await ref.read(authProvider.notifier).checkEmailVerification();
+      verified = await ref
+          .read(authProvider.notifier)
+          .checkEmailVerification()
+          .timeout(const Duration(seconds: 10));
     } catch (e) {
       // Surface the failure instead of leaving the button spinning forever.
       if (!mounted) return;
