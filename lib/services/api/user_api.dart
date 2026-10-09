@@ -5,13 +5,13 @@ class UserApi {
   final ApiClient _client;
 
   Future<Map<String, dynamic>> updateProfile({required String name}) async {
-    final data = await _client.patch('/users/me', body: {'name': name});
+    final data = await _client.patch('/api/users/me', body: {'name': name});
     _client.invalidateCache('currentUser');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth) async {
-    final data = await _client.post('/users/me/age-verification', body: {
+    final data = await _client.post('/api/users/me/age-verification', body: {
       'date_of_birth': dateOfBirth.toIso8601String().substring(0, 10),
     });
     _client.invalidateCache('currentUser');
@@ -19,12 +19,12 @@ class UserApi {
   }
 
   Future<Map<String, dynamic>> getUserProfile(String userId) async {
-    final data = await _client.get('/users/$userId');
+    final data = await _client.get('/api/users/$userId');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   Future<void> deleteAccount() async {
-    await _client.delete('/users/me');
+    await _client.delete('/api/users/me');
     ApiClient.clearCache();
   }
 
@@ -32,7 +32,7 @@ class UserApi {
     required String category,
     required String description,
   }) async {
-    await _client.post('/users/report', body: {
+    await _client.post('/api/users/report', body: {
       'category': category,
       'description': description,
     });
@@ -40,20 +40,20 @@ class UserApi {
 
   // ---------- Style Persona ----------
   Future<Map<String, dynamic>?> getPersona() async {
-    final data = await _client.get('/persona');
+    final data = await _client.get('/api/persona');
     return data is Map<String, dynamic> ? data : null;
   }
 
   Future<Map<String, dynamic>> generatePersona({
     Map<String, dynamic>? preferences,
   }) async {
-    final data = await _client.post('/persona/generate', body: preferences);
+    final data = await _client.post('/api/persona/generate', body: preferences);
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   // ---------- User Preferences ----------
   Future<Map<String, dynamic>> getPreferences() async {
-    final data = await _client.get('/persona/preferences');
+    final data = await _client.get('/api/persona/preferences');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -85,12 +85,12 @@ class UserApi {
     if (shoppingPriorities != null) body['shopping_priorities'] = shoppingPriorities;
     if (onboardingStep != null) body['onboarding_step'] = onboardingStep;
 
-    await _client.post('/persona/preferences', body: body);
+    await _client.post('/api/persona/preferences', body: body);
   }
 
   // ---------- Persona Onboarding Constants ----------
   Future<List<String>> getPersonaStyles() async {
-    final data = await _client.get('/persona/styles');
+    final data = await _client.get('/api/persona/styles');
     if (data is List) return data.map((e) => e.toString()).toList();
     if (data is Map<String, dynamic> && data['styles'] is List) {
       return (data['styles'] as List).map((e) => e.toString()).toList();
@@ -99,7 +99,7 @@ class UserApi {
   }
 
   Future<List<String>> getPersonaProductTypes() async {
-    final data = await _client.get('/persona/product-types');
+    final data = await _client.get('/api/persona/product-types');
     if (data is List) return data.map((e) => e.toString()).toList();
     if (data is Map<String, dynamic> && data['product_types'] is List) {
       return (data['product_types'] as List).map((e) => e.toString()).toList();
@@ -108,7 +108,7 @@ class UserApi {
   }
 
   Future<List<Map<String, dynamic>>> getPersonaColors() async {
-    final data = await _client.get('/persona/colors');
+    final data = await _client.get('/api/persona/colors');
     if (data is List) {
       return data.whereType<Map<String, dynamic>>().toList();
     }

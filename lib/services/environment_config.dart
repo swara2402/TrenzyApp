@@ -45,8 +45,8 @@ class EnvConfig {
     // can also use 127.0.0.1; desktop too. If adb reverse is set up this may
     // vary, but 10.0.2.2 is the most reliable for Android emulator.
     if (!kIsWeb && Platform.isAndroid) {
-      return 'http://10.0.2.2:8000';
+      return 'https://trenzy-staging-api.onrender.com';
     }
-    return 'http://127.0.0.1:8000';
+    return 'https://trenzy-staging-api.onrender.com';
   }
 }
