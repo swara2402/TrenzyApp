@@ -23,10 +23,8 @@ class CacheEntry {
 }
 
 class ApiClient {
-  ApiClient({
-    required this.firebaseAuth,
-    http.Client? client,
-  }) : _client = client;
+  ApiClient({required this.firebaseAuth, http.Client? client})
+    : _client = client;
 
   final FirebaseAuth firebaseAuth;
   final http.Client? _client;
@@ -59,10 +57,14 @@ class ApiClient {
       return raw;
     }
 
-    // Catalog APIs may return either "/uploads/..." or "uploads/...".
-    // Resolve both against the configured backend host instead of letting
-    // CachedNetworkImage interpret a relative path as an invalid URL.
     final path = raw.replaceFirst(RegExp(r'^\./+'), '');
+    final segments = path.split('/');
+    final filename = segments.isNotEmpty ? segments.last : '';
+
+    if (RegExp(r'^TRZ-\d+\.jpg$', caseSensitive: false).hasMatch(filename)) {
+      return 'https://e507cfa3.trenzy-images.pages.dev/images/$filename';
+    }
+
     final normalizedPath = path.startsWith('/') ? path : '/$path';
     return Uri.parse(EnvConfig.apiBaseUrl).resolve(normalizedPath).toString();
   }
@@ -75,7 +77,8 @@ class ApiClient {
   }
 
   void putCache(String key, dynamic data, Duration ttl) {
-    if (_requestCache.length >= _maxCacheSize && !_requestCache.containsKey(key)) {
+    if (_requestCache.length >= _maxCacheSize &&
+        !_requestCache.containsKey(key)) {
       String lruKey = _requestCache.keys.first;
       DateTime oldest = _requestCache[lruKey]!.lastAccessed;
       for (final e in _requestCache.entries) {
@@ -176,7 +179,9 @@ class ApiClient {
     Map<String, String>? extra,
   }) async {
     final user = firebaseAuth.currentUser;
-    if (user != null && _cachedTokenUid != null && _cachedTokenUid != user.uid) {
+    if (user != null &&
+        _cachedTokenUid != null &&
+        _cachedTokenUid != user.uid) {
       _cachedToken = null;
       _tokenExpiry = null;
       _cachedTokenUid = null;
@@ -212,7 +217,8 @@ class ApiClient {
 
     String message = 'Request failed (${response.statusCode})';
     if (decoded is Map<String, dynamic>) {
-      message = decoded['detail']?.toString() ??
+      message =
+          decoded['detail']?.toString() ??
           decoded['message']?.toString() ??
           decoded['error']?.toString() ??
           message;
@@ -251,7 +257,9 @@ class ApiClient {
       attempts++;
       try {
         final headers = await authHeaders();
-        final response = await client.get(uri, headers: headers).timeout(timeout);
+        final response = await client
+            .get(uri, headers: headers)
+            .timeout(timeout);
         final result = handleResponse(response, endpoint: endpoint);
         if (cacheTtl != null) {
           putCache(key, result, cacheTtl);
@@ -322,7 +330,9 @@ class ApiClient {
 
     return _sendWithRetry(endpoint, () async {
       final headers = await authHeaders(extra: extraHeaders);
-      return client.post(uri, headers: headers, body: jsonBody).timeout(timeout);
+      return client
+          .post(uri, headers: headers, body: jsonBody)
+          .timeout(timeout);
     });
   }
 
@@ -342,7 +352,9 @@ class ApiClient {
 
     return _sendWithRetry(endpoint, () async {
       final headers = await authHeaders();
-      return client.patch(uri, headers: headers, body: jsonBody).timeout(timeout);
+      return client
+          .patch(uri, headers: headers, body: jsonBody)
+          .timeout(timeout);
     });
   }
 
@@ -374,7 +386,9 @@ class ApiClient {
           filename: file.name,
         ),
       );
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 45));
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 45),
+      );
       return http.Response.fromStream(streamedResponse);
     });
   }
