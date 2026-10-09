@@ -57,6 +57,7 @@ class _FavoriteCategoriesScreenState
   Future<void> _continueToStyles() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
+
     try {
       await ref.read(apiServiceProvider).savePreferences(
         preferredCategories: _selectedCategories,
@@ -64,10 +65,12 @@ class _FavoriteCategoriesScreenState
       );
       if (mounted) context.go(AppRoutes.preferredStyles);
     } catch (error) {
+      // For intermediate onboarding steps, if save fails, don't navigate forward automatically
+      // Instead, show error and let user retry - this prevents skipping steps without saving progress
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not save your progress: $error'),
+          content: Text('Could not save your progress: $error. Please retry to continue.'),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () => _continueToStyles(),

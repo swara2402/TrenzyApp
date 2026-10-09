@@ -320,7 +320,7 @@ GoRouter createRouter({
         path: AppRoutes.ageVerification,
         builder: (context, state) => const AgeVerificationScreen(),
       ),
-      GoRoute(path: AppRoutes.root, redirect: (_, __) => AppRoutes.splash),
+      GoRoute(path: AppRoutes.root, redirect: (_, _) => AppRoutes.splash),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {

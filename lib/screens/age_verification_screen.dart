@@ -48,11 +48,12 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
       helpText: 'Date of birth',
       confirmText: 'Continue',
     );
-    if (picked != null)
+    if (picked != null) {
       setState(() {
         _dob = picked;
         _error = null;
       });
+    }
   }
 
   Future<void> _submit() async {

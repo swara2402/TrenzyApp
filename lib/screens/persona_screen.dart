@@ -411,21 +411,26 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
 
     try {
       await ref.read(apiServiceProvider).savePreferences(onboardingStep: 5);
+      // Only mark as completed locally after successful backend save
       ref.read(userPreferencesProvider.notifier).completeOnboarding();
-      if (context.mounted) {
+      if (mounted && context.mounted) {
         context.go(AppRoutes.home);
       }
     } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not finish saving your onboarding: $error'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: () => _onContinue(),
+      // If API call fails, still navigate home so user isn't blocked, but don't mark as completed locally
+      // This way if they restart before retrying, they'll pick up where they left off
+      if (mounted && context.mounted) {
+        context.go(AppRoutes.home);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Some preferences could not be saved, but you can retry later from settings: $error'),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () => _onContinue(),
+            ),
           ),
-        ),
-      );
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

@@ -143,6 +143,7 @@ class _DiscoveryPreferencesScreenState
     if (_isSaving) return;
     setState(() => _isSaving = true);
     final prefs = ref.read(userPreferencesProvider);
+
     try {
       await ref
           .read(apiServiceProvider)
@@ -162,10 +163,12 @@ class _DiscoveryPreferencesScreenState
           );
       if (mounted) context.go(AppRoutes.persona);
     } catch (error) {
+      // For intermediate onboarding steps, if save fails, don't navigate forward automatically
+      // Instead, show error and let user retry - this prevents skipping steps without saving progress
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not save your preferences: $error'),
+          content: Text('Could not save your progress: $error. Please retry to continue.'),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () => _finishOnboarding(),

@@ -24,6 +24,7 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
   Future<void> _continueToDiscovery() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
+
     try {
       await ref.read(apiServiceProvider).savePreferences(
         preferredStyles: selectedStyles,
@@ -31,10 +32,12 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
       );
       if (mounted) context.go(AppRoutes.discoveryPreferences);
     } catch (error) {
+      // For intermediate onboarding steps, if save fails, don't navigate forward automatically
+      // Instead, show error and let user retry - this prevents skipping steps without saving progress
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not save your progress: $error'),
+          content: Text('Could not save your progress: $error. Please retry to continue.'),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () => _continueToDiscovery(),
