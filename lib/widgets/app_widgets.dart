@@ -115,7 +115,7 @@ class AppTopBar extends StatelessWidget {
                 else
                   _TopBarButton(
                     icon: Icons.notifications_outlined,
-                    onPressed: onTrailingPressed ?? () {},
+                    onPressed: onTrailingPressed ?? () => context.push(AppRoutes.notifications),
                   ),
                 if (showThemeToggle) ...[
                   SizedBox(width: 8),
@@ -2170,7 +2170,7 @@ class ProductCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: compact ? 168 : null,
-      padding: const EdgeInsets.all(GlassSpacing.sm),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(GlassRadius.card),
         color: context.trenzyColors.background,
@@ -2180,28 +2180,28 @@ class ProductCardSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           LoadingSkeletonShimmer(
-            height: compact ? 116 : 140,
+            height: compact ? 104 : 108,
             radius: GlassRadius.input,
           ),
-          SizedBox(height: GlassSpacing.sm),
+          SizedBox(height: 6),
           LoadingSkeletonShimmer(
-            height: 14,
+            height: 12,
             width: double.infinity,
             radius: GlassRadius.chip,
           ),
-          SizedBox(height: GlassSpacing.xs + 2),
-          LoadingSkeletonShimmer(height: 12, width: 70, radius: GlassRadius.chip),
+          SizedBox(height: 4),
+          LoadingSkeletonShimmer(height: 10, width: 70, radius: GlassRadius.chip),
           SizedBox(height: GlassSpacing.sm),
           Row(
             children: [
               Expanded(
                 child: LoadingSkeletonShimmer(
-                  height: 16,
+                  height: 14,
                   radius: GlassRadius.chip,
                 ),
               ),
-              SizedBox(width: GlassSpacing.sm),
-              LoadingSkeletonShimmer(height: 24, width: 24, radius: 12),
+              SizedBox(width: 6),
+              LoadingSkeletonShimmer(height: 20, width: 20, radius: 10),
             ],
           ),
         ],
