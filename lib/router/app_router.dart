@@ -214,12 +214,26 @@ Page<dynamic> _buildPageWithFadeTransition(
 ) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
+    transitionDuration: const Duration(milliseconds: 320),
+    reverseTransitionDuration: const Duration(milliseconds: 260),
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeThroughTransition(
-        animation: animation,
-        secondaryAnimation: secondaryAnimation,
-        child: child,
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      final slideAnimation = Tween<Offset>(
+        begin: const Offset(0.025, 0.012),
+        end: Offset.zero,
+      ).animate(curvedAnimation);
+
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: SlideTransition(
+          position: slideAnimation,
+          child: child,
+        ),
       );
     },
   );
