@@ -162,6 +162,7 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
+      scrollBehavior: const _NoStretchScrollBehavior(),
       debugShowCheckedModeBanner: false,
       title: 'Trenzy',
       themeMode: themeMode,
@@ -541,4 +542,20 @@ class _TrenzyAppState extends ConsumerState<TrenzyApp> {
       ),
     );
   }
+}
+
+/// Keeps scrolling responsive without iOS-style bounce or Android stretch/glow.
+class _NoStretchScrollBehavior extends MaterialScrollBehavior {
+  const _NoStretchScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }
