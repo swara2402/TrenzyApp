@@ -64,7 +64,7 @@ class ApiClient {
     final filename = segments.isNotEmpty ? segments.last : '';
 
     // Catalog product photos are hosted on Cloudflare Pages under /images.
-    if (RegExp(r'^TRZ-\d+\.jpg
+    if (RegExp(r'^TRZ-\d+\.jpg$', caseSensitive: false)
         .hasMatch(filename)) {
       return 'https://e507cfa3.trenzy-images.pages.dev/images/$filename';
     }
