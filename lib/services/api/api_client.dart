@@ -50,10 +50,21 @@ class ApiClient {
   static String get socketBaseUrl => EnvConfig.socketBaseUrl;
 
   static String? resolveImageUrl(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) return null;
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    if (imageUrl.startsWith('/')) return '${EnvConfig.apiBaseUrl}$imageUrl';
-    return imageUrl;
+    final raw = imageUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+
+    final parsed = Uri.tryParse(raw);
+    if (parsed != null &&
+        (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+      return raw;
+    }
+
+    // Catalog APIs may return either "/uploads/..." or "uploads/...".
+    // Resolve both against the configured backend host instead of letting
+    // CachedNetworkImage interpret a relative path as an invalid URL.
+    final path = raw.replaceFirst(RegExp(r'^\./+'), '');
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    return Uri.parse(EnvConfig.apiBaseUrl).resolve(normalizedPath).toString();
   }
 
   static void clearCache() {
