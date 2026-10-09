@@ -66,12 +66,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     try {
       if (kDebugMode) debugPrint("Loading splash video...");
 
-      await _controller.initialize().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          throw Exception("Video initialization timed out.");
-        },
-      );
+      await _controller.initialize();
 
       if (kDebugMode) debugPrint("Video initialized!");
 
@@ -168,11 +163,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               (prefs['preferred_categories'] as List?)?.isNotEmpty == true ||
               (prefs['shopping_priorities'] as List?)?.isNotEmpty == true);
       context.go(hasPreferences ? AppRoutes.home : AppRoutes.onboarding);
-    } on ApiException {
+    } on ApiException catch (e) {
       if (!mounted) return;
-      // Server rejected the request — send to onboarding so they can set
-      // preferences.
-      context.go(AppRoutes.onboarding);
+      // If we get a 401 (invalid/expired token), sign out and send to welcome screen
+      if (e.statusCode == 401) {
+        await FirebaseAuth.instance.signOut();
+        if (mounted) {
+          context.go(AppRoutes.welcome);
+        }
+      } else {
+        // For other API errors, send to onboarding so they can set preferences
+        context.go(AppRoutes.onboarding);
+      }
     } catch (_) {
       if (!mounted) return;
       // On network error or timeout, default to home
