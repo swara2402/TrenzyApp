@@ -115,7 +115,7 @@ class AppTopBar extends StatelessWidget {
                 else
                   _TopBarButton(
                     icon: Icons.notifications_outlined,
-                    onPressed: onTrailingPressed ?? () {},
+                    onPressed: onTrailingPressed ?? () => context.push(AppRoutes.notifications),
                   ),
                 if (showThemeToggle) ...[
                   SizedBox(width: 8),
