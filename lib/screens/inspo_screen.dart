@@ -6,6 +6,7 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/discover_providers.dart';
 import 'package:trenzy/providers/trends_provider.dart';
 import 'package:trenzy/models/product_model.dart';
+import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/widgets/section_states.dart';
 
@@ -328,7 +329,7 @@ class InspoScreen extends ConsumerWidget {
                                                         ),
                                                       ),
                                                   child: CachedNetworkImage(
-                                                    imageUrl: trend.imageUrl,
+                                                    imageUrl: ApiService.resolveImageUrl(trend.imageUrl) ?? trend.imageUrl,
                                                     fit: BoxFit.cover,
                                                     placeholder:
                                                         (context, url) =>

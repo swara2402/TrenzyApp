@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trenzy/providers/blend_provider.dart';
 import 'package:trenzy/models/blend_model.dart';
 import 'package:trenzy/models/product_model.dart';
+import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/widgets/section_states.dart';
@@ -529,7 +530,7 @@ class _ProductCard extends StatelessWidget {
           Expanded(
             child: product.imageUrl.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: product.imageUrl,
+                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     placeholder: (_, _) => Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg, size: 24)),

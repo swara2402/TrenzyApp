@@ -6,6 +6,7 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/trends_provider.dart';
 import 'package:trenzy/models/trend_model.dart';
 import 'package:trenzy/models/social_models.dart';
+import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
 class TrendsScreen extends ConsumerWidget {
@@ -553,7 +554,7 @@ class _PredictionCard extends StatelessWidget {
                   child:
                       prediction.imageUrl.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: prediction.imageUrl,
+                          imageUrl: ApiService.resolveImageUrl(prediction.imageUrl) ?? prediction.imageUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: Colors.grey[900],

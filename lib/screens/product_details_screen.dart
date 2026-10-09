@@ -12,6 +12,7 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/widgets/section_states.dart';
 
@@ -105,7 +106,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                             fit: StackFit.expand,
                             children: [
                               CachedNetworkImage(
-                                imageUrl: product.imageUrl,
+                                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 800,
                                 placeholder: (_, _) => ColoredBox(

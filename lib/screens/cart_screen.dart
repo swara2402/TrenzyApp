@@ -4,6 +4,7 @@ import '../providers/cart_provider.dart';
 import '../models/decision_flow.dart' as df;
 import '../models/cart_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../services/api_service.dart';
 import '../theme/glass_theme.dart';
 import 'package:go_router/go_router.dart';
 import '../router/app_router.dart';
@@ -203,7 +204,7 @@ class _CartItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
-                imageUrl: product.imageUrl,
+                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                 width: 90,
                 height: 110,
                 fit: BoxFit.cover,

@@ -116,6 +116,21 @@ class ClosetScreen extends ConsumerWidget {
                       label: 'Add Item to Closet',
                       onTap: () => context.push(AppRoutes.addItem),
                     ),
+                    SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () => context.push(AppRoutes.aiStylist),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome, size: 18),
+                            SizedBox(width: 8),
+                            Text('Chat with AI Stylist'),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -142,6 +157,17 @@ class ClosetScreen extends ConsumerWidget {
                 slivers: [
                   SliverToBoxAdapter(
                     child: _AiOutfitMatchBanner(),
+                  ),
+                  // Prominent AI Stylist CTA to strengthen wardrobe→AI loop
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: GlowButton(
+                        label: 'Chat with AI Stylist',
+                        icon: Icons.auto_awesome,
+                        onTap: () => context.push(AppRoutes.aiStylist),
+                      ),
+                    ),
                   ),
                   SliverPadding(
                     padding: const EdgeInsets.all(12),

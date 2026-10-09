@@ -6,6 +6,7 @@ import 'package:trenzy/providers/blend_provider.dart';
 import 'package:trenzy/providers/wishlist_provider.dart';
 import 'package:trenzy/models/blend_model.dart';
 import 'package:trenzy/models/product_model.dart';
+import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/widgets/section_states.dart';
@@ -772,7 +773,7 @@ class _WinnerProductCard extends ConsumerWidget {
               children: [
                 product?.imageUrl != null && product!.imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: product.imageUrl,
+                        imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         placeholder: (_, _) => Container(

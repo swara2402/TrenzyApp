@@ -12,7 +12,8 @@ import '../models/wardrobe_model.dart';
 import '../models/product_model.dart';
 import '../widgets/product_card.dart';
 import '../widgets/section_states.dart';
-import '../widgets/cart_badge_button.dart';
+import '../services/api_service.dart';
+
 import '../theme/glass_theme.dart';
 
 class DiscoverScreen extends ConsumerWidget {
@@ -79,7 +80,6 @@ class DiscoverScreen extends ConsumerWidget {
                       ),
                     ),
                     Spacer(),
-                    CartBadgeButton(),
                     IconButton(
                       icon: Icon(
                         Icons.notifications_none,
@@ -585,7 +585,7 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                               children: [
                                 product.imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                        imageUrl: product.imageUrl,
+                                        imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
                                         fit: BoxFit.cover,
                                         memCacheWidth: 400,
                                         placeholder: (_, _) => Container(

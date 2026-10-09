@@ -19,7 +19,6 @@ import '../models/trend_model.dart';
 import '../models/wardrobe_model.dart';
 import '../widgets/product_card.dart';
 import '../widgets/section_states.dart';
-import '../widgets/cart_badge_button.dart';
 import '../utils/ai_explanations.dart';
 
 part 'home_sections_1.dart';

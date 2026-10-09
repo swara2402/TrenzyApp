@@ -37,7 +37,6 @@ class _WelcomeHeader extends ConsumerWidget {
                 ),
               ),
               Spacer(),
-              CartBadgeButton(),
             ],
           ),
           SizedBox(height: 4),
