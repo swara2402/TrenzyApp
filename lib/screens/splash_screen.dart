@@ -153,7 +153,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // preferences. Goes through the shared serverPreferencesProvider so
     // this check and the auth hydration listener issue a single request.
     try {
-      final prefs = await ref.read(serverPreferencesProvider.future);
+      // Add 3 second timeout to prevent app from freezing if API hangs
+      final prefs = await ref.read(serverPreferencesProvider.future).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
 
       if (!mounted) return;
 
@@ -171,7 +175,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       context.go(AppRoutes.onboarding);
     } catch (_) {
       if (!mounted) return;
-      // On network error, default to home
+      // On network error or timeout, default to home
       context.go(AppRoutes.home);
     }
   }
