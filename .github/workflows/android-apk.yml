@@ -28,10 +28,13 @@ jobs:
       - name: Build APK
         run: flutter build apk --debug --dart-define=TRENZY_API_BASE_URL=https://trenzy-staging-api.onrender.com
 
+      - name: Rename APK
+        run: cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/Trenzy.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: trenzy-android-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: Trenzy-APK
+          path: build/app/outputs/flutter-apk/Trenzy.apk
           if-no-files-found: error
           retention-days: 7
