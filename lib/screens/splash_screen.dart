@@ -27,6 +27,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final Animation<double> _logoScale;
   Timer? _navigationTimer;
   Timer? _safetyTimer;
+  Duration? _playbackEnd;
 
   bool _videoReady = false;
   bool _navigated = false;
@@ -84,10 +85,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       await _controller.setVolume(0);
 
       final videoDuration = _controller.value.duration;
+      // Skip the final second of the splash clip for a cleaner transition.
+      _playbackEnd = videoDuration > const Duration(seconds: 1)
+          ? videoDuration - const Duration(seconds: 1)
+          : videoDuration;
 
       if (videoDuration > Duration.zero) {
         _navigationTimer = Timer(
-          videoDuration + const Duration(milliseconds: 500),
+          _playbackEnd! + const Duration(milliseconds: 500),
           () {
             if (mounted && !_navigated) {
               if (kDebugMode) {
@@ -209,7 +214,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (value.isInitialized &&
         value.duration > Duration.zero &&
-        value.position >= value.duration) {
+        value.position >= (_playbackEnd ?? value.duration)) {
       _navigated = true;
       _navigationTimer?.cancel();
       _safetyTimer?.cancel();
