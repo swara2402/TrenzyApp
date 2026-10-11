@@ -54,8 +54,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller = VideoPlayerController.asset('assets/videos/splash.mp4');
 
-    // Global safety net: navigate regardless of video state after 6 seconds.
-    _safetyTimer = Timer(const Duration(seconds: 6), () {
+    // Safety net only: let the ~15-second splash video finish normally.
+    // This timer is for a stalled player, not a replacement for video timing.
+    _safetyTimer = Timer(const Duration(seconds: 20), () {
       if (mounted && !_navigated) {
         _navigated = true;
         _navigateAfterSplash();
@@ -164,7 +165,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final prefs = await ref
           .read(serverPreferencesProvider.future)
           .timeout(
-            const Duration(seconds: 3),
+            const Duration(seconds: 45),
             onTimeout: () =>
                 throw TimeoutException('Loading account progress timed out'),
           );
