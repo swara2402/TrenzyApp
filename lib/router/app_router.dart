@@ -118,12 +118,12 @@ class AppRoutes {
     Map<String, dynamic> response, {
     String source = 'onboarding',
   }) {
-    final rawPreferences = response['preferences'];
+    final rawPreferences = response['preferences'] is Map
+        ? response['preferences'] as Map
+        : response;
     final preferences = <String, dynamic>{};
-    if (rawPreferences is Map) {
-      for (final entry in rawPreferences.entries) {
-        preferences[entry.key.toString()] = entry.value;
-      }
+    for (final entry in rawPreferences.entries) {
+      preferences[entry.key.toString()] = entry.value;
     }
     return firstIncompleteOnboardingRoute(
       preferences: preferences,
@@ -170,6 +170,68 @@ class AppRoutes {
   static const privacyPolicy = '/privacy-policy';
   static const userProfile = '/user-profile';
   static const friends = '/friends';
+  static String? guardRedirect({
+    required bool isLoggedIn,
+    required bool isOnboardingDone,
+    required bool isAgeVerified,
+    required String location,
+  }) {
+    final isAuthRoute =
+        location == login ||
+        location == signUp ||
+        location == forgotPassword ||
+        location == splash ||
+        location == welcome ||
+        location == verifyEmail ||
+        location == ageVerification ||
+        location == termsOfService ||
+        location == privacyPolicy;
+
+    final isOnboardingRoute =
+        location == onboarding ||
+        location.startsWith(favoriteCategories) ||
+        location.startsWith(preferredStyles) ||
+        location.startsWith(discoveryPreferences) ||
+        location.startsWith(persona);
+
+    if (!isLoggedIn && !isAuthRoute && !isOnboardingRoute) {
+      return splash;
+    }
+
+    if (isLoggedIn &&
+        !isAgeVerified &&
+        location != ageVerification &&
+        !isAuthRoute) {
+      return ageVerification;
+    }
+
+    // A verified user must never be parked on the age gate. This happens on
+    // cold start (the notifier starts false until auth sync resolves) and
+    // after a previously failed sync corrects itself — without this rule the
+    // router has no way back out of /age-verification.
+    if (isLoggedIn &&
+        isAgeVerified &&
+        location == ageVerification) {
+      return isOnboardingDone ? home : onboarding;
+    }
+
+    // If logged in but onboarding not complete, force onboarding flow
+    // (unless already on an onboarding route).
+    if (isLoggedIn &&
+        !isOnboardingDone &&
+        !isOnboardingRoute &&
+        !isAuthRoute) {
+      return onboarding;
+    }
+
+    // If onboarding is already complete but we're still sitting on an
+    // onboarding step (e.g. a returning user resumed mid-wizard), leave it.
+    if (isLoggedIn && isOnboardingDone && isOnboardingRoute) {
+      return home;
+    }
+
+    return null;
+  }
 }
 
 class ProductDetailsRouteExtra {
@@ -230,6 +292,7 @@ GoRouter createRouter({
   required ValueNotifier<bool> onboardingCompleteNotifier,
   required ValueNotifier<bool> ageVerifiedNotifier,
   required VoidCallback onToggleTheme,
+  String initialLocation = AppRoutes.splash,
 }) {
   // By default go_router keeps browser pushes out of the address bar, so a
   // route opened with context.push() (e.g. product details from the feed)
@@ -239,7 +302,7 @@ GoRouter createRouter({
   // reload-safe, and enabling the browser Back button.
   GoRouter.optionURLReflectsImperativeAPIs = true;
   return GoRouter(
-    initialLocation: AppRoutes.splash,
+    initialLocation: initialLocation,
     navigatorKey: _rootNavigatorKey,
     refreshListenable: Listenable.merge([
       authNotifier,
@@ -255,65 +318,15 @@ GoRouter createRouter({
       // want onboarding to be treated as a path-prefix match (query-agnostic).
       final location = state.matchedLocation;
       debugPrint(
-
         'ageVerified=${ageVerifiedNotifier.value} onboarding=$isOnboardingDone',
       );
 
-      final isAuthRoute =
-          location == AppRoutes.login ||
-          location == AppRoutes.signUp ||
-          location == AppRoutes.forgotPassword ||
-          location == AppRoutes.splash ||
-          location == AppRoutes.welcome ||
-          location == AppRoutes.verifyEmail ||
-          location == AppRoutes.ageVerification ||
-          location == AppRoutes.termsOfService ||
-          location == AppRoutes.privacyPolicy;
-
-      final isOnboardingRoute =
-          location == AppRoutes.onboarding ||
-          location.startsWith(AppRoutes.favoriteCategories) ||
-          location.startsWith(AppRoutes.preferredStyles) ||
-          location.startsWith(AppRoutes.discoveryPreferences) ||
-          location.startsWith(AppRoutes.persona);
-
-      if (!isLoggedIn && !isAuthRoute && !isOnboardingRoute) {
-        return AppRoutes.splash;
-      }
-
-      if (isLoggedIn &&
-          !ageVerifiedNotifier.value &&
-          location != AppRoutes.ageVerification &&
-          !isAuthRoute) {
-        return AppRoutes.ageVerification;
-      }
-
-      // A verified user must never be parked on the age gate. This happens on
-      // cold start (the notifier starts false until auth sync resolves) and
-      // after a previously failed sync corrects itself — without this rule the
-      // router has no way back out of /age-verification.
-      if (isLoggedIn &&
-          ageVerifiedNotifier.value &&
-          location == AppRoutes.ageVerification) {
-        return isOnboardingDone ? AppRoutes.home : AppRoutes.onboarding;
-      }
-
-      // If logged in but onboarding not complete, force onboarding flow
-      // (unless already on an onboarding route).
-      if (isLoggedIn &&
-          !isOnboardingDone &&
-          !isOnboardingRoute &&
-          !isAuthRoute) {
-        return AppRoutes.onboarding;
-      }
-
-      // If onboarding is already complete but we're still sitting on an
-      // onboarding step (e.g. a returning user resumed mid-wizard), leave it.
-      if (isLoggedIn && isOnboardingDone && isOnboardingRoute) {
-        return AppRoutes.home;
-      }
-
-      return null;
+      return AppRoutes.guardRedirect(
+        isLoggedIn: isLoggedIn,
+        isOnboardingDone: isOnboardingDone,
+        isAgeVerified: ageVerifiedNotifier.value,
+        location: location,
+      );
     },
     routes: [
       GoRoute(

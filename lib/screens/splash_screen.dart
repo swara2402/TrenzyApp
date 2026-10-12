@@ -159,7 +159,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final prefs = await ref
           .read(serverPreferencesProvider.future)
           .timeout(
-            const Duration(seconds: 3),
+            const Duration(seconds: 15),
             onTimeout: () =>
                 throw TimeoutException('Loading account progress timed out'),
           );
@@ -200,6 +200,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (_retrying) return;
     ref.invalidate(serverPreferencesProvider);
     await _navigateAfterSplash();
+  }
+
+  Future<void> _signOutAndExit() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+    if (!mounted) return;
+    context.go(AppRoutes.welcome);
   }
 
   void _videoListener() {
@@ -311,6 +319,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   onPressed: _retrying ? null : _retryRouting,
                                   child: Text(
                                     _retrying ? 'Retrying...' : 'Retry',
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                TextButton(
+                                  onPressed: _retrying ? null : _signOutAndExit,
+                                  child: const Text(
+                                    'Sign Out',
+                                    style: TextStyle(color: Colors.white70),
                                   ),
                                 ),
                               ],

@@ -47,6 +47,16 @@ class ApiClient {
   static String get baseUrl => '${EnvConfig.apiBaseUrl}/api';
   static String get socketBaseUrl => EnvConfig.socketBaseUrl;
 
+  static Uri resolveUri(String endpoint) {
+    if (endpoint.startsWith('/ai/')) {
+      return Uri.parse('${EnvConfig.apiBaseUrl}$endpoint');
+    }
+    if (endpoint.startsWith('/api/')) {
+      return Uri.parse('${EnvConfig.apiBaseUrl}$endpoint');
+    }
+    return Uri.parse('$baseUrl$endpoint');
+  }
+
   static String? resolveImageUrl(String? imageUrl) {
     final raw = imageUrl?.trim();
     if (raw == null || raw.isEmpty) return null;
@@ -247,7 +257,7 @@ class ApiClient {
       }
     }
 
-    Uri uri = Uri.parse('$baseUrl$endpoint');
+    Uri uri = resolveUri(endpoint);
     if (queryParams != null && queryParams.isNotEmpty) {
       uri = uri.replace(queryParameters: queryParams);
     }
@@ -325,7 +335,7 @@ class ApiClient {
     dynamic body,
     Map<String, String>? extraHeaders,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = resolveUri(endpoint);
     final jsonBody = body != null ? jsonEncode(body) : null;
 
     return _sendWithRetry(endpoint, () async {
@@ -337,7 +347,7 @@ class ApiClient {
   }
 
   Future<dynamic> put(String endpoint, {dynamic body}) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = resolveUri(endpoint);
     final jsonBody = body != null ? jsonEncode(body) : null;
 
     return _sendWithRetry(endpoint, () async {
@@ -347,7 +357,7 @@ class ApiClient {
   }
 
   Future<dynamic> patch(String endpoint, {dynamic body}) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = resolveUri(endpoint);
     final jsonBody = body != null ? jsonEncode(body) : null;
 
     return _sendWithRetry(endpoint, () async {
@@ -359,7 +369,7 @@ class ApiClient {
   }
 
   Future<dynamic> delete(String endpoint) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = resolveUri(endpoint);
 
     return _sendWithRetry(endpoint, () async {
       final headers = await authHeaders();
@@ -372,7 +382,7 @@ class ApiClient {
     XFile file, {
     String fieldName = 'file',
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = resolveUri(endpoint);
     return _sendWithRetry(endpoint, () async {
       final token = await getIdToken(forceRefresh: false);
       final request = http.MultipartRequest('POST', uri);

@@ -146,13 +146,18 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 final serverPreferencesProvider = FutureProvider<Map<String, dynamic>?>((
   ref,
 ) async {
-  final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
-  if (uid == null || uid.isEmpty) return null;
+  final authUser = await ref.watch(auth_p.authProvider.future);
+  if (authUser == null || authUser.id.isEmpty) return null;
 
   final api = ref.read(apiServiceProvider);
   final res = await api.getPreferences();
   final prefs = res['preferences'];
-  return prefs is Map<String, dynamic> ? prefs : null;
+  if (prefs is Map<String, dynamic>) return prefs;
+  if (res.containsKey('onboarding_step') ||
+      res.containsKey('preferred_categories')) {
+    return res;
+  }
+  return null;
 });
 
 final userPreferencesProvider =
