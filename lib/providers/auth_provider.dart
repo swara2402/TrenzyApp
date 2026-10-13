@@ -98,7 +98,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
   }
 
   bool _isVerified(User user) {
-    if (FeatureFlags.devAuthBypass) return true;
+    if (FeatureFlags.skipEmailVerification) return true;
     return user.emailVerified;
   }
 

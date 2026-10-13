@@ -77,6 +77,8 @@ except Exception:  # model not installed in current env
     _EMBEDDING_DIM = 512
 
 
+from sqlalchemy import event
+
 class User(Base):
     """Registered Trenzy user.
 
@@ -93,6 +95,7 @@ class User(Base):
     )
 
     name: Mapped[str] = mapped_column(String, nullable=False, default="")
+    username: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False, default="")
     email: Mapped[str] = mapped_column(String, nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     bio: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -108,6 +111,14 @@ class User(Base):
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+@event.listens_for(User, 'before_insert')
+def generate_username_before_insert(mapper, connection, target):
+    """Automatically generate a unique username if one isn't provided."""
+    if not target.username:
+        # Create a username from the full firebase_uid to ensure uniqueness
+        # Firebase UIDs are already unique, so this will always be unique
+        target.username = f"user_{target.firebase_uid}"
 
 
 class Product(Base):

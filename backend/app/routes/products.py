@@ -447,7 +447,10 @@ def unified_search(
     from ..models import User
     users = (
         session.query(User)
-        .filter(User.name.ilike(pattern, escape="\\"))
+        .filter(or_(
+            User.name.ilike(pattern, escape="\\"),
+            User.username.ilike(pattern, escape="\\")
+        ))
         .limit(limit)
         .all()
     )
@@ -470,6 +473,7 @@ def unified_search(
             {
                 "id": u.id,
                 "name": u.name,
+                "username": u.username,
                 "avatarUrl": u.avatar_url or "",
             }
             for u in users

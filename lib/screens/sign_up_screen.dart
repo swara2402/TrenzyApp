@@ -72,7 +72,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       await ref.read(authProvider.notifier).signup(name, email, password);
       if (!mounted) return;
       final user = ref.read(authProvider).valueOrNull;
-      if (user != null && !user.emailVerified && !FeatureFlags.devAuthBypass) {
+      if (user != null && !user.emailVerified && !FeatureFlags.skipEmailVerification) {
         context.go(AppRoutes.verifyEmail);
       } else {
         // Start onboarding from Step 1, mark source for back-navigation

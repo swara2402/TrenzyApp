@@ -16,6 +16,16 @@ final searchSuggestionsProvider = FutureProvider.autoDispose.family<List<String>
   }
 });
 
+final unifiedSearchProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, query) async {
+  if (query.trim().length < 2) return {};
+  final api = ref.watch(apiServiceProvider);
+  try {
+    return await api.unifiedSearch(query.trim());
+  } catch (_) {
+    return {};
+  }
+});
+
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
 final debouncedSearchQueryProvider = Provider.autoDispose<String>((ref) {

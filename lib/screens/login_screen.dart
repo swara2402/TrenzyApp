@@ -107,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (!mounted) return;
 
       final user = ref.read(authProvider).valueOrNull;
-      final isEmailVerified = (user?.emailVerified ?? false) || FeatureFlags.devAuthBypass;
+      final isEmailVerified = (user?.emailVerified ?? false) || FeatureFlags.skipEmailVerification;
       if (user != null && !isEmailVerified) {
         context.go(AppRoutes.verifyEmail);
       } else {
@@ -363,7 +363,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                                                   final user = ref.read(authProvider).valueOrNull;
                                                   final isEmailVerified =
                                                       (user?.emailVerified ?? false) ||
-                                                      FeatureFlags.devAuthBypass;
+                                                      FeatureFlags.skipEmailVerification;
                                                   final shouldVerifyEmail =
                                                       user != null && !isEmailVerified;
 

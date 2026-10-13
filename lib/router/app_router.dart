@@ -169,6 +169,7 @@ class AppRoutes {
   static const termsOfService = '/terms-of-service';
   static const privacyPolicy = '/privacy-policy';
   static const userProfile = '/user-profile';
+  static String userProfileFor(String uid) => '$userProfile?uid=$uid';
   static const friends = '/friends';
   static String? guardRedirect({
     required bool isLoggedIn,

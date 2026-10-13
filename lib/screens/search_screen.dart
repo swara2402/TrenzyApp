@@ -592,23 +592,9 @@ class _SearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final minPriceStr = initialFilters['min_price'];
-    final maxPriceStr = initialFilters['max_price'];
-    final double? minPrice =
-        (minPriceStr == null || minPriceStr.isEmpty) ? null : double.tryParse(minPriceStr);
-    final double? maxPrice =
-        (maxPriceStr == null || maxPriceStr.isEmpty) ? null : double.tryParse(maxPriceStr);
-    final params = ProductSearchParams(
-      query: query,
-      category: initialFilters['category'],
-      subcategory: initialFilters['subcategory'],
-      sort: initialFilters['sort'] ?? 'relevance',
-      minPrice: minPrice,
-      maxPrice: maxPrice,
-    );
-    final productsAsync = ref.watch(productSearchProvider(params));
+    final unifiedSearchAsync = ref.watch(unifiedSearchProvider(query));
 
-    return productsAsync.when(
+    return unifiedSearchAsync.when(
       loading: () => Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -637,117 +623,196 @@ class _SearchResults extends ConsumerWidget {
       error: (error, _) => _SearchErrorView(
         query: query,
         error: error,
-        onRetry: () => ref.invalidate(productSearchProvider(params)),
+        onRetry: () => ref.invalidate(unifiedSearchProvider(query)),
       ),
-      data: (products) {
-        if (products.isEmpty) {
+      data: (searchResults) {
+        final products = searchResults['products'] ?? [];
+        final users = searchResults['users'] ?? [];
+        final blends = searchResults['blends'] ?? [];
+
+        if (products.isEmpty && users.isEmpty && blends.isEmpty) {
           return _NoResultsView(query: query);
         }
 
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(
-              '${products.length} product${products.length == 1 ? '' : 's'} found',
-              style: TextStyle(
-                color: context.trenzyColors.mutedFg,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+            // Users section
+            if (users.isNotEmpty) ...[
+              Text(
+                '${users.length} user${users.length == 1 ? '' : 's'} found',
+                style: TextStyle(
+                  color: context.trenzyColors.mutedFg,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.65,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return GlassContainer(
-                  color: context.trenzyColors.graphite,
-                  radius: 16,
-                  onTap: () {
-                    context.push(
-                      AppRoutes.productDetailsFor(product.id),
-                      extra: ProductDetailsRouteExtra(productId: product.id),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
+              SizedBox(height: 12),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  return GlassContainer(
+                    color: context.trenzyColors.graphite,
+                    radius: 12,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    onTap: () {
+                      // Navigate to user profile
+                      context.push(
+                        AppRoutes.userProfileFor(user['id'].toString()),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundImage: user['avatarUrl'] != null && user['avatarUrl'].isNotEmpty
+                                ? CachedNetworkImageProvider(ApiService.resolveImageUrl(user['avatarUrl']) ?? user['avatarUrl'])
+                                : null,
+                            child: user['avatarUrl'] == null || user['avatarUrl'].isEmpty
+                                ? Icon(Icons.person, color: context.trenzyColors.mutedFg)
+                                : null,
                           ),
-                          child: ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(16),
-                                  ),
-                                  child: CachedNetworkImage(
-                                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    placeholder: (_, _) => Container(color: Colors.grey[900]),
-                                    errorWidget: (_, _, _) =>
-                                        Icon(Icons.image_outlined,
-                                            color: context.trenzyColors.mutedFg),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user['name'],
+                                  style: TextStyle(
+                                    color: context.trenzyColors.foreground,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                        ),
+                                if (user['username'] != null && user['username'].isNotEmpty)
+                                  Text(
+                                    '@${user['username']}',
+                                    style: TextStyle(
+                                      color: context.trenzyColors.mutedFg,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: context.trenzyColors.mutedFg),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.brand.toUpperCase(),
-                              style: TextStyle(
-                                color: context.trenzyColors.primary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2,
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 24),
+            ],
+
+            // Products section
+            if (products.isNotEmpty) ...[
+              Text(
+                '${products.length} product${products.length == 1 ? '' : 's'} found',
+                style: TextStyle(
+                  color: context.trenzyColors.mutedFg,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 12),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.65,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  return GlassContainer(
+                    color: context.trenzyColors.graphite,
+                    radius: 16,
+                    onTap: () {
+                      context.push(
+                        AppRoutes.productDetailsFor(product.id),
+                        extra: ProductDetailsRouteExtra(productId: product.id),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              product.name,
-                              style: TextStyle(
-                                color: context.trenzyColors.foreground,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            ...[
-                            SizedBox(height: 4),
-                            Text(
-                              '\u20B9${product.price.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                color: context.trenzyColors.primary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                              child: CachedNetworkImage(
+                                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                placeholder: (_, _) => Container(color: Colors.grey[900]),
+                                errorWidget: (_, _, _) =>
+                                    Icon(Icons.image_outlined,
+                                        color: context.trenzyColors.mutedFg),
                               ),
                             ),
-                          ],
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.brand.toUpperCase(),
+                                style: TextStyle(
+                                  color: context.trenzyColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                product.name,
+                                style: TextStyle(
+                                  color: context.trenzyColors.foreground,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                '\u20B9${product.price.toStringAsFixed(0)}',
+                                style: TextStyle(
+                                  color: context.trenzyColors.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
           ],
         );
       },
