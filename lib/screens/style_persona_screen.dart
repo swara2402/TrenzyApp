@@ -21,30 +21,53 @@ class StylePersonaScreen extends ConsumerStatefulWidget {
 class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
   bool _generatedOnce = false;
   bool _isSaving = false;
+  bool _isGenerating = false;
+  String? _generationError;
 
   Future<void> _ensurePersona() async {
-    if (_generatedOnce) return;
+    if (_generatedOnce || _isGenerating) return;
     _generatedOnce = true;
+    _isGenerating = true;
+    _generationError = null;
+    if (mounted) setState(() {});
 
     try {
       // Convert preferences to snake_case to match API expectations
       final preferences = <String, dynamic>{
-        'preferred_categories': ref.read(userPreferencesProvider).preferredCategories,
+        'preferred_categories': ref
+            .read(userPreferencesProvider)
+            .preferredCategories,
         'preferred_brands': ref.read(userPreferencesProvider).preferredBrands,
         'preferred_colors': ref.read(userPreferencesProvider).preferredColors,
         'preferred_styles': ref.read(userPreferencesProvider).preferredStyles,
-        'preferred_aesthetics': ref.read(userPreferencesProvider).preferredAesthetics,
+        'preferred_aesthetics': ref
+            .read(userPreferencesProvider)
+            .preferredAesthetics,
         'preferred_seasons': ref.read(userPreferencesProvider).preferredSeasons,
-        'preferred_occasions': ref.read(userPreferencesProvider).preferredOccasions,
+        'preferred_occasions': ref
+            .read(userPreferencesProvider)
+            .preferredOccasions,
         'budget_max': ref.read(userPreferencesProvider).budgetMax,
-        'discover_preferences': ref.read(userPreferencesProvider).discoverPreferences,
+        'discover_preferences': ref
+            .read(userPreferencesProvider)
+            .discoverPreferences,
         'product_interests': ref.read(userPreferencesProvider).productInterests,
       };
-      await ref.read(apiServiceProvider).generatePersona(preferences: preferences);
-      // Refresh persona provider after generation
+      await ref
+          .read(apiServiceProvider)
+          .generatePersona(preferences: preferences);
       ref.invalidate(personaProvider);
-    } catch (e) {
-      // Non-blocking: persona generation failure shouldn't block the user
+    } catch (error) {
+      _generatedOnce = false;
+      _generationError = 'Could not generate your style persona. Please retry.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not generate style persona: $error')),
+        );
+      }
+    } finally {
+      _isGenerating = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -53,14 +76,16 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
     super.initState();
     // Generate persona if needed when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(personaProvider).maybeWhen(
-        data: (StylePersona? persona) {
-          if ((persona == null || persona.id == 0) && !_generatedOnce) {
-            _ensurePersona();
-          }
-        },
-        orElse: () {},
-      );
+      ref
+          .read(personaProvider)
+          .maybeWhen(
+            data: (StylePersona? persona) {
+              if ((persona == null || persona.id == 0) && !_generatedOnce) {
+                _ensurePersona();
+              }
+            },
+            orElse: () {},
+          );
     });
   }
 
@@ -69,11 +94,15 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
     final colors = context.trenzyColors;
     // Listen to persona changes to trigger regeneration if needed
     ref.listen(personaProvider, (prev, next) {
-      next.whenOrNull(data: (StylePersona? persona) {
-        if ((persona == null || persona.id == 0) && !_generatedOnce) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _ensurePersona());
-        }
-      });
+      next.whenOrNull(
+        data: (StylePersona? persona) {
+          if ((persona == null || persona.id == 0) && !_generatedOnce) {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _ensurePersona(),
+            );
+          }
+        },
+      );
     });
 
     return Scaffold(
@@ -82,10 +111,17 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         children: [
+          if (_generationError != null) ...[
+            ErrorSection(
+              title: 'Persona generation failed',
+              message: _generationError!,
+              onRetry: _ensurePersona,
+            ),
+            const SizedBox(height: 16),
+          ],
           _PersonaHeroCard(
             onRefine: () {
               _generatedOnce = false;
-              // Fire-and-forget; state/provider refresh will happen after generation.
               _ensurePersona();
             },
           ),
@@ -108,35 +144,43 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: ElevatedButton(
-        onPressed: _isSaving ? null : () async {
-          setState(() => _isSaving = true);
-          try {
-            final prefs = ref.read(userPreferencesProvider);
-            await ref.read(apiServiceProvider).savePreferences(
-              preferredCategories: prefs.preferredCategories,
-              preferredBrands: prefs.preferredBrands,
-              preferredColors: prefs.preferredColors,
-              preferredStyles: prefs.preferredStyles,
-              preferredAesthetics: prefs.preferredAesthetics,
-              preferredSeasons: prefs.preferredSeasons,
-              preferredOccasions: prefs.preferredOccasions,
-              budgetMax: prefs.budgetMax,
-              discoverPreferences: prefs.discoverPreferences,
-              productInterests: prefs.productInterests,
-            );
-            if (!mounted) return;
-            context.go(AppRoutes.home);
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to save preferences, continuing anyway')),
-              );
-              context.go(AppRoutes.home);
-            }
-          } finally {
-            if (mounted) setState(() => _isSaving = false);
-          }
-        },
+        onPressed: _isSaving
+            ? null
+            : () async {
+                setState(() => _isSaving = true);
+                try {
+                  final prefs = ref.read(userPreferencesProvider);
+                  await ref
+                      .read(apiServiceProvider)
+                      .savePreferences(
+                        preferredCategories: prefs.preferredCategories,
+                        preferredBrands: prefs.preferredBrands,
+                        preferredColors: prefs.preferredColors,
+                        preferredStyles: prefs.preferredStyles,
+                        preferredAesthetics: prefs.preferredAesthetics,
+                        preferredSeasons: prefs.preferredSeasons,
+                        preferredOccasions: prefs.preferredOccasions,
+                        budgetMax: prefs.budgetMax,
+                        discoverPreferences: prefs.discoverPreferences,
+                        productInterests: prefs.productInterests,
+                      );
+                  if (!mounted) return;
+                  context.go(AppRoutes.home);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Failed to save preferences, continuing anyway',
+                        ),
+                      ),
+                    );
+                    context.go(AppRoutes.home);
+                  }
+                } finally {
+                  if (mounted) setState(() => _isSaving = false);
+                }
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.primaryFg,
@@ -150,11 +194,14 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
             letterSpacing: 1.5,
           ),
         ),
-        child: _isSaving 
+        child: _isSaving
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF241A00)),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF241A00),
+                ),
               )
             : const Text('CONTINUE'),
       ),
@@ -162,7 +209,8 @@ class _StylePersonaScreenState extends ConsumerState<StylePersonaScreen> {
   }
 }
 
-class _StylePersonaAppBar extends StatelessWidget implements PreferredSizeWidget {
+class _StylePersonaAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   const _StylePersonaAppBar();
 
   @override
@@ -179,7 +227,13 @@ class _StylePersonaAppBar extends StatelessWidget implements PreferredSizeWidget
             child: CircleAvatar(
               radius: 16,
               backgroundColor: colors.graphite,
-              child: Text('U', style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold)),
+              child: Text(
+                'U',
+                style: TextStyle(
+                  color: colors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           title: const Text(
@@ -199,11 +253,17 @@ class _StylePersonaAppBar extends StatelessWidget implements PreferredSizeWidget
             ),
             IconButton(
               tooltip: 'Style DNA',
-              icon: const Icon(Icons.insights_outlined, color: Color(0xFFEAE1D4)),
+              icon: const Icon(
+                Icons.insights_outlined,
+                color: Color(0xFFEAE1D4),
+              ),
               onPressed: () => context.push(AppRoutes.aiStyleDna),
             ),
             IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: Color(0xFFEAE1D4)),
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: Color(0xFFEAE1D4),
+              ),
               onPressed: () => context.push(AppRoutes.notifications),
             ),
           ],
@@ -243,9 +303,7 @@ class _GlassCard extends StatelessWidget {
           decoration: const BoxDecoration(
             color: Color(0x66231F17),
             borderRadius: BorderRadius.all(Radius.circular(24)),
-          ).copyWith(
-            border: Border.all(color: Color(0x0DFFFFFF)),
-          ),
+          ).copyWith(border: Border.all(color: Color(0x0DFFFFFF))),
           child: child,
         ),
       ),
@@ -290,11 +348,16 @@ class _PersonaHeroCard extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Text(
                   'PRIMARY PERSONA',
@@ -328,21 +391,30 @@ class _PersonaHeroCard extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
                 children: [
                   ElevatedButton(
                     onPressed: () {
                       onRefine();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Refining your style DNA...')),
+                        const SnackBar(
+                          content: Text('Refining your style DNA...'),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: const Color(0xFF241A00),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                       textStyle: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -351,12 +423,12 @@ class _PersonaHeroCard extends ConsumerWidget {
                     ),
                     child: const Text('REFINE DNA'),
                   ),
-                  const SizedBox(width: 16),
                   OutlinedButton(
                     onPressed: () {
                       SharePlus.instance.share(
                         ShareParams(
-                          text: 'My Trenzy style persona: ${persona.name}\n'
+                          text:
+                              'My Trenzy style persona: ${persona.name}\n'
                               '${persona.description}\n'
                               'Shared from Trenzy',
                           subject: 'My Trenzy style persona',
@@ -365,9 +437,16 @@ class _PersonaHeroCard extends ConsumerWidget {
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFEAE1D4),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                      side: BorderSide(color: const Color(0xFF99907C).withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      side: BorderSide(
+                        color: const Color(0xFF99907C).withValues(alpha: 0.3),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                       textStyle: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -386,7 +465,6 @@ class _PersonaHeroCard extends ConsumerWidget {
   }
 }
 
-
 class _DnaAndColorGrid extends ConsumerWidget {
   const _DnaAndColorGrid();
 
@@ -395,7 +473,9 @@ class _DnaAndColorGrid extends ConsumerWidget {
     final colors = context.trenzyColors;
     final personaAsync = ref.watch(personaProvider);
     return personaAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFF2CA50))),
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFF2CA50)),
+      ),
       error: (_, _) => ErrorSection(
         title: 'Couldn\u2019t load your style DNA',
         message: 'Something went wrong loading your persona. Please try again.',
@@ -420,17 +500,27 @@ class _DnaAndColorGrid extends ConsumerWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: persona.keywords.map((keyword) => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colors.graphite,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    keyword,
-                    style: const TextStyle(color: Color(0xFFEAE1D4), fontSize: 14),
-                  ),
-                )).toList(),
+                children: persona.keywords
+                    .map(
+                      (keyword) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.graphite,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          keyword,
+                          style: const TextStyle(
+                            color: Color(0xFFEAE1D4),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 32),
               if (persona.colorPalette.isNotEmpty) ...[
@@ -445,12 +535,18 @@ class _DnaAndColorGrid extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Row(
-                  children: persona.colorPalette.map((colorHex) => Expanded(
-                    child: Container(
-                      height: 48,
-                      color: Color(int.parse(colorHex.replaceFirst('#', '0xFF'))),
-                    ),
-                  )).toList(),
+                  children: persona.colorPalette
+                      .map(
+                        (colorHex) => Expanded(
+                          child: Container(
+                            height: 48,
+                            color: Color(
+                              int.parse(colorHex.replaceFirst('#', '0xFF')),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
               ],
             ],
@@ -490,17 +586,27 @@ class _BrandLogoCloud extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: prefs.preferredBrands.map((brand) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2A21),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  brand,
-                  style: const TextStyle(color: Color(0xFFEAE1D4), fontSize: 14),
-                ),
-              )).toList(),
+              children: prefs.preferredBrands
+                  .map(
+                    (brand) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2A21),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        brand,
+                        style: const TextStyle(
+                          color: Color(0xFFEAE1D4),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
         ],
       ),
@@ -528,20 +634,44 @@ class _StyleEvolutionTimeline extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _buildTimelineItem('Current', 'Established your core style identity', true, colors),
-          _buildTimelineItem('Next', 'Discover new aesthetics matching your taste', false, colors),
-          _buildTimelineItem('Future', 'Curate a fully personalized wardrobe', false, colors),
+          _buildTimelineItem(
+            'Current',
+            'Established your core style identity',
+            true,
+            colors,
+          ),
+          _buildTimelineItem(
+            'Next',
+            'Discover new aesthetics matching your taste',
+            false,
+            colors,
+          ),
+          _buildTimelineItem(
+            'Future',
+            'Curate a fully personalized wardrobe',
+            false,
+            colors,
+          ),
           const SizedBox(height: 16),
           const Text(
             'Your app will continuously learn from your interactions to refine recommendations and keep your style persona updated. The home feed, discover page, and wardrobe suggestions will all be personalized based on your persona.',
-            style: TextStyle(color: Color(0xFFD0C5AF), fontSize: 14, height: 1.5),
+            style: TextStyle(
+              color: Color(0xFFD0C5AF),
+              fontSize: 14,
+              height: 1.5,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTimelineItem(String title, String description, bool isActive, TrenzyColors colors) {
+  Widget _buildTimelineItem(
+    String title,
+    String description,
+    bool isActive,
+    TrenzyColors colors,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(

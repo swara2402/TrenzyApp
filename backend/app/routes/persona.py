@@ -15,7 +15,7 @@ import logging
 import random
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -40,7 +40,10 @@ _STYLE_PERSONAS = [
 
 
 def _uid(token: dict) -> str:
-    return token.get("uid") or token.get("user_id") or ""
+    uid = token.get("uid") or token.get("user_id")
+    if uid is None or not str(uid).strip():
+        raise HTTPException(status_code=401, detail="Missing uid claim")
+    return str(uid)
 
 
 @router.get("")
@@ -204,7 +207,7 @@ class SavePreferencesRequest(BaseModel):
     preferred_styles: Optional[list[str]] = None
     preferred_aesthetics: Optional[list[str]] = None
     preferred_occasions: Optional[list[str]] = None
-    budget_max: Optional[int] = None
+    budget_max: Optional[int] = Field(default=None, ge=0)
     shopping_priorities: Optional[list[str]] = None
     discover_preferences: Optional[list[str]] = None
     onboarding_step: Optional[int] = None
@@ -217,43 +220,52 @@ async def save_preferences(
     session: Session = Depends(get_session),
 ):
     auth_uid = _uid(user_data)
-    prefs = session.execute(
-        select(UserPreference).where(UserPreference.user_firebase_uid == auth_uid)
-    ).scalar_one_or_none()
-    
-    if not prefs:
-        prefs = UserPreference(user_firebase_uid=auth_uid)
-        session.add(prefs)
-    
-    if payload.preferred_categories is not None:
-        prefs.preferred_categories = payload.preferred_categories
-    if payload.preferred_brands is not None:
-        prefs.preferred_brands = payload.preferred_brands
-    if payload.preferred_colors is not None:
-        from ..color_taxonomy import normalize_color
-        prefs.preferred_colors = [
-            normalize_color(c) or c
-            for c in payload.preferred_colors
-            if c
-        ]
-    if payload.preferred_seasons is not None:
-        prefs.preferred_seasons = payload.preferred_seasons
-    if payload.preferred_styles is not None:
-        prefs.preferred_styles = payload.preferred_styles
-    if payload.preferred_aesthetics is not None:
-        prefs.preferred_aesthetics = payload.preferred_aesthetics
-    if payload.preferred_occasions is not None:
-        prefs.preferred_occasions = payload.preferred_occasions
-    if payload.budget_max is not None:
-        prefs.budget_max = payload.budget_max
-    if payload.shopping_priorities is not None:
-        prefs.shopping_priorities = payload.shopping_priorities
-    if payload.discover_preferences is not None:
-        prefs.discover_preferences = payload.discover_preferences
-    if payload.onboarding_step is not None:
-        prefs.onboarding_step = max(0, min(payload.onboarding_step, 5))
-    
-    session.commit()
+
+    try:
+        prefs = session.execute(
+            select(UserPreference).where(
+                UserPreference.user_firebase_uid == auth_uid
+            )
+        ).scalar_one_or_none()
+        if not prefs:
+            prefs = UserPreference(user_firebase_uid=auth_uid)
+            session.add(prefs)
+
+        if payload.preferred_categories is not None:
+            prefs.preferred_categories = payload.preferred_categories
+        if payload.preferred_brands is not None:
+            prefs.preferred_brands = payload.preferred_brands
+        if payload.preferred_colors is not None:
+            from ..color_taxonomy import normalize_color
+            prefs.preferred_colors = [
+                normalize_color(c) or c
+                for c in payload.preferred_colors
+                if c
+            ]
+        if payload.preferred_seasons is not None:
+            prefs.preferred_seasons = payload.preferred_seasons
+        if payload.preferred_styles is not None:
+            prefs.preferred_styles = payload.preferred_styles
+        if payload.preferred_aesthetics is not None:
+            prefs.preferred_aesthetics = payload.preferred_aesthetics
+        if payload.preferred_occasions is not None:
+            prefs.preferred_occasions = payload.preferred_occasions
+        if payload.budget_max is not None:
+            prefs.budget_max = payload.budget_max
+        if payload.shopping_priorities is not None:
+            prefs.shopping_priorities = payload.shopping_priorities
+        if payload.discover_preferences is not None:
+            prefs.discover_preferences = payload.discover_preferences
+        if payload.onboarding_step is not None:
+            prefs.onboarding_step = max(0, min(payload.onboarding_step, 5))
+
+        session.commit()
+    except Exception as exc:
+        session.rollback()
+        logger.exception("Failed to save preferences for user %s", auth_uid)
+        raise HTTPException(
+            status_code=500, detail="Failed to save preferences"
+        ) from exc
     return {"ok": True}
 
 

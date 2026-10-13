@@ -383,6 +383,7 @@ class PersonaScreen extends ConsumerStatefulWidget {
 class _PersonaScreenState extends ConsumerState<PersonaScreen> {
   bool _isSaving = false;
   bool _generatedOnce = false;
+  bool _generationFailed = false;
 
   Future<void> _ensurePersona() async {
     if (_generatedOnce) return;
@@ -390,14 +391,21 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
     if (existing != null && existing.id != 0) return;
 
     _generatedOnce = true;
+    _generationFailed = false;
 
     try {
       final api = ref.read(apiServiceProvider);
       final prefs = ref.read(userPreferencesProvider);
       await api.generatePersona(preferences: _snakeCase(prefs.toJson()));
       ref.invalidate(personaProvider);
-    } catch (_) {
-      // Non-blocking — user can retry via Continue button
+    } catch (error) {
+      _generatedOnce = false;
+      if (mounted) {
+        setState(() => _generationFailed = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not create your style persona: $error')),
+        );
+      }
     }
   }
 
@@ -461,9 +469,14 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
 
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
-      body: _ConfettiOverlay(
+      body: LayoutBuilder(
+        builder: (context, constraints) => _ConfettiOverlay(
         key: _confettiKey,
-        child: personaAsync.when(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: personaAsync.when(
         loading: () => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -522,16 +535,32 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Creating your style persona...',
+                      _generationFailed
+                          ? 'We could not create your style persona.'
+                          : 'Creating your style persona...',
                       style: TextStyle(
                         fontSize: 18,
                         color: context.trenzyColors.mutedFg,
+                        height: 1.4,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 24),
-                    CircularProgressIndicator(
-                      color: context.trenzyColors.primary,
-                    ),
+                    if (_generationFailed) ...[
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: _ensurePersona,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.trenzyColors.primary,
+                          foregroundColor: context.trenzyColors.primaryFg,
+                        ),
+                        child: const Text('Retry'),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 24),
+                      CircularProgressIndicator(
+                        color: context.trenzyColors.primary,
+                      ),
+                    ],
                     SizedBox(height: 48),
                     ElevatedButton(
                       onPressed: _isSaving ? null : _onContinue,
@@ -617,6 +646,9 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
             ),
           );
         },
+      ),
+        ),
+      ),
       ),
     ),
   );

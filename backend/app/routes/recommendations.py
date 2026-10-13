@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy import func, or_, case
 from sqlalchemy.orm import Session
@@ -458,7 +458,7 @@ def get_recommendations(
 @router.get("/discover/swipe")
 def discover_swipe(
     request: Request,
-    limit: int = 20,
+    limit: int = Query(20, ge=1, le=100),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
@@ -496,7 +496,7 @@ def discover_swipe(
 @recommend_router.get("/people")
 def recommend_people(
     request: Request,
-    limit: int = 10,
+    limit: int = Query(10, ge=1, le=100),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
@@ -529,7 +529,7 @@ def recommend_people(
 @recommend_router.get("/outfits")
 def recommend_outfits(
     request: Request,
-    limit: int = 6,
+    limit: int = Query(6, ge=1, le=100),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
@@ -578,7 +578,7 @@ def recommend_outfits(
 @recommend_router.get("/products")
 def recommend_products(
     request: Request,
-    limit: int = 12,
+    limit: int = Query(12, ge=1, le=100),
     category: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
@@ -657,4 +657,3 @@ def recommendation_evaluation_status() -> dict:
         "metrics_supported": ["precision_at_k", "category_coverage", "diversity"],
         "notes": "Run the offline script in CI/nightly for quantitative ranking quality.",
     }
-
