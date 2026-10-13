@@ -325,9 +325,10 @@ class _PersonaHeroCard extends ConsumerWidget {
       loading: () => const Center(
         child: CircularProgressIndicator(color: Color(0xFFF2CA50)),
       ),
-      error: (_, _) => const Text(
-        'Could not load persona',
-        style: TextStyle(color: Colors.white),
+      error: (_, _) => ErrorSection(
+        title: 'Could not load persona',
+        message: 'Check your connection and retry.',
+        onRetry: () => ref.invalidate(personaProvider),
       ),
       data: (StylePersona? persona) {
         if (persona == null) return const SizedBox.shrink();

@@ -24,6 +24,20 @@ def test_discovery_and_trend_queries_reject_unsupported_limits(client, auth_head
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "path,payload",
+    [
+        ("/api/trends/aggregate", {"timeframe": "monthly"}),
+        ("/api/persona/preferences", {"budget_max": -1}),
+    ],
+)
+def test_trend_and_persona_writes_reject_invalid_values(
+    client, auth_headers, path, payload
+):
+    response = client.post(path, json=payload, headers=auth_headers)
+    assert response.status_code == 422
+
+
 def test_trending_category_filter_uses_product_category_case_insensitively(
     client, db_session, auth_headers
 ):

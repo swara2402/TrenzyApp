@@ -391,7 +391,7 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
     if (existing != null && existing.id != 0) return;
 
     _generatedOnce = true;
-    _generationFailed = false;
+    if (mounted) setState(() => _generationFailed = false);
 
     try {
       final api = ref.read(apiServiceProvider);

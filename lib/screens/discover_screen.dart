@@ -91,31 +91,35 @@ class DiscoverScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 16),
-                    _buildSearchAndFilter(context),
-                    SizedBox(height: 20),
-                    _CampaignBanner(),
-                    SizedBox(height: 24),
-                    _SwipeDiscoveryPreview(),
-                    SizedBox(height: 24),
-                    _PersonaSection(),
-                    SizedBox(height: 24),
-                    _CategoryChips(),
-                    SizedBox(height: 32),
-                    _TrendingProducts(),
-                    SizedBox(height: 32),
-                    _RecommendedSection(),
-                    SizedBox(height: 120),
-                  ],
-                ),
-              ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              sliver: SliverToBoxAdapter(child: _buildSearchAndFilter(context)),
             ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _CampaignBanner()),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _SwipeDiscoveryPreview()),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _PersonaSection()),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _CategoryChips()),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _TrendingProducts()),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+              sliver: const SliverToBoxAdapter(child: _RecommendedSection()),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 120)),
           ],
         ),
       ),
@@ -585,7 +589,11 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                               children: [
                                 product.imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                        imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                                        imageUrl:
+                                            ApiService.resolveImageUrl(
+                                              product.imageUrl,
+                                            ) ??
+                                            product.imageUrl,
                                         fit: BoxFit.cover,
                                         memCacheWidth: 400,
                                         placeholder: (_, _) => Container(
