@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/home_providers.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/widgets/section_states.dart';
 
@@ -54,9 +55,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       return;
     }
 
-    final imageUrl = _imageUrlController.text.trim();
-    if (imageUrl.isNotEmpty &&
-        !(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    final rawImageUrl = _imageUrlController.text.trim();
+    final imageUrl = rawImageUrl.isEmpty ? null : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
+    if (rawImageUrl.isNotEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Image URL must start with http:// or https://')),
       );
@@ -71,7 +72,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
 
       await api.addWardrobeItem(
         name: name,
-        imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+        imageUrl: imageUrl,
         color: color.isNotEmpty ? color : null,
         brand: _brandController.text.trim().isEmpty
             ? null
@@ -137,7 +138,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   }
 
   Widget _buildImagePlaceholder() {
-    final url = _imageUrlController.text.trim();
+    final url = ApiService.resolveImageUrl(_imageUrlController.text.trim());
     return Container(
       height: 240,
       width: double.infinity,
@@ -147,7 +148,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       clipBehavior: Clip.antiAlias,
-      child: url.isNotEmpty && (url.startsWith('http://') || url.startsWith('https://'))
+      child: url != null
           ? CachedNetworkImage(
               imageUrl: url,
               fit: BoxFit.cover,

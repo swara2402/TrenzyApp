@@ -1,3 +1,5 @@
+import '../services/api/api_client.dart';
+
 class UserModel {
   final String id;
   final String name;
@@ -13,6 +15,13 @@ class UserModel {
   final bool emailVerified;
   final bool ageVerified;
   final bool isMinor;
+
+  static String _normalizeImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return '';
+    }
+    return ApiClient.resolveImageUrl(imageUrl) ?? imageUrl;
+  }
 
   UserModel({
     String? id,
@@ -33,8 +42,8 @@ class UserModel {
         name = name ?? displayName ?? '',
         displayName = displayName ?? name ?? '',
         email = email ?? '',
-        profileImageUrl = profileImageUrl ?? '',
-        avatarUrl = avatarUrl ?? '',
+        profileImageUrl = _normalizeImageUrl(profileImageUrl),
+        avatarUrl = _normalizeImageUrl(avatarUrl),
         bio = bio ?? '',
         followers = followers ?? 0,
         following = following ?? 0,

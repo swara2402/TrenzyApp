@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/product_model.dart';
@@ -15,11 +14,7 @@ final discoverCampaignProvider =
       if (uid == null) return null;
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        return await api.getFeaturedCampaign();
-      } catch (_) {
-        return null;
-      }
+      return api.getFeaturedCampaign();
     });
 
 final discoverTrendingCreatorsProvider =
@@ -30,18 +25,14 @@ final discoverTrendingCreatorsProvider =
       if (uid == null) return const <UserModel>[];
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final res = await api.getRecommendedPeople(limit: 10);
-        final people = res['people'] as List<dynamic>? ?? [];
-        return people
-            .map(
-              (json) =>
-                  UserModel.fromJson(Map<String, dynamic>.from(json as Map)),
-            )
-            .toList();
-      } catch (_) {
-        return const <UserModel>[];
-      }
+      final res = await api.getRecommendedPeople(limit: 10);
+      final people = res['people'] as List<dynamic>? ?? [];
+      return people
+          .map(
+            (json) =>
+                UserModel.fromJson(Map<String, dynamic>.from(json as Map)),
+          )
+          .toList();
     });
 
 final discoverRecommendedUsersProvider = discoverTrendingCreatorsProvider;
@@ -54,21 +45,17 @@ final discoverTrendingOutfitsProvider =
       if (uid == null) return const <ProductModel>[];
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final res = await api.getRecommendedOutfits(limit: 6);
-        final outfits = res['outfits'] as List<dynamic>? ?? [];
-        return outfits
-            .map((item) {
-              final map = item as Map;
-              final product = map['product'] as Map<String, dynamic>?;
-              if (product == null) return null;
-              return ProductModel.fromJson(product);
-            })
-            .whereType<ProductModel>()
-            .toList();
-      } catch (_) {
-        return const <ProductModel>[];
-      }
+      final res = await api.getRecommendedOutfits(limit: 6);
+      final outfits = res['outfits'] as List<dynamic>? ?? [];
+      return outfits
+          .map((item) {
+            final map = item as Map;
+            final product = map['product'] as Map<String, dynamic>?;
+            if (product == null) return null;
+            return ProductModel.fromJson(product);
+          })
+          .whereType<ProductModel>()
+          .toList();
     });
 
 class RecommendedProduct {
@@ -89,28 +76,24 @@ final discoverRecommendedProductsProvider =
       ref.watch(userPreferencesProvider);
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final res = await api.getRecommendations();
-        final items = res['items'] as List<dynamic>? ?? [];
-        return items
-            .map((item) {
-              final map = item as Map;
-              final data = map['data'] as Map<String, dynamic>?;
-              if (data == null) return null;
-              // Add the top-level reason to the product data before parsing
-              final productData = Map<String, dynamic>.from(data);
-              productData['reason'] = map['reason']?.toString() ?? '';
+      final res = await api.getRecommendations();
+      final items = res['items'] as List<dynamic>? ?? [];
+      return items
+          .map((item) {
+            final map = item as Map;
+            final data = map['data'] as Map<String, dynamic>?;
+            if (data == null) return null;
+            final reason = map['reason']?.toString() ?? '';
+            final productData = Map<String, dynamic>.from(data)
+              ..['reason'] = reason;
 
-              return RecommendedProduct(
-                product: ProductModel.fromJson(productData),
-                reason: map['reason']?.toString() ?? '',
-              );
-            })
-            .whereType<RecommendedProduct>()
-            .toList();
-      } catch (_) {
-        return const <RecommendedProduct>[];
-      }
+            return RecommendedProduct(
+              product: ProductModel.fromJson(productData),
+              reason: reason,
+            );
+          })
+          .whereType<RecommendedProduct>()
+          .toList();
     });
 
 final personalizedFeedProvider = discoverRecommendedProductsProvider;
@@ -122,11 +105,7 @@ final personaStylesProvider = FutureProvider.autoDispose<List<String>>((
   if (uid == null) return const <String>[];
 
   final api = ref.watch(apiServiceProvider);
-  try {
-    return await api.getPersonaStyles();
-  } catch (_) {
-    return const <String>[];
-  }
+  return api.getPersonaStyles();
 });
 
 final personaColorsProvider =
@@ -137,11 +116,7 @@ final personaColorsProvider =
       if (uid == null) return const <Map<String, dynamic>>[];
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        return await api.getPersonaColors();
-      } catch (_) {
-        return const <Map<String, dynamic>>[];
-      }
+      return api.getPersonaColors();
     });
 
 final discoverSwipeProductsProvider =
@@ -154,17 +129,10 @@ final discoverSwipeProductsProvider =
       ref.watch(userPreferencesProvider);
 
       final api = ref.watch(apiServiceProvider);
-      try {
-        final res = await api.discoverSwipe(limit: 20);
-        final products = res['products'] as List<dynamic>? ?? [];
-        return products.map((item) {
-          final map = item as Map;
-          return ProductModel.fromJson(Map<String, dynamic>.from(map));
-        }).toList();
-      } catch (e) {
-        // Return empty list on error instead of crashing the swipe screen.
-        // The screen will show its no-results empty state.
-        debugPrint('[DiscoverSwipe] Failed to load products: $e');
-        return const <ProductModel>[];
-      }
+      final res = await api.discoverSwipe(limit: 20);
+      final products = res['products'] as List<dynamic>? ?? [];
+      return products.map((item) {
+        final map = item as Map;
+        return ProductModel.fromJson(Map<String, dynamic>.from(map));
+      }).toList();
     });

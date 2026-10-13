@@ -5,6 +5,7 @@ import '../providers/wardrobe_provider.dart';
 import '../providers/home_providers.dart';
 import '../models/wardrobe_model.dart';
 import '../theme/glass_theme.dart';
+import '../services/api_service.dart';
 import 'package:go_router/go_router.dart';
 import '../router/app_router.dart';
 import '../widgets/section_states.dart';
@@ -350,7 +351,7 @@ class _WardrobeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = item.imageUrl;
+    final imageUrl = ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl;
     final name = item.name;
     final category = item.category;
     final isFavorite = item.isFavorite;

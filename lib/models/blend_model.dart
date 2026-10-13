@@ -1,3 +1,4 @@
+import '../services/api/api_client.dart';
 import 'product_model.dart';
 
 /// Swipe action types for blend sessions
@@ -5,6 +6,13 @@ enum SwipeType { like, dislike, love, pass, superLike }
 
 /// A member within a blend live session
 class BlendMember {
+  static String _normalizeAvatarUrl(String? avatarUrl) {
+    if (avatarUrl == null || avatarUrl.trim().isEmpty) {
+      return '';
+    }
+    return ApiClient.resolveImageUrl(avatarUrl) ?? avatarUrl;
+  }
+
   final String userId;
   final String userName;
   final String avatarUrl;
@@ -23,7 +31,7 @@ class BlendMember {
     this.joinedAt,
   })  : userId = userId ?? '',
         userName = userName ?? '',
-        avatarUrl = avatarUrl ?? '',
+        avatarUrl = _normalizeAvatarUrl(avatarUrl),
         isOnline = isOnline ?? false,
         isReady = isReady ?? true,
         swipeCount = swipeCount ?? 0;

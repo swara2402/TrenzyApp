@@ -10,6 +10,7 @@ import 'package:trenzy/providers/home_providers.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/widgets/section_states.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class EditClothingScreen extends ConsumerStatefulWidget {
@@ -74,9 +75,9 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
       return;
     }
 
-    final imageUrl = _imageUrlController.text.trim();
-    if (imageUrl.isNotEmpty &&
-        !(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    final rawImageUrl = _imageUrlController.text.trim();
+    final imageUrl = rawImageUrl.isEmpty ? null : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
+    if (rawImageUrl.isNotEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Image URL must start with http:// or https://')),
       );
@@ -104,7 +105,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
       );
       return;
     }
-    if (imageUrl.length > 500) {
+    if (imageUrl != null && imageUrl.length > 500) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Image URL cannot exceed 500 characters')),
       );
@@ -120,7 +121,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
       await api.updateWardrobeItem(
         int.parse(widget.item.id),
         name: name,
-        imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+        imageUrl: imageUrl,
         color: color.isNotEmpty ? color : null,
         brand: _brandController.text.trim().isEmpty
             ? null

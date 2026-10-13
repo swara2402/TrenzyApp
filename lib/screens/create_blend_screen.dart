@@ -9,6 +9,7 @@ import 'package:trenzy/providers/friend_provider.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/auth_provider.dart';
 import 'package:trenzy/analytics/events.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/theme/trenzy_colors.dart';
 
 final selectedFriendsProvider = StateProvider<List<Friend>>((ref) => []);
@@ -404,6 +405,9 @@ class FriendCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedFriends = ref.watch(selectedFriendsProvider);
     final isSelected = selectedFriends.contains(friend);
+    final resolvedAvatarUrl = friend.avatarUrl != null
+        ? ApiService.resolveImageUrl(friend.avatarUrl) ?? friend.avatarUrl!
+        : null;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
@@ -420,7 +424,9 @@ class FriendCard extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundImage: NetworkImage(friend.avatarUrl!),
+                backgroundImage: resolvedAvatarUrl != null
+                    ? NetworkImage(resolvedAvatarUrl)
+                    : null,
               ),
               const SizedBox(width: 16),
               Column(
@@ -563,7 +569,10 @@ class SelectedFriends extends ConsumerWidget {
                         padding: const EdgeInsets.only(right: 10.0),
                         child: FriendChip(
                           name: friend.name ?? '',
-                          imageUrl: friend.avatarUrl ?? 'https://placehold.co/100x100/1a1a2e/666.png?text=?',
+                          imageUrl: friend.avatarUrl != null
+                              ? ApiService.resolveImageUrl(friend.avatarUrl) ??
+                                  friend.avatarUrl!
+                              : 'https://placehold.co/100x100/1a1a2e/666.png?text=?',
                           onDeleted: () {
                             ref.read(selectedFriendsProvider.notifier).state = [
                               ...selectedFriends..remove(friend)
@@ -593,9 +602,11 @@ class FriendChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedImageUrl = ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
+
     return Chip(
       avatar: CircleAvatar(
-        backgroundImage: NetworkImage(imageUrl),
+        backgroundImage: NetworkImage(resolvedImageUrl),
       ),
       label: Text(name),
       onDeleted: onDeleted,

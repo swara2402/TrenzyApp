@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/discover_providers.dart';
 import 'package:trenzy/models/user_model.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
 class AllCreatorsScreen extends ConsumerWidget {
@@ -114,6 +115,10 @@ class _CreatorTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedAvatarUrl = creator.avatarUrl.isNotEmpty
+        ? ApiService.resolveImageUrl(creator.avatarUrl) ?? creator.avatarUrl
+        : null;
+
     return GlassContainer(
       color: context.trenzyColors.graphite,
       radius: 16,
@@ -144,7 +149,9 @@ class _CreatorTile extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 23,
                     backgroundColor: context.trenzyColors.graphite,
-                    backgroundImage: NetworkImage(creator.avatarUrl),
+                    backgroundImage: resolvedAvatarUrl != null
+                        ? NetworkImage(resolvedAvatarUrl)
+                        : null,
                     child: null,
                   ),
                 ),

@@ -160,6 +160,49 @@ def _uid(token: dict) -> str:
     return token.get("uid") or token.get("user_id") or ""
 
 
+def _duplicate_key(value: Optional[str]) -> str:
+    return (value or "").strip().lower()
+
+
+def _existing_wardrobe_match(session: Session, auth_uid: str, payload: AddWardrobeItemRequest) -> Optional[WardrobeItem]:
+    if not payload.name:
+        return None
+
+    match_name = payload.name.strip().lower()
+    match_image = _duplicate_key(payload.image_url)
+    match_category = _duplicate_key(payload.category)
+    match_color = _duplicate_key(payload.color)
+    match_season = _duplicate_key(payload.season)
+    match_brand = _duplicate_key(payload.brand)
+
+    return session.execute(
+        select(WardrobeItem).where(
+            WardrobeItem.user_firebase_uid == auth_uid,
+            func.lower(WardrobeItem.name) == match_name,
+            (
+                (WardrobeItem.image_url.is_(None) & (match_image == ""))
+                | (func.lower(WardrobeItem.image_url) == match_image)
+            ),
+            (
+                (WardrobeItem.category.is_(None) & (match_category == ""))
+                | (func.lower(WardrobeItem.category) == match_category)
+            ),
+            (
+                (WardrobeItem.color.is_(None) & (match_color == ""))
+                | (func.lower(WardrobeItem.color) == match_color)
+            ),
+            (
+                (WardrobeItem.season.is_(None) & (match_season == ""))
+                | (func.lower(WardrobeItem.season) == match_season)
+            ),
+            (
+                (WardrobeItem.brand.is_(None) & (match_brand == ""))
+                | (func.lower(WardrobeItem.brand) == match_brand)
+            ),
+        )
+    ).scalar_one_or_none()
+
+
 def _validate_wardrobe_item_ids(session: Session, auth_uid: str, item_ids: list[int]) -> None:
     owned_ids = {
         row[0]
@@ -247,6 +290,10 @@ async def add_wardrobe_item(
     session: Session = Depends(get_session),
 ):
     auth_uid = _uid(token)
+    existing = _existing_wardrobe_match(session, auth_uid, payload)
+    if existing is not None:
+        raise HTTPException(status_code=409, detail="Item already exists in your wardrobe")
+
     item = WardrobeItem(
         user_firebase_uid=auth_uid,
         name=payload.name,

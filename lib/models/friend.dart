@@ -1,6 +1,14 @@
+import '../services/api/api_client.dart';
 import 'user_model.dart';
 
 class Friend {
+  static String? _normalizeAvatarUrl(String? avatarUrl) {
+    if (avatarUrl == null || avatarUrl.trim().isEmpty) {
+      return null;
+    }
+    return ApiClient.resolveImageUrl(avatarUrl) ?? avatarUrl;
+  }
+
   final String? id;
   final String? name;
   final String? avatarUrl;
@@ -21,7 +29,7 @@ class Friend {
     return Friend(
       id: json['id']?.toString(),
       name: json['name'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: _normalizeAvatarUrl(json['avatarUrl'] as String?),
       firebaseUid: json['firebaseUid'] as String?,
       user: json['user'] != null
           ? UserModel.fromJson(json['user'] as Map<String, dynamic>)

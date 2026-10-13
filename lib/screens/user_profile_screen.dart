@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/auth_provider.dart' as auth_p;
+import 'package:trenzy/services/api_service.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({super.key, this.uid});
@@ -106,8 +107,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   Widget build(BuildContext context) {
     final userName = _profileData?['name'] as String? ??
         'User';
-    final avatarUrl = _profileData?['avatarUrl'] as String? ??
+    final rawAvatarUrl = _profileData?['avatarUrl'] as String? ??
         _profileData?['avatar_url'] as String?;
+    final avatarUrl = rawAvatarUrl != null
+        ? ApiService.resolveImageUrl(rawAvatarUrl) ?? rawAvatarUrl
+        : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFF16130B),

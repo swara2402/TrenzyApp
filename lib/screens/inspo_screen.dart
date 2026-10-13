@@ -162,6 +162,10 @@ class InspoScreen extends ConsumerWidget {
                       separatorBuilder: (_, _) => SizedBox(width: 16),
                       itemBuilder: (context, index) {
                         final creator = creators[index];
+                        final resolvedAvatarUrl = creator.avatarUrl.isNotEmpty
+                            ? ApiService.resolveImageUrl(creator.avatarUrl) ??
+                                creator.avatarUrl
+                            : null;
                         return GestureDetector(
                           onTap: () => context.push(
                             AppRoutes.userProfile,
@@ -188,7 +192,9 @@ class InspoScreen extends ConsumerWidget {
                                     radius: 28,
                                     backgroundColor:
                                         context.trenzyColors.graphite,
-                                    backgroundImage: NetworkImage(creator.avatarUrl),
+                                    backgroundImage: resolvedAvatarUrl != null
+                                        ? NetworkImage(resolvedAvatarUrl)
+                                        : null,
                                     child: null,
                                   ),
                                 ),

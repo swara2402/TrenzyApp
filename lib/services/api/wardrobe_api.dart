@@ -45,8 +45,9 @@ class WardrobeApi {
     String? season,
     String? brand,
   }) async {
+    final normalizedImageUrl = ApiClient.resolveImageUrl(imageUrl);
     final body = <String, dynamic>{'name': name};
-    if (imageUrl != null) body['imageUrl'] = imageUrl;
+    if (normalizedImageUrl != null) body['imageUrl'] = normalizedImageUrl;
     if (category != null) body['category'] = category;
     if (color != null) body['color'] = color;
     if (season != null) body['season'] = season;
@@ -65,9 +66,10 @@ class WardrobeApi {
     String? brand,
     bool? isFavorite,
   }) async {
+    final normalizedImageUrl = ApiClient.resolveImageUrl(imageUrl);
     final body = <String, dynamic>{};
     if (name != null) body['name'] = name;
-    if (imageUrl != null) body['imageUrl'] = imageUrl;
+    if (normalizedImageUrl != null) body['imageUrl'] = normalizedImageUrl;
     if (category != null) body['category'] = category;
     if (color != null) body['color'] = color;
     if (season != null) body['season'] = season;
@@ -85,7 +87,9 @@ class WardrobeApi {
     final data = await _client.uploadMultipart('/uploads/image', imageFile);
     if (data is Map<String, dynamic>) {
       final imageUrl = data['image_url']?.toString() ?? data['imageUrl']?.toString();
-      if (imageUrl != null && imageUrl.isNotEmpty) return imageUrl;
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        return ApiClient.resolveImageUrl(imageUrl) ?? imageUrl;
+      }
     }
     throw StateError('Image upload response did not contain an image URL.');
   }
