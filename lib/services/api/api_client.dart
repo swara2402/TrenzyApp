@@ -41,7 +41,7 @@ class ApiClient {
 
   static void Function()? onSessionExpired;
 
-  static const Duration timeout = Duration(seconds: 20);
+  static const Duration timeout = Duration(seconds: 45);
   static const int maxRetries = 2;
 
   static String get baseUrl => '${EnvConfig.apiBaseUrl}/api';
@@ -324,7 +324,10 @@ class ApiClient {
         }
         rethrow;
       } catch (e) {
-        throw ApiException('Connection failed: $e', details: endpoint);
+        if (attempts >= maxRetries) {
+          throw ApiException('Connection failed: $e', details: endpoint);
+        }
+        await Future.delayed(Duration(milliseconds: 500 * attempts));
       }
     }
     throw ApiException('Request failed after retries', details: endpoint);
