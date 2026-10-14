@@ -73,11 +73,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) return;
       final user = ref.read(authProvider).valueOrNull;
       if (user != null && !user.emailVerified && !FeatureFlags.skipEmailVerification) {
+        if (!mounted) return;
         context.go(AppRoutes.verifyEmail);
-      } else {
-        // Start onboarding from Step 1, mark source for back-navigation
-        context.go('${AppRoutes.favoriteCategories}?source=signup');
+        return;
       }
+
+      // Let router's redirect logic handle navigation based on auth/onboarding/age state
+      // This ensures consistency with the central guardRedirect in app_router.dart
+      // The router's refresh listener will automatically redirect to the correct page
     } catch (e) {
       if (!mounted) return;
       setState(() => _errorMessage = friendlyFirebaseError(e));

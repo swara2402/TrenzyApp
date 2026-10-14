@@ -109,10 +109,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       final user = ref.read(authProvider).valueOrNull;
       final isEmailVerified = (user?.emailVerified ?? false) || FeatureFlags.skipEmailVerification;
       if (user != null && !isEmailVerified) {
+        if (!mounted) return;
         context.go(AppRoutes.verifyEmail);
-      } else {
-        await _routeAfterLogin();
+        return;
       }
+
+      // Let router's redirect logic handle navigation based on auth/onboarding/age state
+      // This ensures consistency with the central guardRedirect in app_router.dart
     } catch (e) {
       if (!mounted) return;
       final message = friendlyFirebaseError(e);
@@ -129,14 +132,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
-  Future<void> _routeAfterLogin() async {
-    try {
-      final preferences = await ref.read(apiServiceProvider).getPreferences();
-      if (!mounted) return;
-      context.go(
-        AppRoutes.routeFromPreferencesResponse(preferences, source: 'signup'),
-      );
     } on ApiException catch (error) {
       if (!mounted) return;
       // For post-login 401s: don't trigger session-expired (we just logged in!)
@@ -369,42 +364,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
                                                   if (shouldVerifyEmail) {
                                                     if (!mounted) return;
-                                                    // ignore: use_build_context_synchronously
                                                     context.go(AppRoutes.verifyEmail);
                                                     return;
                                                   }
 
-                                                  // Check if user has completed onboarding preferences
-                                                  try {
-                                                    final api = ref.read(apiServiceProvider);
-                                                    final prefs = await api.getPreferences();
-
-                                                    if (!mounted) return;
-
-                                                    final saved = prefs['preferences'];
-                                                    final hasPreferences = saved is Map &&
-                                                        ((saved['preferred_categories'] as List?)?.isNotEmpty == true ||
-                                                            (saved['preferred_styles'] as List?)?.isNotEmpty == true ||
-                                                            (saved['shopping_priorities'] as List?)?.isNotEmpty == true);
-
-                                                    if (hasPreferences) {
-                                                      if (!mounted) return;
-                                                      // ignore: use_build_context_synchronously
-                                                      context.go(AppRoutes.home);
-                                                    } else {
-                                                      // Start onboarding preference flow from Step 1
-                                                      if (!mounted) return;
-                                                      // ignore: use_build_context_synchronously
-                                                      context.go(
-                                                          '${AppRoutes.favoriteCategories}?source=signup');
-                                                    }
-                                                  } catch (_) {
-                                                    if (!mounted) return;
-                                                    // If we can't fetch preferences, start onboarding flow to be safe
-                                                    // ignore: use_build_context_synchronously
-                                                    context.go(
-                                                        '${AppRoutes.favoriteCategories}?source=signup');
-                                                  }
+                                                  // Let router's redirect logic handle navigation based on auth/onboarding/age state
+                                                  // This ensures consistency with the central guardRedirect in app_router.dart
+                                                  // The router's refresh listener will automatically redirect to the correct page
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   final message = friendlyFirebaseError(e);
