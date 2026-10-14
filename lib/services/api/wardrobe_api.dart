@@ -30,10 +30,13 @@ class WardrobeApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
-  Future<Map<String, dynamic>> getWardrobeRecommendations({int limit = 5}) async {
-    final data = await _client.get('/wardrobe/recommendations', queryParams: {
-      'limit': limit.toString(),
-    });
+  Future<Map<String, dynamic>> getWardrobeRecommendations({
+    int limit = 5,
+  }) async {
+    final data = await _client.get(
+      '/wardrobe/recommendations',
+      queryParams: {'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -86,7 +89,8 @@ class WardrobeApi {
   Future<String> uploadImage(XFile imageFile) async {
     final data = await _client.uploadMultipart('/uploads/image', imageFile);
     if (data is Map<String, dynamic>) {
-      final imageUrl = data['image_url']?.toString() ?? data['imageUrl']?.toString();
+      final imageUrl =
+          data['image_url']?.toString() ?? data['imageUrl']?.toString();
       if (imageUrl != null && imageUrl.isNotEmpty) {
         return ApiClient.resolveImageUrl(imageUrl) ?? imageUrl;
       }

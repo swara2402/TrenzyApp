@@ -60,10 +60,9 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ref.read(apiServiceProvider).savePreferences(
-            preferredStyles: selectedStyles,
-            onboardingStep: 3,
-          );
+      await ref
+          .read(apiServiceProvider)
+          .savePreferences(preferredStyles: selectedStyles, onboardingStep: 3);
       if (mounted) context.go(AppRoutes.discoveryPreferences);
     } catch (error) {
       if (!mounted) return;
@@ -175,7 +174,9 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
                                 height: 1.45,
                               ),
                               children: [
-                                TextSpan(text: 'Pick styles that match your vibe '),
+                                TextSpan(
+                                  text: 'Pick styles that match your vibe ',
+                                ),
                                 TextSpan(
                                   text: '(optional)',
                                   style: TextStyle(
@@ -245,11 +246,11 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
                         sliver: SliverGrid(
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: width < 355 ? 1 : 2,
-                            crossAxisSpacing: 11,
-                            mainAxisSpacing: 11,
-                            mainAxisExtent: 91,
-                          ),
+                                crossAxisCount: width < 355 ? 1 : 2,
+                                crossAxisSpacing: 11,
+                                mainAxisSpacing: 11,
+                                mainAxisExtent: 91,
+                              ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) => _buildStyleCard(styles[index]),
                             childCount: styles.length,
@@ -418,15 +419,17 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Choose up to 5 styles. Remove one to add another.'),
+                    content: Text(
+                      'Choose up to 5 styles. Remove one to add another.',
+                    ),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
             });
-            ref.read(userPreferencesProvider.notifier).setStyles(
-                  List<String>.from(selectedStyles),
-                );
+            ref
+                .read(userPreferencesProvider.notifier)
+                .setStyles(List<String>.from(selectedStyles));
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 190),
@@ -506,8 +509,11 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
                     ),
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check_rounded,
-                          color: Colors.white, size: 17)
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 17,
+                        )
                       : null,
                 ),
               ],

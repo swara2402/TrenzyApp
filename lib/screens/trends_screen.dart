@@ -380,8 +380,7 @@ class _TrendProductCard extends StatelessWidget {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child:
-                          trend.imageUrl.isNotEmpty
+                      child: trend.imageUrl.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: trend.imageUrl,
                               fit: BoxFit.cover,
@@ -470,17 +469,17 @@ class _TrendProductCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       ...[
-                      SizedBox(height: 2),
-                      Text(
-                        trend.category,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: context.trenzyColors.mutedFg,
+                        SizedBox(height: 2),
+                        Text(
+                          trend.category,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
                       Spacer(),
                       Row(
                         children: [
@@ -551,10 +550,11 @@ class _PredictionCard extends StatelessWidget {
                 child: SizedBox(
                   width: 64,
                   height: 64,
-                  child:
-                      prediction.imageUrl.isNotEmpty
+                  child: prediction.imageUrl.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: ApiService.resolveImageUrl(prediction.imageUrl) ?? prediction.imageUrl,
+                          imageUrl:
+                              ApiService.resolveImageUrl(prediction.imageUrl) ??
+                              prediction.imageUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: Colors.grey[900],
@@ -600,15 +600,15 @@ class _PredictionCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     ...[
-                    SizedBox(height: 2),
-                    Text(
-                      prediction.category,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.trenzyColors.mutedFg,
+                      SizedBox(height: 2),
+                      Text(
+                        prediction.category,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: context.trenzyColors.mutedFg,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
                     SizedBox(height: 6),
                     Text(
                       prediction.reasoning,

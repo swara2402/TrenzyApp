@@ -19,7 +19,8 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -99,15 +100,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authProvider.notifier).login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      await ref
+          .read(authProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text);
 
       if (!mounted) return;
 
       final user = ref.read(authProvider).valueOrNull;
-      final isEmailVerified = (user?.emailVerified ?? false) || FeatureFlags.skipEmailVerification;
+      final isEmailVerified =
+          (user?.emailVerified ?? false) || FeatureFlags.skipEmailVerification;
       if (user != null && !isEmailVerified) {
         if (!mounted) return;
         context.go(AppRoutes.verifyEmail);
@@ -131,7 +132,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
           backgroundColor: context.trenzyColors.crimson,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     } finally {
@@ -258,229 +261,301 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                     ..rotateX(-_y * 0.1),
                   alignment: FractionalOffset.center,
                   child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32.0),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 24.0, sigmaY: 24.0),
-                    child: Container(
-                      width: 400,
-                      padding: const EdgeInsets.all(32.0),
-                      decoration: BoxDecoration(
-                        color: context.trenzyColors.graphite.withAlpha(179),
-                        borderRadius: BorderRadius.circular(32.0),
-                        border: Border.all(color: context.trenzyColors.foreground.withAlpha(13)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Trenzy',
-                            style: GlassTypography.display(
-                              fontSize: 48,
-                              color: context.trenzyColors.primary,
-                              weight: FontWeight.w700,
-                            ).copyWith(
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 20.0,
-                                  color: context.trenzyColors.primary,
+                    borderRadius: BorderRadius.circular(32.0),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 24.0, sigmaY: 24.0),
+                      child: Container(
+                        width: 400,
+                        padding: const EdgeInsets.all(32.0),
+                        decoration: BoxDecoration(
+                          color: context.trenzyColors.graphite.withAlpha(179),
+                          borderRadius: BorderRadius.circular(32.0),
+                          border: Border.all(
+                            color: context.trenzyColors.foreground.withAlpha(
+                              13,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Trenzy',
+                              style:
+                                  GlassTypography.display(
+                                    fontSize: 48,
+                                    color: context.trenzyColors.primary,
+                                    weight: FontWeight.w700,
+                                  ).copyWith(
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 20.0,
+                                        color: context.trenzyColors.primary,
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                            SizedBox(height: 8),
+                            MetaLabel(
+                              'Curation of the Avant-Garde'.toUpperCase(),
+                              color: context.trenzyColors.mutedFg.withAlpha(
+                                204,
+                              ),
+                              fontSize: 10,
+                            ),
+                            SizedBox(height: 40),
+                            AnimatedBuilder(
+                              animation: _entryController,
+                              builder: (context, child) {
+                                return Opacity(
+                                  opacity: _formOpacity.value,
+                                  child: Form(
+                                    key: _formKey,
+                                    child: Column(
+                                      children: [
+                                        Transform.translate(
+                                          offset: Offset(0, _emailSlide.value),
+                                          child: _buildTextField(
+                                            key: const Key('email-field'),
+                                            label: 'EMAIL',
+                                            icon: Icons.person_outline,
+                                            placeholder: 'Enter your email',
+                                            controller: _emailController,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return 'Please enter your email';
+                                              }
+                                              if (!value.contains('@')) {
+                                                return 'Please enter a valid email';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(height: 16),
+                                        Transform.translate(
+                                          offset: Offset(
+                                            0,
+                                            _passwordSlide.value,
+                                          ),
+                                          child: _buildTextField(
+                                            key: const Key('password-field'),
+                                            label: 'PASSWORD',
+                                            icon: Icons.lock_outline,
+                                            placeholder: '••••••••',
+                                            isPassword: true,
+                                            controller: _passwordController,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return 'Please enter your password';
+                                              }
+                                              if (value.length < 6) {
+                                                return 'Password must be at least 6 characters';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(height: 24),
+                                        Transform.translate(
+                                          offset: Offset(
+                                            0,
+                                            _loginButtonSlide.value,
+                                          ),
+                                          child: GlowButton(
+                                            key: const Key('login-button'),
+                                            label: 'Sign In'.toUpperCase(),
+                                            onTap: _isLoading
+                                                ? null
+                                                : _handleLogin,
+                                            loading: _isLoading,
+                                            width: double.infinity,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(height: 24),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () =>
+                                    context.go(AppRoutes.forgotPassword),
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: GlassTypography.body(
+                                    fontSize: 12,
+                                    color: context.trenzyColors.mutedFg,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            AnimatedBuilder(
+                              animation: _entryController,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, _googleButtonSlide.value),
+                                  child: Opacity(
+                                    opacity: _formOpacity.value,
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 24),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Divider(
+                                                color: context
+                                                    .trenzyColors
+                                                    .glassBorder,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16.0,
+                                                  ),
+                                              child: MetaLabel(
+                                                'or continue with'
+                                                    .toUpperCase(),
+                                                color: context
+                                                    .trenzyColors
+                                                    .mutedFg,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Divider(
+                                                color: context
+                                                    .trenzyColors
+                                                    .glassBorder,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 24),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: GlowButton(
+                                                label: 'Google'.toUpperCase(),
+                                                onTap: () async {
+                                                  final crimsonColor = context
+                                                      .trenzyColors
+                                                      .crimson;
+                                                  final messenger =
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      );
+                                                  try {
+                                                    await ref
+                                                        .read(
+                                                          authProvider.notifier,
+                                                        )
+                                                        .googleLogin();
+
+                                                    if (!mounted ||
+                                                        !context.mounted) {
+                                                      return;
+                                                    }
+
+                                                    final user = ref
+                                                        .read(authProvider)
+                                                        .valueOrNull;
+                                                    final isEmailVerified =
+                                                        (user?.emailVerified ??
+                                                            false) ||
+                                                        FeatureFlags
+                                                            .skipEmailVerification;
+                                                    final shouldVerifyEmail =
+                                                        user != null &&
+                                                        !isEmailVerified;
+
+                                                    if (shouldVerifyEmail) {
+                                                      if (!mounted ||
+                                                          !context.mounted) {
+                                                        return;
+                                                      }
+                                                      context.go(
+                                                        AppRoutes.verifyEmail,
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    // Let router's redirect logic handle navigation based on auth/onboarding/age state
+                                                    // This ensures consistency with the central guardRedirect in app_router.dart
+                                                    // The router's refresh listener will automatically redirect to the correct page
+                                                  } catch (e) {
+                                                    if (!mounted) return;
+                                                    final message =
+                                                        friendlyFirebaseError(
+                                                          e,
+                                                        );
+                                                    messenger.showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(message),
+                                                        backgroundColor:
+                                                            crimsonColor,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin:
+                                                            const EdgeInsets.all(
+                                                              16,
+                                                            ),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                                icon: Icons.public,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(height: 32),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Don't have an account? ",
+                                  style: GlassTypography.body(
+                                    color: context.trenzyColors.mutedFg
+                                        .withAlpha(153),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => context.go(AppRoutes.signUp),
+                                  child: Text(
+                                    'Join the circle',
+                                    style: GlassTypography.body(
+                                      color: context.trenzyColors.primary,
+                                      weight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          MetaLabel(
-                            'Curation of the Avant-Garde'.toUpperCase(),
-                            color: context.trenzyColors.mutedFg.withAlpha(204),
-                            fontSize: 10,
-                          ),
-                          SizedBox(height: 40),
-                          AnimatedBuilder(
-                            animation: _entryController,
-                            builder: (context, child) {
-                              return Opacity(
-                                opacity: _formOpacity.value,
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    children: [
-                                      Transform.translate(
-                                        offset: Offset(0, _emailSlide.value),
-                                          child: _buildTextField(
-                                          key: const Key('email-field'),
-                                          label: 'EMAIL',
-                                          icon: Icons.person_outline,
-                                          placeholder: 'Enter your email',
-                                          controller: _emailController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your email';
-                                            }
-                                            if (!value.contains('@')) {
-                                              return 'Please enter a valid email';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(height: 16),
-                                      Transform.translate(
-                                        offset: Offset(0, _passwordSlide.value),
-                                        child: _buildTextField(
-                                          key: const Key('password-field'),
-                                          label: 'PASSWORD',
-                                          icon: Icons.lock_outline,
-                                          placeholder: '••••••••',
-                                          isPassword: true,
-                                          controller: _passwordController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your password';
-                                            }
-                                            if (value.length < 6) {
-                                              return 'Password must be at least 6 characters';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(height: 24),
-                                      Transform.translate(
-                                        offset: Offset(0, _loginButtonSlide.value),
-                                        child: GlowButton(
-                                          key: const Key('login-button'),
-                                          label: 'Sign In'.toUpperCase(),
-                                          onTap: _isLoading ? null : _handleLogin,
-                                          loading: _isLoading,
-                                          width: double.infinity,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 24),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => context.go(AppRoutes.forgotPassword),
-                              child: Text(
-                                'Forgot Password?',
-                                style: GlassTypography.body(
-                                  fontSize: 12,
-                                  color: context.trenzyColors.mutedFg,
-                                ),
-                              ),
-                            ),
-                          ),
-                          AnimatedBuilder(
-                            animation: _entryController,
-                            builder: (context, child) {
-                              return Transform.translate(
-                                offset: Offset(0, _googleButtonSlide.value),
-                                child: Opacity(
-                                  opacity: _formOpacity.value,
-                                  child: Column(
-                                    children: [
-                                      SizedBox(height: 24),
-                                      Row(
-                                        children: [
-                                          Expanded(child: Divider(color: context.trenzyColors.glassBorder)),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                            child: MetaLabel(
-                                              'or continue with'.toUpperCase(),
-                                              color: context.trenzyColors.mutedFg,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                          Expanded(child: Divider(color: context.trenzyColors.glassBorder)),
-                                        ],
-                                      ),
-                                      SizedBox(height: 24),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: GlowButton(
-                                              label: 'Google'.toUpperCase(),
-                                              onTap: () async {
-                                                try {
-                                                  await ref.read(authProvider.notifier).googleLogin();
-
-                                                  if (!mounted) return;
-
-                                                  final user = ref.read(authProvider).valueOrNull;
-                                                  final isEmailVerified =
-                                                      (user?.emailVerified ?? false) ||
-                                                      FeatureFlags.skipEmailVerification;
-                                                  final shouldVerifyEmail =
-                                                      user != null && !isEmailVerified;
-
-                                                  if (shouldVerifyEmail) {
-                                                    if (!mounted) return;
-                                                    context.go(AppRoutes.verifyEmail);
-                                                    return;
-                                                  }
-
-                                                  // Let router's redirect logic handle navigation based on auth/onboarding/age state
-                                                  // This ensures consistency with the central guardRedirect in app_router.dart
-                                                  // The router's refresh listener will automatically redirect to the correct page
-                                                } catch (e) {
-                                                  if (!mounted) return;
-                                                  final message = friendlyFirebaseError(e);
-                                                  // ignore: use_build_context_synchronously
-                                                  final crimsonColor = context.trenzyColors.crimson;
-                                                  // ignore: use_build_context_synchronously
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(message),
-                                                      backgroundColor: crimsonColor,
-                                                      behavior: SnackBarBehavior.floating,
-                                                      margin: const EdgeInsets.all(16),
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                              icon: Icons.public,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account? ",
-                                style: GlassTypography.body(
-                                  color: context.trenzyColors.mutedFg.withAlpha(153),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => context.go(AppRoutes.signUp),
-                                child: Text(
-                                  'Join the circle',
-                                  style: GlassTypography.body(
-                                    color: context.trenzyColors.primary,
-                                    weight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
                 ),
               ),
             ),
@@ -503,7 +578,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MetaLabel(label, color: context.trenzyColors.mutedFg.withAlpha(153), fontSize: 12),
+        MetaLabel(
+          label,
+          color: context.trenzyColors.mutedFg.withAlpha(153),
+          fontSize: 12,
+        ),
         SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -513,13 +592,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
           decoration: InputDecoration(
             filled: true,
             fillColor: context.trenzyColors.graphite,
-            prefixIcon: Icon(icon, color: context.trenzyColors.mutedFg.withAlpha(102)),
+            prefixIcon: Icon(
+              icon,
+              color: context.trenzyColors.mutedFg.withAlpha(102),
+            ),
             suffixIcon: isPassword
                 ? IconButton(
                     icon: AnimatedSwitcher(
                       duration: Duration(milliseconds: 200),
                       child: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         key: ValueKey(_obscurePassword),
                         color: context.trenzyColors.mutedFg.withAlpha(102),
                         size: 20,
@@ -532,18 +616,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                   )
                 : null,
             hintText: placeholder,
-            hintStyle: GlassTypography.body(color: context.trenzyColors.mutedFg.withAlpha(102)),
+            hintStyle: GlassTypography.body(
+              color: context.trenzyColors.mutedFg.withAlpha(102),
+            ),
             errorStyle: GlassTypography.body(
               color: context.trenzyColors.crimson,
               fontSize: 12,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: context.trenzyColors.glassBorder.withAlpha(77)),
+              borderSide: BorderSide(
+                color: context.trenzyColors.glassBorder.withAlpha(77),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: context.trenzyColors.glassBorder.withAlpha(77)),
+              borderSide: BorderSide(
+                color: context.trenzyColors.glassBorder.withAlpha(77),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -551,7 +641,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: context.trenzyColors.crimson.withAlpha(153)),
+              borderSide: BorderSide(
+                color: context.trenzyColors.crimson.withAlpha(153),
+              ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

@@ -31,7 +31,10 @@ class SettingsScreen extends ConsumerWidget {
       queryParameters: {'subject': 'Trenzy Feedback'},
     );
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched && context.mounted) {
         _showSnackBar(context, 'No email app available on this device.');
       }
@@ -54,15 +57,23 @@ class SettingsScreen extends ConsumerWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: context.trenzyColors.graphite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: DisplayText('Change Password', fontSize: 20, weight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: DisplayText(
+            'Change Password',
+            fontSize: 20,
+            weight: FontWeight.w600,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'We\'ll email you a secure link to reset your password.',
-                style: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
               SizedBox(height: 16),
               TextField(
@@ -71,24 +82,35 @@ class SettingsScreen extends ConsumerWidget {
                 enabled: email.isEmpty,
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
-                style: GlassTypography.body(color: context.trenzyColors.foreground),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.foreground,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                  labelStyle: GlassTypography.body(
+                    color: context.trenzyColors.mutedFg,
+                  ),
                   hintText: 'you@example.com',
                   filled: true,
                   fillColor: context.trenzyColors.glass,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                    borderSide: BorderSide(
+                      color: context.trenzyColors.glassBorder,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                    borderSide: BorderSide(
+                      color: context.trenzyColors.glassBorder,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: context.trenzyColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: context.trenzyColors.primary,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -97,14 +119,24 @@ class SettingsScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text('Cancel', style: GlassTypography.body(color: context.trenzyColors.mutedFg)),
+              child: Text(
+                'Cancel',
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
                 submitted = true;
                 Navigator.of(ctx).pop(true);
               },
-              child: Text('Send Reset Link', style: GlassTypography.body(color: context.trenzyColors.primary)),
+              child: Text(
+                'Send Reset Link',
+                style: GlassTypography.body(
+                  color: context.trenzyColors.primary,
+                ),
+              ),
             ),
           ],
         ),
@@ -171,16 +203,27 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.trenzyColors.graphite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: DisplayText('Delete Account', fontSize: 20, weight: FontWeight.w600),
+        title: DisplayText(
+          'Delete Account',
+          fontSize: 20,
+          weight: FontWeight.w600,
+        ),
         content: Text(
           'This action is permanent. All your data, preferences, and activity will be erased. This cannot be undone.',
-          style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 14, height: 1.5),
+          style: GlassTypography.body(
+            color: context.trenzyColors.mutedFg,
+            fontSize: 14,
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
@@ -194,20 +237,23 @@ class SettingsScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
               'Delete',
-              style: GlassTypography.body(color: context.trenzyColors.crimson, weight: FontWeight.w700),
+              style: GlassTypography.body(
+                color: context.trenzyColors.crimson,
+                weight: FontWeight.w700,
+              ),
             ),
           ),
         ],
       ),
     );
-      if (confirmed == true && context.mounted) {
-        final success = await ref.read(authProvider.notifier).deleteAccount();
-        if (success && context.mounted) {
-          context.go(AppRoutes.login);
-        } else if (context.mounted) {
-          _showSnackBar(context, 'Error deleting account. Please try again.');
-        }
+    if (confirmed == true && context.mounted) {
+      final success = await ref.read(authProvider.notifier).deleteAccount();
+      if (success && context.mounted) {
+        context.go(AppRoutes.login);
+      } else if (context.mounted) {
+        _showSnackBar(context, 'Error deleting account. Please try again.');
       }
+    }
   }
 
   @override
@@ -223,12 +269,22 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               // ── Header ────────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(GlassSpacing.lg, 8, GlassSpacing.lg, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  GlassSpacing.lg,
+                  8,
+                  GlassSpacing.lg,
+                  0,
+                ),
                 child: Row(
                   children: [
                     GlassBackButton(onTap: () => context.pop()),
                     SizedBox(width: 8),
-                    DisplayText('Settings', fontSize: 24, weight: FontWeight.w600, color: context.trenzyColors.primary),
+                    DisplayText(
+                      'Settings',
+                      fontSize: 24,
+                      weight: FontWeight.w600,
+                      color: context.trenzyColors.primary,
+                    ),
                   ],
                 ),
               ),
@@ -246,7 +302,8 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         CircleAvatar(
                           radius: 24,
-                          backgroundColor: context.trenzyColors.primary.withValues(alpha: 0.15),
+                          backgroundColor: context.trenzyColors.primary
+                              .withValues(alpha: 0.15),
                           backgroundImage: NetworkImage(user.avatarUrl),
                           child: null,
                         ),
@@ -257,16 +314,28 @@ class SettingsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 user.name,
-                                style: TextStyle(color: context.trenzyColors.foreground, fontSize: 16, fontWeight: FontWeight.w700),
+                                style: TextStyle(
+                                  color: context.trenzyColors.foreground,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               Text(
                                 user.email,
-                                style: TextStyle(color: context.trenzyColors.mutedFg.withValues(alpha: 0.7), fontSize: 12),
+                                style: TextStyle(
+                                  color: context.trenzyColors.mutedFg
+                                      .withValues(alpha: 0.7),
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right, color: context.trenzyColors.mutedFg, size: 20),
+                        Icon(
+                          Icons.chevron_right,
+                          color: context.trenzyColors.mutedFg,
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
@@ -334,7 +403,10 @@ class SettingsScreen extends ConsumerWidget {
                     title: 'Theme',
                     trailing: Text(
                       ref.watch(isDarkModeProvider) ? 'Dark' : 'Light',
-                      style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg),
+                      style: GlassTypography.body(
+                        fontSize: 13,
+                        color: context.trenzyColors.mutedFg,
+                      ),
                     ),
                     onTap: () => toggleTheme(ref),
                   ),
@@ -372,14 +444,20 @@ class SettingsScreen extends ConsumerWidget {
                   _buildItem(
                     icon: Icons.help_outline,
                     title: 'Help & Support',
-                    onTap: () => _showSnackBar(context, 'Help & Support coming soon'),
+                    onTap: () =>
+                        _showSnackBar(context, 'Help & Support coming soon'),
                   ),
                   _buildItem(
                     icon: Icons.info_outline,
                     title: 'About',
                     trailing: Text(
                       'v1.0.0-beta',
-                      style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg.withValues(alpha: 0.5)),
+                      style: GlassTypography.body(
+                        fontSize: 12,
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
                     ),
                     onTap: () => _showSnackBar(context, 'Trenzy v1.0.0-beta'),
                   ),
@@ -421,7 +499,11 @@ class SettingsScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(GlassRadius.button),
-                      border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: context.trenzyColors.crimson.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
                     ),
                     child: Center(
                       child: Text(
@@ -444,13 +526,21 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSection({required String title, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DisplayText(title, fontSize: 14, weight: FontWeight.w700, color: GlassColors.primary),
+          DisplayText(
+            title,
+            fontSize: 14,
+            weight: FontWeight.w700,
+            color: GlassColors.primary,
+          ),
           SizedBox(height: 12),
           GlassContainer(
             radius: 16,
@@ -482,10 +572,7 @@ class SettingsScreen extends ConsumerWidget {
             Icon(icon, color: GlassColors.foreground, size: 20),
             SizedBox(width: 12),
             Expanded(
-              child: Text(
-                title,
-                style: GlassTypography.body(fontSize: 15),
-              ),
+              child: Text(title, style: GlassTypography.body(fontSize: 15)),
             ),
             ?trailing,
             SizedBox(width: 8),

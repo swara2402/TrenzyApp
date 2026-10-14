@@ -28,16 +28,18 @@ class SocialScreen extends ConsumerWidget {
         ),
       ),
       body: feedAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: c.primary),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: c.primary)),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.error_outline_rounded, color: c.mutedFg, size: 48),
               const SizedBox(height: 16),
-              Text('Could not load activity', style: TextStyle(color: c.mutedFg)),
+              Text(
+                'Could not load activity',
+                style: TextStyle(color: c.mutedFg),
+              ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => ref.invalidate(socialFeedProvider),
@@ -60,7 +62,11 @@ class SocialScreen extends ConsumerWidget {
                       size: 64,
                     ),
                     const SizedBox(height: 16),
-                    DisplayText('No Activity Yet', fontSize: 20, weight: FontWeight.w600),
+                    DisplayText(
+                      'No Activity Yet',
+                      fontSize: 20,
+                      weight: FontWeight.w600,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'Follow creators and friends to see their fashion activity here.',

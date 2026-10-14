@@ -42,22 +42,26 @@ class ClosetScreen extends ConsumerWidget {
         ],
       ),
       body: wardrobeAsync.when(
-        loading: () => Center(
-          child: LoadingSkeletonShimmer(height: 400, radius: 16),
-        ),
+        loading: () =>
+            Center(child: LoadingSkeletonShimmer(height: 400, radius: 16)),
         error: (err, _) => Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.cloud_off_rounded,
-                    size: 72, color: context.trenzyColors.mutedFg),
+                Icon(
+                  Icons.cloud_off_rounded,
+                  size: 72,
+                  color: context.trenzyColors.mutedFg,
+                ),
                 SizedBox(height: 20),
                 Text(
                   'Could not load wardrobe',
                   style: TextStyle(
-                    color: context.trenzyColors.foreground.withValues(alpha: 0.7),
+                    color: context.trenzyColors.foreground.withValues(
+                      alpha: 0.7,
+                    ),
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -89,7 +93,9 @@ class ClosetScreen extends ConsumerWidget {
                       height: 96,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
                       ),
                       child: Icon(
                         Icons.checkroom_rounded,
@@ -108,7 +114,9 @@ class ClosetScreen extends ConsumerWidget {
                       'Your wardrobe powers smarter recommendations.\nAdd your first piece to get started.',
                       textAlign: TextAlign.center,
                       style: GlassTypography.body(
-                        color: context.trenzyColors.mutedFg.withValues(alpha: 0.7),
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.7,
+                        ),
                         fontSize: 14,
                       ),
                     ),
@@ -156,13 +164,14 @@ class ClosetScreen extends ConsumerWidget {
               },
               child: CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: _AiOutfitMatchBanner(),
-                  ),
+                  SliverToBoxAdapter(child: _AiOutfitMatchBanner()),
                   // Prominent AI Stylist CTA to strengthen wardrobe→AI loop
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       child: GlowButton(
                         label: 'Chat with AI Stylist',
                         icon: Icons.auto_awesome,
@@ -173,12 +182,13 @@ class ClosetScreen extends ConsumerWidget {
                   SliverPadding(
                     padding: const EdgeInsets.all(12),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 0.75,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 0.75,
+                          ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => _WardrobeCard(item: items[index]),
                         childCount: items.length,
@@ -201,9 +211,16 @@ class ClosetScreen extends ConsumerWidget {
                                 )
                               : TextButton(
                                   onPressed: () {
-                                    ref.read(wardrobeProvider.notifier).loadMore();
+                                    ref
+                                        .read(wardrobeProvider.notifier)
+                                        .loadMore();
                                   },
-                                  child: Text('Load More', style: TextStyle(color: context.trenzyColors.primary)),
+                                  child: Text(
+                                    'Load More',
+                                    style: TextStyle(
+                                      color: context.trenzyColors.primary,
+                                    ),
+                                  ),
                                 ),
                         ),
                       ),
@@ -241,7 +258,8 @@ class _AiOutfitMatchBanner extends ConsumerWidget {
           ),
           child: Center(
             child: SizedBox(
-              width: 16, height: 16,
+              width: 16,
+              height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: context.trenzyColors.mutedFg,
@@ -291,7 +309,9 @@ class _AiOutfitMatchBanner extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: context.trenzyColors.primary.withValues(alpha: 0.2),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.2,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -317,7 +337,9 @@ class _AiOutfitMatchBanner extends ConsumerWidget {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          (outfits.first.title?.isNotEmpty == true) ? outfits.first.title! : 'Matches your wardrobe perfectly',
+                          (outfits.first.title?.isNotEmpty == true)
+                              ? outfits.first.title!
+                              : 'Matches your wardrobe perfectly',
                           style: TextStyle(
                             fontFamily: GlassTypography.bodyFont,
                             fontSize: 12,
@@ -388,21 +410,28 @@ class _WardrobeCard extends StatelessWidget {
                           ),
                           errorWidget: (_, _, _) => Container(
                             color: context.trenzyColors.graphite,
-                            child: Icon(Icons.broken_image,
-                                color: context.trenzyColors.mutedFg),
+                            child: Icon(
+                              Icons.broken_image,
+                              color: context.trenzyColors.mutedFg,
+                            ),
                           ),
                         )
                       : Container(
                           color: context.trenzyColors.graphite,
-                          child: Icon(Icons.checkroom_rounded,
-                              color: context.trenzyColors.mutedFg),
+                          child: Icon(
+                            Icons.checkroom_rounded,
+                            color: context.trenzyColors.mutedFg,
+                          ),
                         ),
                   if (isFavorite == true)
                     Positioned(
                       top: 6,
                       right: 6,
-                      child: Icon(Icons.favorite,
-                          size: 16, color: context.trenzyColors.primary),
+                      child: Icon(
+                        Icons.favorite,
+                        size: 16,
+                        color: context.trenzyColors.primary,
+                      ),
                     ),
                 ],
               ),
@@ -426,7 +455,9 @@ class _WardrobeCard extends StatelessWidget {
                     Text(
                       category,
                       style: TextStyle(
-                        color: context.trenzyColors.mutedFg.withValues(alpha: 0.6),
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.6,
+                        ),
                         fontSize: 11,
                       ),
                     ),

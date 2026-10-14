@@ -4,11 +4,12 @@ import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:go_router/go_router.dart';
 
-final activityFeedProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final api = ref.watch(apiServiceProvider);
-  final data = await api.getActivity(limit: 50);
-  return List<Map<String, dynamic>>.from(data['activities'] ?? []);
-});
+final activityFeedProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final api = ref.watch(apiServiceProvider);
+      final data = await api.getActivity(limit: 50);
+      return List<Map<String, dynamic>>.from(data['activities'] ?? []);
+    });
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -49,11 +50,17 @@ class HistoryScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.history, color: context.trenzyColors.mutedFg, size: 48),
+              Icon(
+                Icons.history,
+                color: context.trenzyColors.mutedFg,
+                size: 48,
+              ),
               SizedBox(height: 16),
               Text(
                 'Could not load history',
-                style: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
               SizedBox(height: 12),
               GlowButton(
@@ -76,16 +83,29 @@ class HistoryScreen extends ConsumerWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.1,
+                      ),
                     ),
-                    child: Icon(Icons.history, size: 36, color: context.trenzyColors.primary),
+                    child: Icon(
+                      Icons.history,
+                      size: 36,
+                      color: context.trenzyColors.primary,
+                    ),
                   ),
                   SizedBox(height: 20),
-                  DisplayText('No activity yet', fontSize: 18, weight: FontWeight.w600),
+                  DisplayText(
+                    'No activity yet',
+                    fontSize: 18,
+                    weight: FontWeight.w600,
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Your browsing history and actions will appear here.',
-                    style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 14),
+                    style: GlassTypography.body(
+                      color: context.trenzyColors.mutedFg,
+                      fontSize: 14,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],

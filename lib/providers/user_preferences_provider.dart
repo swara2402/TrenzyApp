@@ -126,7 +126,8 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       productInterests: _stringList(prefs['product_interests']),
       shoppingPriorities: _stringList(prefs['shopping_priorities']),
       onboardingCompleted:
-          prefs['onboarding_step'] is num && (prefs['onboarding_step'] as num) >= 5,
+          prefs['onboarding_step'] is num &&
+          (prefs['onboarding_step'] as num) >= 5,
     );
   }
 

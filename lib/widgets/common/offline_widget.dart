@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../../theme/glass_theme.dart';
 
 /// Full-screen offline indicator
-/// 
+///
 /// Shows when no network connectivity is detected.
 /// Automatically retries when connection is restored.
 class OfflineWidget extends StatelessWidget {
@@ -71,10 +71,7 @@ class OfflineWidget extends StatelessWidget {
     );
 
     if (compact) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: content,
-      );
+      return Padding(padding: const EdgeInsets.all(16), child: content);
     }
 
     return Scaffold(
@@ -88,17 +85,14 @@ class OfflineWidget extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: content,
-        ),
+        child: Padding(padding: const EdgeInsets.all(24), child: content),
       ),
     );
   }
 }
 
 /// Session expired widget with login redirect
-/// 
+///
 /// Shows when Firebase session has expired and user needs to re-authenticate.
 class SessionExpiredWidget extends StatelessWidget {
   /// Callback to redirect to login screen
@@ -181,10 +175,7 @@ class SessionExpiredWidget extends StatelessWidget {
     );
 
     if (compact) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: content,
-      );
+      return Padding(padding: const EdgeInsets.all(16), child: content);
     }
 
     return Scaffold(
@@ -198,10 +189,7 @@ class SessionExpiredWidget extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: content,
-        ),
+        child: Padding(padding: const EdgeInsets.all(24), child: content),
       ),
     );
   }
@@ -250,7 +238,8 @@ class NetworkErrorWidget extends StatelessWidget {
         ),
         SizedBox(height: compact ? 4 : 8),
         Text(
-          message ?? 'Unable to reach the server. Please check your connection.',
+          message ??
+              'Unable to reach the server. Please check your connection.',
           textAlign: TextAlign.center,
           style: GlassTypography.body(
             fontSize: compact ? 12 : 14,
@@ -263,10 +252,7 @@ class NetworkErrorWidget extends StatelessWidget {
     );
 
     if (compact) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: content,
-      );
+      return Padding(padding: const EdgeInsets.all(16), child: content);
     }
 
     return Scaffold(
@@ -280,10 +266,7 @@ class NetworkErrorWidget extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: content,
-        ),
+        child: Padding(padding: const EdgeInsets.all(24), child: content),
       ),
     );
   }

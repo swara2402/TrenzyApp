@@ -61,9 +61,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: email,
-      );
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
       if (!mounted) return;
 
@@ -71,12 +69,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle, color: context.trenzyColors.foreground, size: 20),
+              Icon(
+                Icons.check_circle,
+                color: context.trenzyColors.foreground,
+                size: 20,
+              ),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Password reset link sent to ${_emailController.text}',
-                  style: GlassTypography.body(color: context.trenzyColors.foreground, fontSize: 14),
+                  style: GlassTypography.body(
+                    color: context.trenzyColors.foreground,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -98,12 +103,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.error_outline, color: context.trenzyColors.foreground, size: 20),
+              Icon(
+                Icons.error_outline,
+                color: context.trenzyColors.foreground,
+                size: 20,
+              ),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
                   message,
-                  style: GlassTypography.body(color: context.trenzyColors.foreground, fontSize: 14),
+                  style: GlassTypography.body(
+                    color: context.trenzyColors.foreground,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -128,7 +140,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       appBar: AppBar(
         title: Text(
           'Trenzy',
-          style: GlassTypography.display(fontSize: 20, color: context.trenzyColors.primary),
+          style: GlassTypography.display(
+            fontSize: 20,
+            color: context.trenzyColors.primary,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
@@ -163,10 +178,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
-                            colors: [
-                              Color(0x2CF2CA50),
-                              Colors.transparent,
-                            ],
+                            colors: [Color(0x2CF2CA50), Colors.transparent],
                           ),
                         ),
                       ),
@@ -174,7 +186,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                          color: context.trenzyColors.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -220,18 +234,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: context.trenzyColors.fg08,
-                          borderRadius: BorderRadius.circular(GlassRadius.panel),
-                          border: Border.all(color: context.trenzyColors.glassBorder),
+                          borderRadius: BorderRadius.circular(
+                            GlassRadius.panel,
+                          ),
+                          border: Border.all(
+                            color: context.trenzyColors.glassBorder,
+                          ),
                         ),
                         child: Column(
                           children: [
                             TextFormField(
                               controller: _emailController,
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              style: GlassTypography.body(color: context.trenzyColors.foreground),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              style: GlassTypography.body(
+                                color: context.trenzyColors.foreground,
+                              ),
                               decoration: InputDecoration(
                                 labelText: 'Email Address',
-                                labelStyle: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                                labelStyle: GlassTypography.body(
+                                  color: context.trenzyColors.mutedFg,
+                                ),
                                 prefixIcon: Icon(
                                   Icons.mail_outline_rounded,
                                   color: context.trenzyColors.mutedFg,
@@ -239,24 +262,45 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 filled: true,
                                 fillColor: context.trenzyColors.graphite,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlassRadius.input),
-                                  borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: context.trenzyColors.glassBorder,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlassRadius.input),
-                                  borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: context.trenzyColors.glassBorder,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlassRadius.input),
-                                  borderSide: BorderSide(color: context.trenzyColors.primary),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: context.trenzyColors.primary,
+                                  ),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlassRadius.input),
-                                  borderSide: BorderSide(color: context.trenzyColors.crimson.withValues(alpha: 0.6)),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: context.trenzyColors.crimson
+                                        .withValues(alpha: 0.6),
+                                  ),
                                 ),
                                 focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlassRadius.input),
-                                  borderSide: BorderSide(color: context.trenzyColors.crimson),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: context.trenzyColors.crimson,
+                                  ),
                                 ),
                               ),
                               keyboardType: TextInputType.emailAddress,

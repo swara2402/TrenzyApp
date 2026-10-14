@@ -37,21 +37,35 @@ export 'api/user_api.dart';
 /// (`AuthApi`, `ProductApi`, `CartApi`, `WishlistApi`, `WardrobeApi`, `BlendApi`,
 /// `SocialApi`, `PaymentApi`, `RecommendationApi`, `NotificationApi`, `UserApi`).
 class ApiService implements ApiServiceBase {
-  ApiService({
-    required this.firebaseAuth,
-    http.Client? client,
-  })  : _client = ApiClient(firebaseAuth: firebaseAuth, client: client),
-        _authApi = AuthApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _productApi = ProductApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _cartApi = CartApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _wishlistApi = WishlistApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _wardrobeApi = WardrobeApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _blendApi = BlendApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _socialApi = SocialApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _paymentApi = PaymentApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _recommendationApi = RecommendationApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _notificationApi = NotificationApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
-        _userApi = UserApi(ApiClient(firebaseAuth: firebaseAuth, client: client));
+  ApiService({required this.firebaseAuth, http.Client? client})
+    : _client = ApiClient(firebaseAuth: firebaseAuth, client: client),
+      _authApi = AuthApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
+      _productApi = ProductApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _cartApi = CartApi(ApiClient(firebaseAuth: firebaseAuth, client: client)),
+      _wishlistApi = WishlistApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _wardrobeApi = WardrobeApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _blendApi = BlendApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _socialApi = SocialApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _paymentApi = PaymentApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _recommendationApi = RecommendationApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _notificationApi = NotificationApi(
+        ApiClient(firebaseAuth: firebaseAuth, client: client),
+      ),
+      _userApi = UserApi(ApiClient(firebaseAuth: firebaseAuth, client: client));
 
   final FirebaseAuth firebaseAuth;
   final ApiClient _client;
@@ -87,19 +101,25 @@ class ApiService implements ApiServiceBase {
 
   // Global static hooks & utilities
   static void Function()? get onSessionExpired => ApiClient.onSessionExpired;
-  static set onSessionExpired(void Function()? handler) => ApiClient.onSessionExpired = handler;
+  static set onSessionExpired(void Function()? handler) =>
+      ApiClient.onSessionExpired = handler;
 
   static void clearCache() => ApiClient.clearCache();
-  static String? resolveImageUrl(String? imageUrl) => ApiClient.resolveImageUrl(imageUrl);
+  static String? resolveImageUrl(String? imageUrl) =>
+      ApiClient.resolveImageUrl(imageUrl);
   static String get socketBaseUrl => ApiClient.socketBaseUrl;
 
   // ---------- Auth ----------
   @override
-  Future<Map<String, dynamic>> login(String email, String password) => _authApi.login(email, password);
+  Future<Map<String, dynamic>> login(String email, String password) =>
+      _authApi.login(email, password);
 
   @override
-  Future<Map<String, dynamic>> signup(String name, String email, String password) =>
-      _authApi.signup(name, email, password);
+  Future<Map<String, dynamic>> signup(
+    String name,
+    String email,
+    String password,
+  ) => _authApi.signup(name, email, password);
 
   @override
   Future<Map<String, dynamic>?> googleLogin() => _authApi.googleLogin();
@@ -118,20 +138,20 @@ class ApiService implements ApiServiceBase {
     String? brand,
     int offset = 0,
     int limit = 24,
-  }) =>
-      _productApi.getProducts(
-        category: category,
-        subcategory: subcategory,
-        gender: gender,
-        color: color,
-        season: season,
-        brand: brand,
-        offset: offset,
-        limit: limit,
-      );
+  }) => _productApi.getProducts(
+    category: category,
+    subcategory: subcategory,
+    gender: gender,
+    color: color,
+    season: season,
+    brand: brand,
+    offset: offset,
+    limit: limit,
+  );
 
   @override
-  Future<Map<String, dynamic>> getProduct(String productId) => _productApi.getProduct(productId);
+  Future<Map<String, dynamic>> getProduct(String productId) =>
+      _productApi.getProduct(productId);
 
   @override
   Future<List<dynamic>> searchProducts({
@@ -145,56 +165,65 @@ class ApiService implements ApiServiceBase {
     int? minPrice,
     int? maxPrice,
     String? sort,
-  }) =>
-      _productApi.searchProducts(
-        query: query,
-        category: category,
-        subcategory: subcategory,
-        gender: gender,
-        color: color,
-        season: season,
-        brand: brand,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        sort: sort,
-      );
+  }) => _productApi.searchProducts(
+    query: query,
+    category: category,
+    subcategory: subcategory,
+    gender: gender,
+    color: color,
+    season: season,
+    brand: brand,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    sort: sort,
+  );
 
   @override
   Future<List<String>> getCategories() => _productApi.getCategories();
 
   @override
-  Future<List<String>> getSubcategories(String categoryName) => _productApi.getSubcategories(categoryName);
+  Future<List<String>> getSubcategories(String categoryName) =>
+      _productApi.getSubcategories(categoryName);
 
   @override
-  Future<Map<String, dynamic>> getBrands({String? search}) => _productApi.getBrands(search: search);
+  Future<Map<String, dynamic>> getBrands({String? search}) =>
+      _productApi.getBrands(search: search);
 
   @override
-  Future<void> archiveProduct(String productId) => _productApi.archiveProduct(productId);
+  Future<void> archiveProduct(String productId) =>
+      _productApi.archiveProduct(productId);
 
   @override
-  Future<Map<String, dynamic>> getBatchProducts(List<String> ids) => _productApi.getBatchProducts(ids);
+  Future<Map<String, dynamic>> getBatchProducts(List<String> ids) =>
+      _productApi.getBatchProducts(ids);
 
   @override
   Future<Map<String, dynamic>> unifiedSearch(String query, {int limit = 10}) =>
       _productApi.unifiedSearch(query, limit: limit);
 
   @override
-  Future<List<dynamic>> getSuggestions(String query) => _productApi.getSuggestions(query);
+  Future<List<dynamic>> getSuggestions(String query) =>
+      _productApi.getSuggestions(query);
 
   // ---------- Cart ----------
   @override
   Future<Map<String, dynamic>> getCart() => _cartApi.getCart();
 
   @override
-  Future<Map<String, dynamic>> addCartItem({required String productId, int quantity = 1}) =>
-      _cartApi.addCartItem(productId: productId, quantity: quantity);
+  Future<Map<String, dynamic>> addCartItem({
+    required String productId,
+    int quantity = 1,
+  }) => _cartApi.addCartItem(productId: productId, quantity: quantity);
 
   @override
-  Future<Map<String, dynamic>> updateCartItem({required String productId, required int quantity}) =>
-      _cartApi.updateCartItem(productId: productId, quantity: quantity);
+  Future<Map<String, dynamic>> updateCartItem({
+    required String productId,
+    required int quantity,
+  }) => _cartApi.updateCartItem(productId: productId, quantity: quantity);
 
   @override
-  Future<void> removeCartItem(String productId) => _cartApi.removeCartItem(productId);
+  Future<void> removeCartItem(String productId) =>
+      _cartApi.removeCartItem(productId);
 
   @override
   Future<void> clearCart() => _cartApi.clearCart();
@@ -204,13 +233,16 @@ class ApiService implements ApiServiceBase {
   Future<Map<String, dynamic>> getWishlist() => _wishlistApi.getWishlist();
 
   @override
-  Future<void> setWishlist(List<String> productIds) => _wishlistApi.setWishlist(productIds);
+  Future<void> setWishlist(List<String> productIds) =>
+      _wishlistApi.setWishlist(productIds);
 
   @override
-  Future<void> addWishlistItem(String productId) => _wishlistApi.addWishlistItem(productId);
+  Future<void> addWishlistItem(String productId) =>
+      _wishlistApi.addWishlistItem(productId);
 
   @override
-  Future<void> removeWishlistItem(String productId) => _wishlistApi.removeWishlistItem(productId);
+  Future<void> removeWishlistItem(String productId) =>
+      _wishlistApi.removeWishlistItem(productId);
 
   // ---------- Wardrobe & Outfits ----------
   @override
@@ -223,17 +255,16 @@ class ApiService implements ApiServiceBase {
     String? search,
     int offset = 0,
     int limit = 50,
-  }) =>
-      _wardrobeApi.getWardrobe(
-        category: category,
-        color: color,
-        season: season,
-        brand: brand,
-        favoriteOnly: favoriteOnly,
-        search: search,
-        offset: offset,
-        limit: limit,
-      );
+  }) => _wardrobeApi.getWardrobe(
+    category: category,
+    color: color,
+    season: season,
+    brand: brand,
+    favoriteOnly: favoriteOnly,
+    search: search,
+    offset: offset,
+    limit: limit,
+  );
 
   @override
   Future<Map<String, dynamic>> getWardrobeRecommendations({int limit = 5}) =>
@@ -247,15 +278,14 @@ class ApiService implements ApiServiceBase {
     String? color,
     String? season,
     String? brand,
-  }) =>
-      _wardrobeApi.addWardrobeItem(
-        name: name,
-        imageUrl: imageUrl,
-        category: category,
-        color: color,
-        season: season,
-        brand: brand,
-      );
+  }) => _wardrobeApi.addWardrobeItem(
+    name: name,
+    imageUrl: imageUrl,
+    category: category,
+    color: color,
+    season: season,
+    brand: brand,
+  );
 
   @override
   Future<void> updateWardrobeItem(
@@ -267,23 +297,24 @@ class ApiService implements ApiServiceBase {
     String? season,
     String? brand,
     bool? isFavorite,
-  }) =>
-      _wardrobeApi.updateWardrobeItem(
-        itemId,
-        name: name,
-        imageUrl: imageUrl,
-        category: category,
-        color: color,
-        season: season,
-        brand: brand,
-        isFavorite: isFavorite,
-      );
+  }) => _wardrobeApi.updateWardrobeItem(
+    itemId,
+    name: name,
+    imageUrl: imageUrl,
+    category: category,
+    color: color,
+    season: season,
+    brand: brand,
+    isFavorite: isFavorite,
+  );
 
   @override
-  Future<void> deleteWardrobeItem(int itemId) => _wardrobeApi.deleteWardrobeItem(itemId);
+  Future<void> deleteWardrobeItem(int itemId) =>
+      _wardrobeApi.deleteWardrobeItem(itemId);
 
   @override
-  Future<String> uploadImage(XFile imageFile) => _wardrobeApi.uploadImage(imageFile);
+  Future<String> uploadImage(XFile imageFile) =>
+      _wardrobeApi.uploadImage(imageFile);
 
   @override
   Future<Map<String, dynamic>> getOutfits() => _wardrobeApi.getOutfits();
@@ -293,12 +324,11 @@ class ApiService implements ApiServiceBase {
     required String name,
     required List<int> wardrobeItemIds,
     String? occasion,
-  }) =>
-      _wardrobeApi.createOutfit(
-        name: name,
-        wardrobeItemIds: wardrobeItemIds,
-        occasion: occasion,
-      );
+  }) => _wardrobeApi.createOutfit(
+    name: name,
+    wardrobeItemIds: wardrobeItemIds,
+    occasion: occasion,
+  );
 
   @override
   Future<void> updateOutfit(
@@ -306,16 +336,16 @@ class ApiService implements ApiServiceBase {
     String? name,
     String? occasion,
     List<int>? wardrobeItemIds,
-  }) =>
-      _wardrobeApi.updateOutfit(
-        outfitId,
-        name: name,
-        occasion: occasion,
-        wardrobeItemIds: wardrobeItemIds,
-      );
+  }) => _wardrobeApi.updateOutfit(
+    outfitId,
+    name: name,
+    occasion: occasion,
+    wardrobeItemIds: wardrobeItemIds,
+  );
 
   @override
-  Future<void> deleteOutfit(int outfitId) => _wardrobeApi.deleteOutfit(outfitId);
+  Future<void> deleteOutfit(int outfitId) =>
+      _wardrobeApi.deleteOutfit(outfitId);
 
   // ---------- Blends & Shared Features ----------
   @override
@@ -331,15 +361,20 @@ class ApiService implements ApiServiceBase {
     required String blendId,
     required String inviterId,
     required String inviteeId,
-  }) =>
-      _blendApi.inviteToBlend(blendId: blendId, inviterId: inviterId, inviteeId: inviteeId);
+  }) => _blendApi.inviteToBlend(
+    blendId: blendId,
+    inviterId: inviterId,
+    inviteeId: inviteeId,
+  );
 
   @override
   Future<void> respondToBlendInvitation({
     required String invitationId,
     required String status,
-  }) =>
-      _blendApi.respondToBlendInvitation(invitationId: invitationId, status: status);
+  }) => _blendApi.respondToBlendInvitation(
+    invitationId: invitationId,
+    status: status,
+  );
 
   @override
   Future<Map<String, dynamic>> joinBlend({required String groupId}) =>
@@ -349,25 +384,29 @@ class ApiService implements ApiServiceBase {
   Future<void> leaveBlend(String groupId) => _blendApi.leaveBlend(groupId);
 
   @override
-  Future<Map<String, dynamic>> getBlendGroup(String groupId) => _blendApi.getBlendGroup(groupId);
+  Future<Map<String, dynamic>> getBlendGroup(String groupId) =>
+      _blendApi.getBlendGroup(groupId);
 
   @override
-  Future<Map<String, dynamic>> getBlendResults(String groupId) => _blendApi.getBlendResults(groupId);
+  Future<Map<String, dynamic>> getBlendResults(String groupId) =>
+      _blendApi.getBlendResults(groupId);
 
   @override
   Future<void> recordBlendSwipe({
     required String groupId,
     required String productId,
     required String swipeType,
-  }) =>
-      _blendApi.recordBlendSwipe(groupId: groupId, productId: productId, swipeType: swipeType);
+  }) => _blendApi.recordBlendSwipe(
+    groupId: groupId,
+    productId: productId,
+    swipeType: swipeType,
+  );
 
   @override
   Future<void> undoBlendSwipe({
     required String groupId,
     required String productId,
-  }) =>
-      _blendApi.undoBlendSwipe(groupId: groupId, productId: productId);
+  }) => _blendApi.undoBlendSwipe(groupId: groupId, productId: productId);
 
   @override
   Future<List<dynamic>> getUserBlendGroups() => _blendApi.getUserBlendGroups();
@@ -379,8 +418,10 @@ class ApiService implements ApiServiceBase {
   Future<Map<String, dynamic>> createInvitation({
     required String groupId,
     int expiresInSeconds = 60 * 60 * 24 * 7,
-  }) =>
-      _blendApi.createInvitation(groupId: groupId, expiresInSeconds: expiresInSeconds);
+  }) => _blendApi.createInvitation(
+    groupId: groupId,
+    expiresInSeconds: expiresInSeconds,
+  );
 
   @override
   Future<Map<String, dynamic>> acceptInvitation({required String token}) =>
@@ -396,8 +437,12 @@ class ApiService implements ApiServiceBase {
     String? sort,
     String? category,
     String? search,
-  }) =>
-      _blendApi.getSharedWishlist(blendId, sort: sort, category: category, search: search);
+  }) => _blendApi.getSharedWishlist(
+    blendId,
+    sort: sort,
+    category: category,
+    search: search,
+  );
 
   @override
   Future<Map<String, dynamic>> addToSharedWishlist(
@@ -410,18 +455,17 @@ class ApiService implements ApiServiceBase {
     String? productCategory,
     String? productUrl,
     String? notes,
-  }) =>
-      _blendApi.addToSharedWishlist(
-        blendId,
-        productId: productId,
-        productName: productName,
-        productPrice: productPrice,
-        productImage: productImage,
-        productBrand: productBrand,
-        productCategory: productCategory,
-        productUrl: productUrl,
-        notes: notes,
-      );
+  }) => _blendApi.addToSharedWishlist(
+    blendId,
+    productId: productId,
+    productName: productName,
+    productPrice: productPrice,
+    productImage: productImage,
+    productBrand: productBrand,
+    productCategory: productCategory,
+    productUrl: productUrl,
+    notes: notes,
+  );
 
   @override
   Future<Map<String, dynamic>> updateWishlistItem(
@@ -430,14 +474,13 @@ class ApiService implements ApiServiceBase {
     String? notes,
     bool? isFavorite,
     String? purchaseLink,
-  }) =>
-      _blendApi.updateWishlistItem(
-        blendId,
-        itemId,
-        notes: notes,
-        isFavorite: isFavorite,
-        purchaseLink: purchaseLink,
-      );
+  }) => _blendApi.updateWishlistItem(
+    blendId,
+    itemId,
+    notes: notes,
+    isFavorite: isFavorite,
+    purchaseLink: purchaseLink,
+  );
 
   @override
   Future<void> removeFromSharedWishlist(String blendId, int itemId) =>
@@ -454,22 +497,23 @@ class ApiService implements ApiServiceBase {
     Map<String, dynamic>? content,
     String? imageUrl,
     String? caption,
-  }) =>
-      _blendApi.addToMoodboard(
-        blendId,
-        itemType: itemType,
-        content: content,
-        imageUrl: imageUrl,
-        caption: caption,
-      );
+  }) => _blendApi.addToMoodboard(
+    blendId,
+    itemType: itemType,
+    content: content,
+    imageUrl: imageUrl,
+    caption: caption,
+  );
 
   @override
   Future<void> removeFromMoodboard(String blendId, int itemId) =>
       _blendApi.removeFromMoodboard(blendId, itemId);
 
   @override
-  Future<List<dynamic>> getBlendInsights(String blendId, {bool refresh = false}) =>
-      _blendApi.getBlendInsights(blendId, refresh: refresh);
+  Future<List<dynamic>> getBlendInsights(
+    String blendId, {
+    bool refresh = false,
+  }) => _blendApi.getBlendInsights(blendId, refresh: refresh);
 
   @override
   Future<Map<String, dynamic>> refreshBlendInsights(String blendId) =>
@@ -482,14 +526,13 @@ class ApiService implements ApiServiceBase {
     String? description,
     String? coverImage,
     bool? isPrivate,
-  }) =>
-      _blendApi.updateBlendSettings(
-        blendId,
-        name: name,
-        description: description,
-        coverImage: coverImage,
-        isPrivate: isPrivate,
-      );
+  }) => _blendApi.updateBlendSettings(
+    blendId,
+    name: name,
+    description: description,
+    coverImage: coverImage,
+    isPrivate: isPrivate,
+  );
 
   @override
   Future<Map<String, dynamic>> getBlendSettings(String blendId) =>
@@ -500,8 +543,7 @@ class ApiService implements ApiServiceBase {
     String blendId, {
     int limit = 50,
     int offset = 0,
-  }) =>
-      _blendApi.getBlendActivity(blendId, limit: limit, offset: offset);
+  }) => _blendApi.getBlendActivity(blendId, limit: limit, offset: offset);
 
   // ---------- Social, Friends, Posts, Feed ----------
   @override
@@ -516,34 +558,38 @@ class ApiService implements ApiServiceBase {
       _socialApi.getFriendRequests(box: box);
 
   @override
-  Future<void> acceptFriendRequest(int requestId) => _socialApi.acceptFriendRequest(requestId);
+  Future<void> acceptFriendRequest(int requestId) =>
+      _socialApi.acceptFriendRequest(requestId);
 
   @override
-  Future<void> rejectFriendRequest(int requestId) => _socialApi.rejectFriendRequest(requestId);
+  Future<void> rejectFriendRequest(int requestId) =>
+      _socialApi.rejectFriendRequest(requestId);
 
   @override
   Future<void> removeFriend(int friendId) => _socialApi.removeFriend(friendId);
 
   @override
-  Future<List<FriendSuggestion>> getFriendSuggestions() => _socialApi.getFriendSuggestions();
+  Future<List<FriendSuggestion>> getFriendSuggestions() =>
+      _socialApi.getFriendSuggestions();
 
   @override
   Future<void> reportUser({
     required String targetFirebaseUid,
     required String reason,
     String? details,
-  }) =>
-      _socialApi.reportUser(
-        targetFirebaseUid: targetFirebaseUid,
-        reason: reason,
-        details: details,
-      );
+  }) => _socialApi.reportUser(
+    targetFirebaseUid: targetFirebaseUid,
+    reason: reason,
+    details: details,
+  );
 
   @override
-  Future<void> followUser(String targetFirebaseUid) => _socialApi.followUser(targetFirebaseUid);
+  Future<void> followUser(String targetFirebaseUid) =>
+      _socialApi.followUser(targetFirebaseUid);
 
   @override
-  Future<void> unfollowUser(String targetFirebaseUid) => _socialApi.unfollowUser(targetFirebaseUid);
+  Future<void> unfollowUser(String targetFirebaseUid) =>
+      _socialApi.unfollowUser(targetFirebaseUid);
 
   @override
   Future<bool> getFollowStatus(String targetFirebaseUid) =>
@@ -556,12 +602,17 @@ class ApiService implements ApiServiceBase {
   Future<Map<String, dynamic>> getFollowing() => _socialApi.getFollowing();
 
   @override
-  Future<Map<String, dynamic>> createPost({required String content, String? attachment}) =>
-      _socialApi.createPost(content: content, attachment: attachment);
+  Future<Map<String, dynamic>> createPost({
+    required String content,
+    String? attachment,
+  }) => _socialApi.createPost(content: content, attachment: attachment);
 
   @override
-  Future<Map<String, dynamic>> getUserPosts({String? userId, int offset = 0, int limit = 20}) =>
-      _socialApi.getUserPosts(userId: userId, offset: offset, limit: limit);
+  Future<Map<String, dynamic>> getUserPosts({
+    String? userId,
+    int offset = 0,
+    int limit = 20,
+  }) => _socialApi.getUserPosts(userId: userId, offset: offset, limit: limit);
 
   @override
   Future<void> deletePost(int postId) => _socialApi.deletePost(postId);
@@ -577,15 +628,18 @@ class ApiService implements ApiServiceBase {
       _socialApi.commentOnPost(postId, content);
 
   @override
-  Future<Map<String, dynamic>> getComments(int postId) => _socialApi.getComments(postId);
+  Future<Map<String, dynamic>> getComments(int postId) =>
+      _socialApi.getComments(postId);
 
   @override
   Future<Map<String, dynamic>> getFeed({int offset = 0, int limit = 20}) =>
       _socialApi.getFeed(offset: offset, limit: limit);
 
   @override
-  Future<Map<String, dynamic>> getGroupMessages({required String groupId, int limit = 50}) =>
-      _socialApi.getGroupMessages(groupId: groupId, limit: limit);
+  Future<Map<String, dynamic>> getGroupMessages({
+    required String groupId,
+    int limit = 50,
+  }) => _socialApi.getGroupMessages(groupId: groupId, limit: limit);
 
   @override
   Future<void> sendGroupMessage({
@@ -595,37 +649,34 @@ class ApiService implements ApiServiceBase {
     String? attachedProductTitle,
     String? attachedProductImage,
     String? attachedProductPrice,
-  }) =>
-      _socialApi.sendGroupMessage(
-        groupId: groupId,
-        message: message,
-        attachedProductId: attachedProductId,
-        attachedProductTitle: attachedProductTitle,
-        attachedProductImage: attachedProductImage,
-        attachedProductPrice: attachedProductPrice,
-      );
+  }) => _socialApi.sendGroupMessage(
+    groupId: groupId,
+    message: message,
+    attachedProductId: attachedProductId,
+    attachedProductTitle: attachedProductTitle,
+    attachedProductImage: attachedProductImage,
+    attachedProductPrice: attachedProductPrice,
+  );
 
   @override
   Future<Map<String, dynamic>> getDirectMessages({
     required String friendFirebaseUid,
     int limit = 50,
     int? beforeId,
-  }) =>
-      _socialApi.getDirectMessages(
-        friendFirebaseUid: friendFirebaseUid,
-        limit: limit,
-        beforeId: beforeId,
-      );
+  }) => _socialApi.getDirectMessages(
+    friendFirebaseUid: friendFirebaseUid,
+    limit: limit,
+    beforeId: beforeId,
+  );
 
   @override
   Future<Map<String, dynamic>> sendDirectMessage({
     required String toFirebaseUid,
     required String message,
-  }) =>
-      _socialApi.sendDirectMessage(
-        toFirebaseUid: toFirebaseUid,
-        message: message,
-      );
+  }) => _socialApi.sendDirectMessage(
+    toFirebaseUid: toFirebaseUid,
+    message: message,
+  );
 
   @override
   Future<Map<String, dynamic>> getActivity({int limit = 20, int offset = 0}) =>
@@ -638,18 +689,18 @@ class ApiService implements ApiServiceBase {
     String? targetId,
     String? targetType,
     Map<String, dynamic>? metadataJson,
-  }) =>
-      _socialApi.createActivity(
-        kind: kind,
-        description: description,
-        targetId: targetId,
-        targetType: targetType,
-        metadataJson: metadataJson,
-      );
+  }) => _socialApi.createActivity(
+    kind: kind,
+    description: description,
+    targetId: targetId,
+    targetType: targetType,
+    metadataJson: metadataJson,
+  );
 
   // ---------- Recommendations, Trends & Discovery ----------
   @override
-  Future<Map<String, dynamic>> getRecommendations() => _recommendationApi.getRecommendations();
+  Future<Map<String, dynamic>> getRecommendations() =>
+      _recommendationApi.getRecommendations();
 
   @override
   Future<Map<String, dynamic>> getRecommendedPeople({int limit = 10}) =>
@@ -660,16 +711,26 @@ class ApiService implements ApiServiceBase {
       _recommendationApi.getRecommendedOutfits(limit: limit);
 
   @override
-  Future<Map<String, dynamic>> getRecommendedProducts({int limit = 12, String? category}) =>
-      _recommendationApi.getRecommendedProducts(limit: limit, category: category);
+  Future<Map<String, dynamic>> getRecommendedProducts({
+    int limit = 12,
+    String? category,
+  }) => _recommendationApi.getRecommendedProducts(
+    limit: limit,
+    category: category,
+  );
 
   @override
   Future<Map<String, dynamic>> discoverSwipe({int limit = 20}) =>
       _recommendationApi.discoverSwipe(limit: limit);
 
   @override
-  Future<void> recordDiscoverySwipe({required String productId, required String swipeType}) =>
-      _recommendationApi.recordDiscoverySwipe(productId: productId, swipeType: swipeType);
+  Future<void> recordDiscoverySwipe({
+    required String productId,
+    required String swipeType,
+  }) => _recommendationApi.recordDiscoverySwipe(
+    productId: productId,
+    swipeType: swipeType,
+  );
 
   @override
   Future<List<dynamic>> getTrendingProducts({
@@ -677,20 +738,23 @@ class ApiService implements ApiServiceBase {
     String? categories,
     String timeframe = 'daily',
     int limit = 20,
-  }) =>
-      _recommendationApi.getTrendingProducts(
-        category: category,
-        categories: categories,
-        timeframe: timeframe,
-        limit: limit,
-      );
+  }) => _recommendationApi.getTrendingProducts(
+    category: category,
+    categories: categories,
+    timeframe: timeframe,
+    limit: limit,
+  );
 
   @override
-  Future<List<dynamic>> getTrendPredictions({String? category, int limit = 10}) =>
+  Future<List<dynamic>> getTrendPredictions({
+    String? category,
+    int limit = 10,
+  }) =>
       _recommendationApi.getTrendPredictions(category: category, limit: limit);
 
   @override
-  Future<void> trackProductView(String productId) => _recommendationApi.trackProductView(productId);
+  Future<void> trackProductView(String productId) =>
+      _recommendationApi.trackProductView(productId);
 
   @override
   Future<String?> trackAffiliateClick(String productId) =>
@@ -707,14 +771,13 @@ class ApiService implements ApiServiceBase {
     required String optionPrice,
     required int aiScore,
     required int socialApproval,
-  }) =>
-      _recommendationApi.getReasoning(
-        query: query,
-        optionTitle: optionTitle,
-        optionPrice: optionPrice,
-        aiScore: aiScore,
-        socialApproval: socialApproval,
-      );
+  }) => _recommendationApi.getReasoning(
+    query: query,
+    optionTitle: optionTitle,
+    optionPrice: optionPrice,
+    aiScore: aiScore,
+    socialApproval: socialApproval,
+  );
 
   @override
   Future<void> saveDecision({
@@ -723,14 +786,13 @@ class ApiService implements ApiServiceBase {
     required String recommendedOptionId,
     required int socialApproval,
     required String reasoning,
-  }) =>
-      _recommendationApi.saveDecision(
-        query: query,
-        selectedOptions: selectedOptions,
-        recommendedOptionId: recommendedOptionId,
-        socialApproval: socialApproval,
-        reasoning: reasoning,
-      );
+  }) => _recommendationApi.saveDecision(
+    query: query,
+    selectedOptions: selectedOptions,
+    recommendedOptionId: recommendedOptionId,
+    socialApproval: socialApproval,
+    reasoning: reasoning,
+  );
 
   @override
   Future<List<dynamic>> getDecisions() => _recommendationApi.getDecisions();
@@ -747,21 +809,34 @@ class ApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> getAiModelHealth() => _aiApi.getModelHealth();
   @override
-  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) => _aiApi.getAiRecommendations(limit: limit);
+  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) =>
+      _aiApi.getAiRecommendations(limit: limit);
   @override
-  Future<Map<String, dynamic>> generateAiOutfits({required String prompt, int numOptions = 3, Map<String, dynamic>? context}) =>
-      _aiApi.generateOutfits(prompt: prompt, numOptions: numOptions, context: context);
+  Future<Map<String, dynamic>> generateAiOutfits({
+    required String prompt,
+    int numOptions = 3,
+    Map<String, dynamic>? context,
+  }) => _aiApi.generateOutfits(
+    prompt: prompt,
+    numOptions: numOptions,
+    context: context,
+  );
   @override
-  Future<Map<String, dynamic>> aiStylistChat({required String message, int? conversationId}) =>
-      _aiApi.stylistChat(message: message, conversationId: conversationId);
+  Future<Map<String, dynamic>> aiStylistChat({
+    required String message,
+    int? conversationId,
+  }) => _aiApi.stylistChat(message: message, conversationId: conversationId);
   @override
-  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) => _aiApi.stylistOutfit(prompt);
+  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) =>
+      _aiApi.stylistOutfit(prompt);
   @override
-  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) => _aiApi.visualSearch(image, limit: limit);
+  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) =>
+      _aiApi.visualSearch(image, limit: limit);
 
   // ---------- Notifications ----------
   @override
-  Future<Map<String, dynamic>> getNotifications() => _notificationApi.getNotifications();
+  Future<Map<String, dynamic>> getNotifications() =>
+      _notificationApi.getNotifications();
 
   @override
   Future<void> markNotificationRead(String notificationId) =>
@@ -796,8 +871,10 @@ class ApiService implements ApiServiceBase {
   Future<void> deleteAccount() => _userApi.deleteAccount();
 
   @override
-  Future<void> reportIssue({required String category, required String description}) =>
-      _userApi.reportIssue(category: category, description: description);
+  Future<void> reportIssue({
+    required String category,
+    required String description,
+  }) => _userApi.reportIssue(category: category, description: description);
 
   @override
   Future<void> resetPassword(String email) => _authApi.resetPassword(email);
@@ -806,8 +883,9 @@ class ApiService implements ApiServiceBase {
   Future<Map<String, dynamic>?> getPersona() => _userApi.getPersona();
 
   @override
-  Future<Map<String, dynamic>> generatePersona({Map<String, dynamic>? preferences}) =>
-      _userApi.generatePersona(preferences: preferences);
+  Future<Map<String, dynamic>> generatePersona({
+    Map<String, dynamic>? preferences,
+  }) => _userApi.generatePersona(preferences: preferences);
 
   @override
   Future<Map<String, dynamic>> getPreferences() => _userApi.getPreferences();
@@ -826,30 +904,31 @@ class ApiService implements ApiServiceBase {
     List<String>? productInterests,
     List<String>? shoppingPriorities,
     int? onboardingStep,
-  }) =>
-      _userApi.savePreferences(
-        preferredCategories: preferredCategories,
-        preferredBrands: preferredBrands,
-        preferredColors: preferredColors,
-        preferredSeasons: preferredSeasons,
-        preferredStyles: preferredStyles,
-        preferredAesthetics: preferredAesthetics,
-        preferredOccasions: preferredOccasions,
-        budgetMax: budgetMax,
-        discoverPreferences: discoverPreferences,
-        productInterests: productInterests,
-        shoppingPriorities: shoppingPriorities,
-        onboardingStep: onboardingStep,
-      );
+  }) => _userApi.savePreferences(
+    preferredCategories: preferredCategories,
+    preferredBrands: preferredBrands,
+    preferredColors: preferredColors,
+    preferredSeasons: preferredSeasons,
+    preferredStyles: preferredStyles,
+    preferredAesthetics: preferredAesthetics,
+    preferredOccasions: preferredOccasions,
+    budgetMax: budgetMax,
+    discoverPreferences: discoverPreferences,
+    productInterests: productInterests,
+    shoppingPriorities: shoppingPriorities,
+    onboardingStep: onboardingStep,
+  );
 
   @override
   Future<List<String>> getPersonaStyles() => _userApi.getPersonaStyles();
 
   @override
-  Future<List<String>> getPersonaProductTypes() => _userApi.getPersonaProductTypes();
+  Future<List<String>> getPersonaProductTypes() =>
+      _userApi.getPersonaProductTypes();
 
   @override
-  Future<List<Map<String, dynamic>>> getPersonaColors() => _userApi.getPersonaColors();
+  Future<List<Map<String, dynamic>>> getPersonaColors() =>
+      _userApi.getPersonaColors();
 
   // ---------- Payments ----------
   @override
@@ -861,16 +940,14 @@ class ApiService implements ApiServiceBase {
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
-  }) =>
-      _paymentApi.verifyPayment(
-        razorpayOrderId: razorpayOrderId,
-        razorpayPaymentId: razorpayPaymentId,
-        razorpaySignature: razorpaySignature,
-      );
+  }) => _paymentApi.verifyPayment(
+    razorpayOrderId: razorpayOrderId,
+    razorpayPaymentId: razorpayPaymentId,
+    razorpaySignature: razorpaySignature,
+  );
 
   @override
   Future<Map<String, dynamic>> getPaymentOrderStatus({
     required String razorpayOrderId,
-  }) =>
-      _paymentApi.getPaymentOrderStatus(razorpayOrderId: razorpayOrderId);
+  }) => _paymentApi.getPaymentOrderStatus(razorpayOrderId: razorpayOrderId);
 }

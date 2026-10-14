@@ -97,7 +97,9 @@ class AppRoutes {
     String source = 'onboarding',
   }) {
     final step = preferences?['onboarding_step'];
-    final currentStep = step is int ? step : int.tryParse(step?.toString() ?? '') ?? 0;
+    final currentStep = step is int
+        ? step
+        : int.tryParse(step?.toString() ?? '') ?? 0;
     switch (currentStep) {
       case 0:
         return onboarding;
@@ -200,6 +202,12 @@ class AppRoutes {
     }
 
     if (isLoggedIn &&
+        (location == login || location == signUp || location == welcome)) {
+      if (!isAgeVerified) return ageVerification;
+      return isOnboardingDone ? home : onboarding;
+    }
+
+    if (isLoggedIn &&
         !isAgeVerified &&
         location != ageVerification &&
         !isAuthRoute) {
@@ -210,18 +218,13 @@ class AppRoutes {
     // cold start (the notifier starts false until auth sync resolves) and
     // after a previously failed sync corrects itself — without this rule the
     // router has no way back out of /age-verification.
-    if (isLoggedIn &&
-        isAgeVerified &&
-        location == ageVerification) {
+    if (isLoggedIn && isAgeVerified && location == ageVerification) {
       return isOnboardingDone ? home : onboarding;
     }
 
     // If logged in but onboarding not complete, force onboarding flow
     // (unless already on an onboarding route).
-    if (isLoggedIn &&
-        !isOnboardingDone &&
-        !isOnboardingRoute &&
-        !isAuthRoute) {
+    if (isLoggedIn && !isOnboardingDone && !isOnboardingRoute && !isAuthRoute) {
       return onboarding;
     }
 
@@ -293,10 +296,7 @@ Page<dynamic> _buildPageWithFadeTransition(
 
       return FadeTransition(
         opacity: curvedAnimation,
-        child: SlideTransition(
-          position: slideAnimation,
-          child: child,
-        ),
+        child: SlideTransition(position: slideAnimation, child: child),
       );
     },
   );
@@ -385,13 +385,19 @@ GoRouter createRouter({
           ),
           GoRoute(
             path: AppRoutes.aiStylist,
-            pageBuilder: (context, state) =>
-                _buildPageWithFadeTransition(context, state, const AiStylistScreen()),
+            pageBuilder: (context, state) => _buildPageWithFadeTransition(
+              context,
+              state,
+              const AiStylistScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.aiStyleDna,
-            pageBuilder: (context, state) =>
-                _buildPageWithFadeTransition(context, state, const AiStyleDnaScreen()),
+            pageBuilder: (context, state) => _buildPageWithFadeTransition(
+              context,
+              state,
+              const AiStyleDnaScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.profile,

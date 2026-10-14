@@ -31,7 +31,8 @@ class WardrobeMilestoneCard extends ConsumerStatefulWidget {
   const WardrobeMilestoneCard({super.key});
 
   @override
-  ConsumerState<WardrobeMilestoneCard> createState() => _WardrobeMilestoneCardState();
+  ConsumerState<WardrobeMilestoneCard> createState() =>
+      _WardrobeMilestoneCardState();
 }
 
 class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
@@ -48,12 +49,14 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
       vsync: this,
       duration: Duration(milliseconds: 1500),
     );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
-    _rotateAnimation = Tween<double>(begin: 0, end: 0.1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _rotateAnimation = Tween<double>(
+      begin: 0,
+      end: 0.1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -125,11 +128,11 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
   Widget build(BuildContext context) {
     final authAsync = ref.watch(authProvider);
     final uid = authAsync.valueOrNull?.id;
-    
+
     if (uid == null || _isDismissed) return SizedBox.shrink();
 
     final wardrobeAsync = ref.watch(wardrobeProvider);
-    
+
     return wardrobeAsync.when(
       loading: () => SizedBox.shrink(),
       error: (error, _) => ErrorSection(
@@ -142,31 +145,41 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
       data: (wardrobeState) {
         final itemCount = wardrobeState.items.length;
         final milestones = _getMilestones(itemCount);
-        
+
         // Find the next milestone to achieve
         final nextMilestone = milestones.firstWhere(
           (m) => !m.isUnlocked,
           orElse: () => milestones.last,
         );
-        
+
         // Find the most recently achieved milestone
-        final achievedMilestones = milestones.where((m) => m.isUnlocked).toList();
-        final latestAchieved = achievedMilestones.isNotEmpty ? achievedMilestones.last : null;
-        
+        final achievedMilestones = milestones
+            .where((m) => m.isUnlocked)
+            .toList();
+        final latestAchieved = achievedMilestones.isNotEmpty
+            ? achievedMilestones.last
+            : null;
+
         // Calculate progress to next milestone
         final progress = itemCount / nextMilestone.itemCount;
-        
+
         // Show widget if user has items and hasn't dismissed
         if (itemCount == 0) {
           return _buildEmptyState(context);
         }
-        
+
         // Show celebration if just achieved a new milestone
         if (latestAchieved != null && itemCount == latestAchieved.itemCount) {
           _controller.forward(from: 0);
-          return _buildCelebrationCard(context, latestAchieved, itemCount, progress, nextMilestone);
+          return _buildCelebrationCard(
+            context,
+            latestAchieved,
+            itemCount,
+            progress,
+            nextMilestone,
+          );
         }
-        
+
         // Show progress card
         return _buildProgressCard(context, itemCount, progress, nextMilestone);
       },
@@ -205,10 +218,16 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: context.trenzyColors.primary.withValues(alpha: 0.15),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.15,
+                      ),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(Icons.checkroom_rounded, color: context.trenzyColors.primary, size: 24),
+                    child: Icon(
+                      Icons.checkroom_rounded,
+                      color: context.trenzyColors.primary,
+                      size: 24,
+                    ),
                   ),
                 ),
                 SizedBox(width: 14),
@@ -237,7 +256,10 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                 ),
                 Semantics(
                   label: 'Navigate to wardrobe',
-                  child: Icon(Icons.chevron_right_rounded, color: context.trenzyColors.mutedFg),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ],
             ),
@@ -255,7 +277,8 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
     WardrobeMilestone nextMilestone,
   ) {
     return Semantics(
-      label: 'Milestone achieved! ${milestone.title}. ${milestone.description}. You have $itemCount items in your wardrobe.',
+      label:
+          'Milestone achieved! ${milestone.title}. ${milestone.description}. You have $itemCount items in your wardrobe.',
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
@@ -302,7 +325,10 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                       SizedBox(height: 12),
                       // Milestone achieved text
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: milestone.color.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -341,7 +367,8 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                       SizedBox(height: 16),
                       // Stats row
                       Semantics(
-                        label: 'You have $itemCount items. ${nextMilestone.itemCount - itemCount} items needed for next milestone.',
+                        label:
+                            'You have $itemCount items. ${nextMilestone.itemCount - itemCount} items needed for next milestone.',
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -363,13 +390,16 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                       // Progress bar to next milestone
                       if (itemCount < nextMilestone.itemCount) ...[
                         Semantics(
-                          label: 'Progress to next milestone: ${(progress * 100).toInt()} percent',
+                          label:
+                              'Progress to next milestone: ${(progress * 100).toInt()} percent',
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: progress.clamp(0.0, 1.0),
                               backgroundColor: context.trenzyColors.glass,
-                              valueColor: AlwaysStoppedAnimation(milestone.color),
+                              valueColor: AlwaysStoppedAnimation(
+                                milestone.color,
+                              ),
                               minHeight: 6,
                             ),
                           ),
@@ -394,7 +424,9 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                               child: GestureDetector(
                                 onTap: () => context.go(AppRoutes.wardrobe),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: GlassGradients.primary,
                                     borderRadius: BorderRadius.circular(12),
@@ -419,11 +451,16 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                             child: GestureDetector(
                               onTap: _dismissMilestone,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: context.trenzyColors.glass,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: context.trenzyColors.glassBorder),
+                                  border: Border.all(
+                                    color: context.trenzyColors.glassBorder,
+                                  ),
                                 ),
                                 child: Text(
                                   'Dismiss',
@@ -456,7 +493,8 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
     WardrobeMilestone nextMilestone,
   ) {
     return Semantics(
-      label: 'Wardrobe progress. $itemCount items. ${nextMilestone.itemCount - itemCount} items needed for ${nextMilestone.title}.',
+      label:
+          'Wardrobe progress. $itemCount items. ${nextMilestone.itemCount - itemCount} items needed for ${nextMilestone.title}.',
       button: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -507,14 +545,18 @@ class _WardrobeMilestoneCardState extends ConsumerState<WardrobeMilestoneCard>
                     ),
                     Semantics(
                       label: 'Navigate to wardrobe',
-                      child: Icon(Icons.chevron_right_rounded, color: context.trenzyColors.mutedFg),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        color: context.trenzyColors.mutedFg,
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: 16),
                 // Progress bar
                 Semantics(
-                  label: 'Progress: ${(progress * 100).toInt()} percent complete',
+                  label:
+                      'Progress: ${(progress * 100).toInt()} percent complete',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
@@ -635,7 +677,8 @@ class _MilestoneIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '$label items milestone ${isAchieved ? "achieved" : "not yet achieved"}',
+      label:
+          '$label items milestone ${isAchieved ? "achieved" : "not yet achieved"}',
       child: Column(
         children: [
           Container(
@@ -653,12 +696,7 @@ class _MilestoneIndicator extends StatelessWidget {
                 width: isAchieved ? 2 : 1,
               ),
             ),
-            child: Center(
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
+            child: Center(child: Text(emoji, style: TextStyle(fontSize: 14))),
           ),
           SizedBox(height: 4),
           Text(

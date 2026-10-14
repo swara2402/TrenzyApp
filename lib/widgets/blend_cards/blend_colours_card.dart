@@ -5,10 +5,7 @@ import '../../theme/glass_theme.dart';
 import 'blend_card_decoration.dart';
 
 class BlendColoursCard extends StatelessWidget {
-  const BlendColoursCard({
-    super.key,
-    required this.results,
-  });
+  const BlendColoursCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -72,14 +69,20 @@ class BlendColoursCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Shared Colours',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Colours that define your palette',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -106,11 +109,7 @@ class BlendColoursCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.palette_rounded,
-            size: 40,
-            color: GlassColors.fg20,
-          ),
+          Icon(Icons.palette_rounded, size: 40, color: GlassColors.fg20),
           const SizedBox(height: 12),
           Text(
             'No shared colours yet',
@@ -119,15 +118,16 @@ class BlendColoursCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Colour preferences will appear as you discover more together',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-
-
 }
 
 class _ColourChip extends StatelessWidget {

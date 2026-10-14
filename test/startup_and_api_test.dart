@@ -49,128 +49,149 @@ void main() {
       ageVerifiedNotifier.dispose();
     });
 
-    test('1. Fresh launch, signed out: stays on splash or routes to welcome', () {
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: false,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.splash,
-        ),
-        isNull,
-      );
+    test(
+      '1. Fresh launch, signed out: stays on splash or routes to welcome',
+      () {
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: false,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.splash,
+          ),
+          isNull,
+        );
 
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: false,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.welcome,
-        ),
-        isNull,
-      );
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: false,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.welcome,
+          ),
+          isNull,
+        );
 
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: false,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.home,
-        ),
-        AppRoutes.splash,
-      );
-    });
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: false,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.home,
+          ),
+          AppRoutes.splash,
+        );
+      },
+    );
 
-    test('2 & 3. Existing valid session: verified age and complete onboarding routes to home', () {
-      // Verified returning user on age gate or onboarding is redirected to home
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: true,
-          isAgeVerified: true,
-          location: AppRoutes.ageVerification,
-        ),
-        AppRoutes.home,
-      );
+    test(
+      '2 & 3. Existing valid session: verified age and complete onboarding routes to home',
+      () {
+        // Verified returning user on age gate or onboarding is redirected to home
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: true,
+            isAgeVerified: true,
+            location: AppRoutes.ageVerification,
+          ),
+          AppRoutes.home,
+        );
 
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: true,
-          isAgeVerified: true,
-          location: AppRoutes.onboarding,
-        ),
-        AppRoutes.home,
-      );
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: true,
+            isAgeVerified: true,
+            location: AppRoutes.onboarding,
+          ),
+          AppRoutes.home,
+        );
 
-      // Verified user on home is allowed
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: true,
-          isAgeVerified: true,
-          location: AppRoutes.home,
-        ),
-        isNull,
-      );
-    });
+        // Verified user on home is allowed
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: true,
+            isAgeVerified: true,
+            location: AppRoutes.home,
+          ),
+          isNull,
+        );
+      },
+    );
 
-    test('4. Logged in user without age verification is redirected to /age-verification', () {
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.onboarding,
-        ),
-        AppRoutes.ageVerification,
-      );
+    test(
+      '4. Logged in user without age verification is redirected to /age-verification',
+      () {
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.onboarding,
+          ),
+          AppRoutes.ageVerification,
+        );
 
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.home,
-        ),
-        AppRoutes.ageVerification,
-      );
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.home,
+          ),
+          AppRoutes.ageVerification,
+        );
 
-      // Allowed to stay on age verification to verify
-      expect(
-        AppRoutes.guardRedirect(
-          isLoggedIn: true,
-          isOnboardingDone: false,
-          isAgeVerified: false,
-          location: AppRoutes.ageVerification,
-        ),
-        isNull,
-      );
-    });
+        // Allowed to stay on age verification to verify
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: true,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: AppRoutes.ageVerification,
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('5. Incomplete onboarding: resumes the exact pending wizard step', () {
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 0}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 0},
+        ),
         AppRoutes.onboarding,
       );
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 1}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 1},
+        ),
         '${AppRoutes.favoriteCategories}?source=onboarding',
       );
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 2}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 2},
+        ),
         '${AppRoutes.preferredStyles}?source=onboarding',
       );
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 3}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 3},
+        ),
         '${AppRoutes.discoveryPreferences}?source=onboarding',
       );
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 4}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 4},
+        ),
         AppRoutes.persona,
       );
       expect(
-        AppRoutes.firstIncompleteOnboardingRoute(preferences: {'onboarding_step': 5}),
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: {'onboarding_step': 5},
+        ),
         AppRoutes.home,
       );
     });
@@ -178,7 +199,9 @@ void main() {
     test('6 & 7. Unexpected response shapes are handled gracefully', () {
       // Nested format
       expect(
-        AppRoutes.routeFromPreferencesResponse({'preferences': {'onboarding_step': 3}}),
+        AppRoutes.routeFromPreferencesResponse({
+          'preferences': {'onboarding_step': 3},
+        }),
         '${AppRoutes.discoveryPreferences}?source=onboarding',
       );
       // Flat format
@@ -210,7 +233,9 @@ void main() {
           http.Response('{"detail": "token expired"}', 401),
           endpoint: '/persona/preferences',
         ),
-        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 401)),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 401),
+        ),
       );
 
       ApiClient.onSessionExpired?.call();

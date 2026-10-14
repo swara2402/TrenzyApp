@@ -88,7 +88,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
 
     // P1: Listen to swipe_applied events for real-time activity feed updates
     _swipeSub?.cancel();
-    _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((swipeEvent) {
+    _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((
+      swipeEvent,
+    ) {
       if (mounted) {
         setState(() => _lastSwipeEvent = swipeEvent);
       }
@@ -96,7 +98,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
 
     // P1 RESYNC: Listen to connection state to trigger full state refresh on reconnect
     _connectionSub?.cancel();
-    _connectionSub = BlendSocketService.instance.connectionStateStream.listen((isConnected) {
+    _connectionSub = BlendSocketService.instance.connectionStateStream.listen((
+      isConnected,
+    ) {
       if (isConnected && mounted) {
         // On successful reconnect, fetch full blend state to sync any missed events
         BlendSocketService.instance.getBlendState(_groupId!);
@@ -119,9 +123,13 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     if (_liveState == null || _liveState!.memberCount <= 1) return 0;
     final swipesByMember = _liveState!.swipesByMember;
     if (swipesByMember.isEmpty) return 0;
-    final membersWithSwipes = swipesByMember.entries.where((e) => e.value > 0).length;
+    final membersWithSwipes = swipesByMember.entries
+        .where((e) => e.value > 0)
+        .length;
     final memberRatio = membersWithSwipes / _liveState!.memberCount;
-    final agreementRatio = _liveState!.totalSwipes > 0 ? (_liveState!.agreementScore ?? 0.5) : 0.0;
+    final agreementRatio = _liveState!.totalSwipes > 0
+        ? (_liveState!.agreementScore ?? 0.5)
+        : 0.0;
     return (memberRatio * 0.5 + agreementRatio * 0.5).clamp(0.0, 1.0);
   }
 
@@ -143,7 +151,11 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
       body: Stack(
         children: [
           if (groupId == null)
-            Center(child: CircularProgressIndicator(color: context.trenzyColors.primary))
+            Center(
+              child: CircularProgressIndicator(
+                color: context.trenzyColors.primary,
+              ),
+            )
           else
             _buildMainContent(groupId, members),
           _BottomNavBar(),
@@ -163,11 +175,19 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.group_remove, size: 64, color: context.trenzyColors.mutedFg.withValues(alpha: 0.5)),
+              Icon(
+                Icons.group_remove,
+                size: 64,
+                color: context.trenzyColors.mutedFg.withValues(alpha: 0.5),
+              ),
               SizedBox(height: 24),
               Text(
                 'Blend Ended',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: context.trenzyColors.foreground,
+                ),
               ),
               SizedBox(height: 12),
               Text(
@@ -206,31 +226,45 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                         padding: EdgeInsets.symmetric(vertical: 40),
                         child: Column(
                           children: [
-                            Icon(Icons.shopping_bag_outlined, 
-                              color: context.trenzyColors.mutedFg.withValues(alpha: 0.5), 
-                              size: 48),
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              color: context.trenzyColors.mutedFg.withValues(
+                                alpha: 0.5,
+                              ),
+                              size: 48,
+                            ),
                             SizedBox(height: 16),
                             Text(
                               'Waiting for products...',
-                              style: TextStyle(color: context.trenzyColors.mutedFg),
+                              style: TextStyle(
+                                color: context.trenzyColors.mutedFg,
+                              ),
                             ),
                           ],
                         ),
                       ),
                 loading: () => Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
-                  child: CircularProgressIndicator(color: context.trenzyColors.primary),
+                  child: CircularProgressIndicator(
+                    color: context.trenzyColors.primary,
+                  ),
                 ),
                 error: (e, _) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Column(
                     children: [
-                      Icon(Icons.error_outline, 
-                        color: context.trenzyColors.crimson.withValues(alpha: 0.5), 
-                        size: 48),
+                      Icon(
+                        Icons.error_outline,
+                        color: context.trenzyColors.crimson.withValues(
+                          alpha: 0.5,
+                        ),
+                        size: 48,
+                      ),
                       SizedBox(height: 16),
-                      Text('Error loading products', 
-                        style: TextStyle(color: context.trenzyColors.mutedFg)),
+                      Text(
+                        'Error loading products',
+                        style: TextStyle(color: context.trenzyColors.mutedFg),
+                      ),
                     ],
                   ),
                 ),
@@ -250,7 +284,8 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
   Widget _buildLiveInteractionOverlay(List<BlendMember> members) {
     final activeMember = members.isNotEmpty ? members.first : null;
     final onlineMembers = _liveState?.onlineUserIds ?? [];
-    final isActiveMemberOnline = activeMember != null && onlineMembers.contains(activeMember.userId);
+    final isActiveMemberOnline =
+        activeMember != null && onlineMembers.contains(activeMember.userId);
 
     return GlassBlurredContainer(
       radius: 99,
@@ -265,7 +300,11 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
               width: 50,
               child: Stack(
                 children: [
-                  _buildAvatar(null, label: activeMember?.userName ?? 'U', isOnline: isActiveMemberOnline),
+                  _buildAvatar(
+                    null,
+                    label: activeMember?.userName ?? 'U',
+                    isOnline: isActiveMemberOnline,
+                  ),
                   if (members.length > 1)
                     Positioned(
                       left: 20,
@@ -309,7 +348,11 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     );
   }
 
-  Widget _buildAvatar(String? imageUrl, {bool isOnline = false, String? label}) {
+  Widget _buildAvatar(
+    String? imageUrl, {
+    bool isOnline = false,
+    String? label,
+  }) {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -320,10 +363,14 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
           CircleAvatar(
             radius: 18,
             backgroundColor: context.trenzyColors.graphite,
-            backgroundImage: (imageUrl != null && imageUrl.isNotEmpty) ? NetworkImage(imageUrl) : null,
+            backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
+                ? NetworkImage(imageUrl)
+                : null,
             child: (imageUrl == null || imageUrl.isEmpty)
                 ? Text(
-                    label != null && label.isNotEmpty ? label[0].toUpperCase() : 'U',
+                    label != null && label.isNotEmpty
+                        ? label[0].toUpperCase()
+                        : 'U',
                     style: TextStyle(
                       color: context.trenzyColors.primary,
                       fontSize: 14,
@@ -343,12 +390,17 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                 decoration: BoxDecoration(
                   color: context.trenzyColors.emerald,
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.trenzyColors.background, width: 2),
+                  border: Border.all(
+                    color: context.trenzyColors.background,
+                    width: 2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: context.trenzyColors.emerald.withValues(alpha: 0.5),
+                      color: context.trenzyColors.emerald.withValues(
+                        alpha: 0.5,
+                      ),
                       blurRadius: 6,
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -379,7 +431,11 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(99),
                 gradient: LinearGradient(
-                  colors: [Color(0xFFD4AF37), context.trenzyColors.primary, Color(0xFFFFE088)],
+                  colors: [
+                    Color(0xFFD4AF37),
+                    context.trenzyColors.primary,
+                    Color(0xFFFFE088),
+                  ],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -438,11 +494,19 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(
                   color: context.trenzyColors.graphite,
-                  child: Icon(Icons.checkroom, color: context.trenzyColors.mutedFg, size: 60),
+                  child: Icon(
+                    Icons.checkroom,
+                    color: context.trenzyColors.mutedFg,
+                    size: 60,
+                  ),
                 ),
                 errorWidget: (_, _, _) => Container(
                   color: context.trenzyColors.graphite,
-                  child: Icon(Icons.checkroom, color: context.trenzyColors.mutedFg, size: 60),
+                  child: Icon(
+                    Icons.checkroom,
+                    color: context.trenzyColors.mutedFg,
+                    size: 60,
+                  ),
                 ),
               ),
               Container(
@@ -466,9 +530,16 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                   children: [
                     Row(
                       children: [
-                        _buildTag(product.brand, Colors.white.withValues(alpha: 0.1)),
+                        _buildTag(
+                          product.brand,
+                          Colors.white.withValues(alpha: 0.1),
+                        ),
                         SizedBox(width: 8),
-                        _buildTag(product.category, context.trenzyColors.primary.withValues(alpha: 0.2), textColor: context.trenzyColors.primary),
+                        _buildTag(
+                          product.category,
+                          context.trenzyColors.primary.withValues(alpha: 0.2),
+                          textColor: context.trenzyColors.primary,
+                        ),
                       ],
                     ),
                     SizedBox(height: 16),
@@ -487,7 +558,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                     Text(
                       product.description,
                       style: TextStyle(
-                        color: context.trenzyColors.mutedFg.withValues(alpha: 0.9),
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.9,
+                        ),
                         fontSize: 15,
                       ),
                       maxLines: 2,
@@ -523,7 +596,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                           onPressed: () {
                             context.push(
                               AppRoutes.productDetailsFor(product.id),
-                              extra: ProductDetailsRouteExtra(productId: product.id),
+                              extra: ProductDetailsRouteExtra(
+                                productId: product.id,
+                              ),
                             );
                           },
                           icon: Icon(Icons.info_outline, size: 18),
@@ -537,12 +612,19 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
                           ),
                           style: ElevatedButton.styleFrom(
                             foregroundColor: context.trenzyColors.foreground,
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.05,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                              side: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -557,7 +639,11 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     );
   }
 
-  Widget _buildTag(String text, Color bgColor, {Color textColor = GlassColors.foreground}) {
+  Widget _buildTag(
+    String text,
+    Color bgColor, {
+    Color textColor = GlassColors.foreground,
+  }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(99),
       child: BackdropFilter(
@@ -634,19 +720,19 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
 
     // Show live feedback snackbar for user's swipe
     if (mounted) {
-      final message = type == SwipeType.love 
-          ? "❤️ You loved ${product.name}!" 
-          : type == SwipeType.like 
-              ? "👍 You liked ${product.name}"
-              : "👎 You passed on ${product.name}";
+      final message = type == SwipeType.love
+          ? "❤️ You loved ${product.name}!"
+          : type == SwipeType.like
+          ? "👍 You liked ${product.name}"
+          : "👎 You passed on ${product.name}";
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: type == SwipeType.love 
-              ? context.trenzyColors.crimson 
-              : type == SwipeType.like 
-                  ? context.trenzyColors.primary 
-                  : context.trenzyColors.mutedFg,
+          backgroundColor: type == SwipeType.love
+              ? context.trenzyColors.crimson
+              : type == SwipeType.like
+              ? context.trenzyColors.primary
+              : context.trenzyColors.mutedFg,
           duration: const Duration(milliseconds: 1500),
           behavior: SnackBarBehavior.floating,
         ),
@@ -684,7 +770,9 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
               boxShadow: hasPulse
                   ? [
                       BoxShadow(
-                        color: context.trenzyColors.primary.withValues(alpha: 0.15),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.15,
+                        ),
                         blurRadius: 40,
                         offset: Offset(0, 10),
                       ),
@@ -743,20 +831,32 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  style: TextStyle(fontSize: 12, color: context.trenzyColors.foreground),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.trenzyColors.foreground,
+                  ),
                   children: [
                     if (swipeEvent != null) ...[
                       TextSpan(
                         text: '${swipeEvent['userName'] ?? 'Someone'} ',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: context.trenzyColors.primary),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: context.trenzyColors.primary,
+                        ),
                       ),
                       TextSpan(
-                        text: _getSwipeActionText(swipeEvent['swipeType'] ?? 'liked'),
+                        text: _getSwipeActionText(
+                          swipeEvent['swipeType'] ?? 'liked',
+                        ),
                       ),
                     ] else ...[
                       TextSpan(
-                        text: '${memberNames.isNotEmpty ? memberNames.first : 'Members'} ',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: context.trenzyColors.primary),
+                        text:
+                            '${memberNames.isNotEmpty ? memberNames.first : 'Members'} ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: context.trenzyColors.primary,
+                        ),
                       ),
                       TextSpan(text: ' joined the session'),
                     ],
@@ -795,7 +895,8 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     if (!mounted) return;
 
     // P0 ERROR HANDLING: Distinguish between connection issues and auth failures
-    bool isCritical = error.contains('token') ||
+    bool isCritical =
+        error.contains('token') ||
         error.contains('expired') ||
         error.contains('revoked') ||
         error.contains('Not authenticated');
@@ -846,16 +947,38 @@ class _BottomNavBar extends StatelessWidget {
             height: 90,
             decoration: BoxDecoration(
               color: context.trenzyColors.background.withValues(alpha: 0.8),
-              border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+              border: Border(
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(context, Icons.home, 'Home', AppRoutes.home),
-                _buildNavItem(context, Icons.style, 'Social', AppRoutes.blendHub),
-                _buildNavItem(context, Icons.search, 'Discover', AppRoutes.discover),
-                _buildNavItem(context, Icons.checkroom, 'Closet', AppRoutes.wardrobe),
-                _buildNavItem(context, Icons.person, 'Profile', AppRoutes.profile),
+                _buildNavItem(
+                  context,
+                  Icons.style,
+                  'Social',
+                  AppRoutes.blendHub,
+                ),
+                _buildNavItem(
+                  context,
+                  Icons.search,
+                  'Discover',
+                  AppRoutes.discover,
+                ),
+                _buildNavItem(
+                  context,
+                  Icons.checkroom,
+                  'Closet',
+                  AppRoutes.wardrobe,
+                ),
+                _buildNavItem(
+                  context,
+                  Icons.person,
+                  'Profile',
+                  AppRoutes.profile,
+                ),
               ],
             ),
           ),
@@ -864,13 +987,22 @@ class _BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, String route) {
+  Widget _buildNavItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String route,
+  ) {
     return GestureDetector(
       onTap: () => context.go(route),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: context.trenzyColors.mutedFg.withValues(alpha: 0.4), size: 26),
+          Icon(
+            icon,
+            color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
+            size: 26,
+          ),
           SizedBox(height: 6),
           Text(
             label.toUpperCase(),

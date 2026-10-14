@@ -19,15 +19,15 @@ class FeedItem {
     int? likes,
     int? comments,
     DateTime? createdAt,
-  })  : id = id ?? '',
-        userId = userId ?? '',
-        content = content ?? '',
-        title = title ?? 'Untitled',
-        description = description ?? '',
-        imageUrl = imageUrl ?? '',
-        likes = likes ?? 0,
-        comments = comments ?? 0,
-        createdAt = createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }) : id = id ?? '',
+       userId = userId ?? '',
+       content = content ?? '',
+       title = title ?? 'Untitled',
+       description = description ?? '',
+       imageUrl = imageUrl ?? '',
+       likes = likes ?? 0,
+       comments = comments ?? 0,
+       createdAt = createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
 
   factory FeedItem.fromJson(Map<String, dynamic> json) {
     return FeedItem(

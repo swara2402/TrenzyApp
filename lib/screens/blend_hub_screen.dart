@@ -52,10 +52,7 @@ class BlendHubScreen extends ConsumerWidget {
                               ),
                             ),
                             SizedBox(height: 4),
-                            DisplayText(
-                              'Your Active Blends',
-                              fontSize: 24,
-                            ),
+                            DisplayText('Your Active Blends', fontSize: 24),
                           ],
                         ),
                         Container(
@@ -64,10 +61,14 @@ class BlendHubScreen extends ConsumerWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: context.trenzyColors.primary.withValues(alpha: 0.12),
+                            color: context.trenzyColors.primary.withValues(
+                              alpha: 0.12,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: context.trenzyColors.primary.withValues(alpha: 0.3),
+                              color: context.trenzyColors.primary.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                           child: Text(
@@ -96,7 +97,11 @@ class BlendHubScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActiveBlends(BuildContext context, WidgetRef ref, AsyncValue<List<BlendGroup>> blendsAsync) {
+  Widget _buildActiveBlends(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<BlendGroup>> blendsAsync,
+  ) {
     return blendsAsync.when(
       loading: () => SizedBox(
         height: 380,
@@ -111,7 +116,8 @@ class BlendHubScreen extends ConsumerWidget {
         if (blends.isEmpty) {
           return EmptySection(
             title: 'Start a Blend with friends',
-            subtitle: 'Swipe, vote, and decide what to buy together. Create a new blend or join one with an invite code.',
+            subtitle:
+                'Swipe, vote, and decide what to buy together. Create a new blend or join one with an invite code.',
             icon: Icons.groups_outlined,
             actionLabel: 'Create New Blend',
             onAction: () => context.go(AppRoutes.createBlend),
@@ -128,7 +134,8 @@ class BlendHubScreen extends ConsumerWidget {
                 match: '${blend.memberCount} Members',
                 title: blend.name,
                 updateTime: '#${blend.inviteCode}',
-                onTap: () => context.go('${AppRoutes.blendLobby}?groupId=${blend.id}'),
+                onTap: () =>
+                    context.go('${AppRoutes.blendLobby}?groupId=${blend.id}'),
               );
             },
           ),
@@ -201,7 +208,10 @@ class _BlendCard extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [context.trenzyColors.primary, context.trenzyColors.emerald],
+                  colors: [
+                    context.trenzyColors.primary,
+                    context.trenzyColors.emerald,
+                  ],
                 ),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
@@ -214,9 +224,15 @@ class _BlendCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: context.trenzyColors.primary.withValues(alpha: 0.12),
-                border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.25)),
+                border: Border.all(
+                  color: context.trenzyColors.primary.withValues(alpha: 0.25),
+                ),
               ),
-              child: Icon(Icons.groups, color: context.trenzyColors.primary, size: 28),
+              child: Icon(
+                Icons.groups,
+                color: context.trenzyColors.primary,
+                size: 28,
+              ),
             ),
             SizedBox(height: 20),
             // Title
@@ -300,7 +316,9 @@ class _ActionTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.trenzyColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: context.trenzyColors.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: Icon(icon, color: context.trenzyColors.primary, size: 32),
             ),

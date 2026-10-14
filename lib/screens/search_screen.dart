@@ -20,7 +20,10 @@ class _RecentSearchesNotifier extends StateNotifier<List<String>> {
   void add(String query) {
     final q = query.trim();
     if (q.isEmpty) return;
-    state = [q, ...state.where((s) => s != q)].take(_kMaxRecentSearches).toList();
+    state = [
+      q,
+      ...state.where((s) => s != q),
+    ].take(_kMaxRecentSearches).toList();
   }
 
   void remove(String query) {
@@ -34,8 +37,8 @@ class _RecentSearchesNotifier extends StateNotifier<List<String>> {
 
 final recentSearchesProvider =
     StateNotifierProvider<_RecentSearchesNotifier, List<String>>(
-  (_) => _RecentSearchesNotifier(),
-);
+      (_) => _RecentSearchesNotifier(),
+    );
 
 // ── Trending searches (static for now, can be wired to API later) ──────────
 const _kTrendingSearches = [
@@ -89,8 +92,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _hasSubmitted = true;
     }
     if (widget.initialCategory != null) {
-      _controller.text = widget.initialSubcategory != null 
-          ? '${widget.initialCategory!} > ${widget.initialSubcategory!}' 
+      _controller.text = widget.initialSubcategory != null
+          ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
           : widget.initialCategory!;
       _query = widget.initialCategory!;
       _hasSubmitted = true;
@@ -145,7 +148,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       };
     }
   }
-  
+
   Map<String, String?> _initialFilters = {};
 
   @override
@@ -209,8 +212,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       onTap: () => setState(() => _hasSubmitted = false),
                       trailing: _controller.text.isNotEmpty
                           ? IconButton(
-                              icon: Icon(Icons.close,
-                                  color: context.trenzyColors.mutedFg, size: 18),
+                              icon: Icon(
+                                Icons.close,
+                                color: context.trenzyColors.mutedFg,
+                                size: 18,
+                              ),
                               onPressed: () {
                                 _controller.clear();
                                 setState(() {
@@ -233,8 +239,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         color: context.trenzyColors.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.search_rounded,
-                          color: context.trenzyColors.primaryFg, size: 22),
+                      child: Icon(
+                        Icons.search_rounded,
+                        color: context.trenzyColors.primaryFg,
+                        size: 22,
+                      ),
                     ),
                   ),
                 ],
@@ -254,7 +263,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // ── Body ────────────────────────────────────────────────────
             Expanded(
               child: _hasSubmitted
-                  ? _SearchResults(query: _query, initialFilters: _initialFilters)
+                  ? _SearchResults(
+                      query: _query,
+                      initialFilters: _initialFilters,
+                    )
                   : _BrowseView(
                       recentSearches: recentSearches,
                       onRecentTap: _selectRecent,
@@ -292,7 +304,8 @@ class _SuggestionsOverlay extends ConsumerWidget {
           height: 32,
           child: Center(
             child: SizedBox(
-              width: 16, height: 16,
+              width: 16,
+              height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: context.trenzyColors.mutedFg,
@@ -305,12 +318,19 @@ class _SuggestionsOverlay extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            Icon(Icons.error_outline_rounded, size: 16, color: context.trenzyColors.crimson),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 16,
+              color: context.trenzyColors.crimson,
+            ),
             SizedBox(width: 8),
             Expanded(
               child: Text(
                 'Suggestions are unavailable right now',
-                style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  fontSize: 13,
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
             ),
           ],
@@ -335,14 +355,20 @@ class _SuggestionsOverlay extends ConsumerWidget {
                 borderRadius: index == 0
                     ? BorderRadius.vertical(top: Radius.circular(12))
                     : index == suggestions.length - 1
-                        ? BorderRadius.vertical(bottom: Radius.circular(12))
-                        : null,
+                    ? BorderRadius.vertical(bottom: Radius.circular(12))
+                    : null,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.search_rounded,
-                          size: 18, color: context.trenzyColors.mutedFg),
+                      Icon(
+                        Icons.search_rounded,
+                        size: 18,
+                        color: context.trenzyColors.mutedFg,
+                      ),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -422,18 +448,29 @@ class _BrowseView extends StatelessWidget {
           ...recentSearches.map(
             (query) => ListTile(
               dense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              leading:
-                  Icon(Icons.history, color: context.trenzyColors.mutedFg, size: 20),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 0,
+              ),
+              leading: Icon(
+                Icons.history,
+                color: context.trenzyColors.mutedFg,
+                size: 20,
+              ),
               title: Text(
                 query,
-                style: TextStyle(color: context.trenzyColors.foreground, fontSize: 14),
+                style: TextStyle(
+                  color: context.trenzyColors.foreground,
+                  fontSize: 14,
+                ),
               ),
               trailing: GestureDetector(
                 onTap: () => onRecentRemove(query),
-                child: Icon(Icons.close,
-                    color: context.trenzyColors.mutedFg, size: 16),
+                child: Icon(
+                  Icons.close,
+                  color: context.trenzyColors.mutedFg,
+                  size: 16,
+                ),
               ),
               onTap: () => onRecentTap(query),
             ),
@@ -446,8 +483,11 @@ class _BrowseView extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
             children: [
-              Icon(Icons.trending_up_rounded,
-                  color: context.trenzyColors.primary, size: 18),
+              Icon(
+                Icons.trending_up_rounded,
+                color: context.trenzyColors.primary,
+                size: 18,
+              ),
               SizedBox(width: 8),
               Text(
                 'Trending Searches',
@@ -470,8 +510,10 @@ class _BrowseView extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onTrendingTap(term),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: context.trenzyColors.graphite,
                     borderRadius: BorderRadius.circular(20),
@@ -480,8 +522,11 @@ class _BrowseView extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.trending_up_rounded,
-                          color: context.trenzyColors.primary, size: 14),
+                      Icon(
+                        Icons.trending_up_rounded,
+                        color: context.trenzyColors.primary,
+                        size: 14,
+                      ),
                       SizedBox(width: 6),
                       Text(
                         term,
@@ -570,10 +615,7 @@ class _CategoryChips extends ConsumerWidget {
                 separatorBuilder: (_, _) => SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final cat = categories[index];
-                  return GlassTag(
-                    text: cat,
-                    onTap: () => onCategoryTap(cat),
-                  );
+                  return GlassTag(text: cat, onTap: () => onCategoryTap(cat));
                 },
               ),
             );
@@ -670,11 +712,23 @@ class _SearchResults extends ConsumerWidget {
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundImage: user['avatarUrl'] != null && user['avatarUrl'].isNotEmpty
-                                ? CachedNetworkImageProvider(ApiService.resolveImageUrl(user['avatarUrl']) ?? user['avatarUrl'])
+                            backgroundImage:
+                                user['avatarUrl'] != null &&
+                                    user['avatarUrl'].isNotEmpty
+                                ? CachedNetworkImageProvider(
+                                    ApiService.resolveImageUrl(
+                                          user['avatarUrl'],
+                                        ) ??
+                                        user['avatarUrl'],
+                                  )
                                 : null,
-                            child: user['avatarUrl'] == null || user['avatarUrl'].isEmpty
-                                ? Icon(Icons.person, color: context.trenzyColors.mutedFg)
+                            child:
+                                user['avatarUrl'] == null ||
+                                    user['avatarUrl'].isEmpty
+                                ? Icon(
+                                    Icons.person,
+                                    color: context.trenzyColors.mutedFg,
+                                  )
                                 : null,
                           ),
                           SizedBox(width: 12),
@@ -690,7 +744,8 @@ class _SearchResults extends ConsumerWidget {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                if (user['username'] != null && user['username'].isNotEmpty)
+                                if (user['username'] != null &&
+                                    user['username'].isNotEmpty)
                                   Text(
                                     '@${user['username']}',
                                     style: TextStyle(
@@ -701,7 +756,11 @@ class _SearchResults extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios, size: 16, color: context.trenzyColors.mutedFg),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: context.trenzyColors.mutedFg,
+                          ),
                         ],
                       ),
                     ),
@@ -759,13 +818,19 @@ class _SearchResults extends ConsumerWidget {
                                 top: Radius.circular(16),
                               ),
                               child: CachedNetworkImage(
-                                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                                imageUrl:
+                                    ApiService.resolveImageUrl(
+                                      product.imageUrl,
+                                    ) ??
+                                    product.imageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                placeholder: (_, _) => Container(color: Colors.grey[900]),
-                                errorWidget: (_, _, _) =>
-                                    Icon(Icons.image_outlined,
-                                        color: context.trenzyColors.mutedFg),
+                                placeholder: (_, _) =>
+                                    Container(color: Colors.grey[900]),
+                                errorWidget: (_, _, _) => Icon(
+                                  Icons.image_outlined,
+                                  color: context.trenzyColors.mutedFg,
+                                ),
                               ),
                             ),
                           ),
@@ -932,11 +997,7 @@ class _SearchErrorView extends StatelessWidget {
               ),
             ),
             SizedBox(height: 24),
-            GlowButton(
-              label: 'Try Again',
-              width: 200,
-              onTap: onRetry,
-            ),
+            GlowButton(label: 'Try Again', width: 200, onTap: onRetry),
           ],
         ),
       ),
@@ -966,8 +1027,11 @@ class _SwipeDiscoveryCard extends StatelessWidget {
                 color: context.trenzyColors.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.swipe_rounded,
-                  size: 28, color: context.trenzyColors.primary),
+              child: Icon(
+                Icons.swipe_rounded,
+                size: 28,
+                color: context.trenzyColors.primary,
+              ),
             ),
             SizedBox(width: 16),
             Expanded(
@@ -993,8 +1057,11 @@ class _SwipeDiscoveryCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios,
-                size: 16, color: context.trenzyColors.mutedFg),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: context.trenzyColors.mutedFg,
+            ),
           ],
         ),
       ),

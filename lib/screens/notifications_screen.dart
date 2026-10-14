@@ -67,7 +67,9 @@ class NotificationsScreen extends ConsumerWidget {
                 Text(
                   'Could not load notifications',
                   style: TextStyle(
-                    color: context.trenzyColors.foreground.withValues(alpha: 0.7),
+                    color: context.trenzyColors.foreground.withValues(
+                      alpha: 0.7,
+                    ),
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -92,13 +94,17 @@ class NotificationsScreen extends ConsumerWidget {
                     Icon(
                       Icons.notifications_none_rounded,
                       size: 72,
-                      color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
+                      color: context.trenzyColors.mutedFg.withValues(
+                        alpha: 0.4,
+                      ),
                     ),
                     SizedBox(height: 20),
                     Text(
                       'No notifications yet',
                       style: TextStyle(
-                        color: context.trenzyColors.foreground.withValues(alpha: 0.7),
+                        color: context.trenzyColors.foreground.withValues(
+                          alpha: 0.7,
+                        ),
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -108,7 +114,9 @@ class NotificationsScreen extends ConsumerWidget {
                       'When you get notifications, they\'ll show up here.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: context.trenzyColors.mutedFg.withValues(alpha: 0.6),
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.6,
+                        ),
                         fontSize: 14,
                       ),
                     ),
@@ -153,10 +161,7 @@ class NotificationsScreen extends ConsumerWidget {
 }
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({
-    required this.notification,
-    required this.onTap,
-  });
+  const _NotificationTile({required this.notification, required this.onTap});
 
   final NotificationItem notification;
   final VoidCallback onTap;

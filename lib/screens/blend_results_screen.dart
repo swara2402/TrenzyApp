@@ -157,7 +157,8 @@ class _BlendResultsContent extends StatelessWidget {
                 results.sharedCategories!,
               ),
             ),
-          if (results.categoryWinners?.isNotEmpty == true || results.winners?.isNotEmpty == true)
+          if (results.categoryWinners?.isNotEmpty == true ||
+              results.winners?.isNotEmpty == true)
             SliverToBoxAdapter(child: _buildWinnersSection(context))
           else if (results.overallWinner == null)
             SliverToBoxAdapter(
@@ -180,7 +181,9 @@ class _BlendResultsContent extends StatelessWidget {
 
   Widget _buildScoreSection(BuildContext context) {
     final score = results.fashionScore ?? 0.0;
-    final level = results.compatibilityLevel != null ? '${results.compatibilityLevel}' : '';
+    final level = results.compatibilityLevel != null
+        ? '${results.compatibilityLevel}'
+        : '';
 
     // Determine emoji for accessibility
     String accessibilityEmoji;
@@ -568,9 +571,15 @@ class _BlendResultsContent extends StatelessWidget {
                     height: 240,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: (catWinner.products ?? (catWinner.winner != null ? [catWinner.winner!] : [])).map((rp) {
-                        return _WinnerProductCard(rankedProduct: rp);
-                      }).toList(),
+                      children:
+                          (catWinner.products ??
+                                  (catWinner.winner != null
+                                      ? [catWinner.winner!]
+                                      : []))
+                              .map((rp) {
+                                return _WinnerProductCard(rankedProduct: rp);
+                              })
+                              .toList(),
                     ),
                   ),
                 ],
@@ -732,7 +741,8 @@ class _WinnerProductCard extends ConsumerWidget {
     final w = isLarge ? double.infinity : 180.0;
 
     final isStrongAgreement =
-        (rankedProduct.matchScore ?? 0) >= 70 || (rankedProduct.loveCount ?? 0) >= 2;
+        (rankedProduct.matchScore ?? 0) >= 70 ||
+        (rankedProduct.loveCount ?? 0) >= 2;
     final consensusLabel = isStrongAgreement ? 'Strong agreement' : 'Split';
     final consensusColor = isStrongAgreement
         ? context.trenzyColors.emerald
@@ -773,7 +783,9 @@ class _WinnerProductCard extends ConsumerWidget {
               children: [
                 product?.imageUrl != null && product!.imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                        imageUrl:
+                            ApiService.resolveImageUrl(product.imageUrl) ??
+                            product.imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         placeholder: (_, _) => Container(
@@ -980,7 +992,8 @@ class _MemberVotingBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalVotes = (rankedProduct.loveCount ?? 0) + (rankedProduct.likeCount ?? 0);
+    final totalVotes =
+        (rankedProduct.loveCount ?? 0) + (rankedProduct.likeCount ?? 0);
     if (totalVotes == 0) return SizedBox.shrink();
 
     return Container(
@@ -1011,7 +1024,8 @@ class _MemberVotingBreakdown extends StatelessWidget {
                   color: context.trenzyColors.crimson,
                   label: 'Loved',
                 ),
-              if ((rankedProduct.loveCount ?? 0) > 0 && (rankedProduct.likeCount ?? 0) > 0)
+              if ((rankedProduct.loveCount ?? 0) > 0 &&
+                  (rankedProduct.likeCount ?? 0) > 0)
                 SizedBox(width: 8),
               if ((rankedProduct.likeCount ?? 0) > 0)
                 _VoteChip(

@@ -13,21 +13,23 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: context.trenzyColors.background.withValues(alpha: 0.8),
+            backgroundColor: context.trenzyColors.background.withValues(
+              alpha: 0.8,
+            ),
             pinned: true,
             elevation: 0,
             leading: GlassBackButton(),
-            title: DisplayText(
-              'Analytics Dashboard',
-              fontSize: 20,
-            ),
+            title: DisplayText('Analytics Dashboard', fontSize: 20),
             actions: [
               // Firebase Console link
               Semantics(
                 label: 'Open Firebase Analytics console',
                 button: true,
                 child: IconButton(
-                  icon: Icon(Icons.open_in_new, color: context.trenzyColors.primary),
+                  icon: Icon(
+                    Icons.open_in_new,
+                    color: context.trenzyColors.primary,
+                  ),
                   onPressed: () => _showFirebaseConsoleInfo(context),
                 ),
               ),
@@ -42,19 +44,19 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                   // Analytics Status Card
                   _buildStatusCard(context, ref),
                   SizedBox(height: 24),
-                  
+
                   // Quick Stats Section
                   _buildSectionHeader('Quick Stats'),
                   SizedBox(height: 12),
                   _buildQuickStatsGrid(context),
                   SizedBox(height: 24),
-                  
+
                   // Tracked Events Section
                   _buildSectionHeader('Tracked Events'),
                   SizedBox(height: 12),
                   _buildEventsList(context),
                   SizedBox(height: 24),
-                  
+
                   // Event Categories
                   _buildSectionHeader('Event Categories'),
                   SizedBox(height: 12),
@@ -71,7 +73,7 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
 
   Widget _buildStatusCard(BuildContext context, WidgetRef ref) {
     final isEnabled = FeatureFlags.analyticsEnabled;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -94,14 +96,16 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isEnabled 
+              color: isEnabled
                   ? context.trenzyColors.emerald.withValues(alpha: 0.15)
                   : context.trenzyColors.crimson.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isEnabled ? Icons.check_circle : Icons.cancel,
-              color: isEnabled ? context.trenzyColors.emerald : context.trenzyColors.crimson,
+              color: isEnabled
+                  ? context.trenzyColors.emerald
+                  : context.trenzyColors.crimson,
               size: 24,
             ),
           ),
@@ -120,7 +124,7 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  isEnabled 
+                  isEnabled
                       ? 'Events are being tracked to Firebase Analytics'
                       : 'Analytics tracking is currently disabled',
                   style: TextStyle(
@@ -224,7 +228,11 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
       _EventItem('user_unfollow', 'User unfollowed', Icons.person_remove),
       _EventItem('onboarding_complete', 'Onboarding done', Icons.check_circle),
       _EventItem('wardrobe_add', 'Wardrobe item added', Icons.checkroom),
-      _EventItem('wardrobe_remove', 'Wardrobe item removed', Icons.delete_outline),
+      _EventItem(
+        'wardrobe_remove',
+        'Wardrobe item removed',
+        Icons.delete_outline,
+      ),
     ];
 
     return Container(
@@ -238,7 +246,7 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
           final index = entry.key;
           final event = entry.value;
           final isLast = index == events.length - 1;
-          
+
           return _buildEventTile(context, event, isLast);
         }).toList(),
       ),
@@ -248,14 +256,16 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
   Widget _buildEventTile(BuildContext context, _EventItem event, bool isLast) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: isLast ? null : BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: context.trenzyColors.glassBorder,
-            width: 0.5,
-          ),
-        ),
-      ),
+      decoration: isLast
+          ? null
+          : BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: context.trenzyColors.glassBorder,
+                  width: 0.5,
+                ),
+              ),
+            ),
       child: Row(
         children: [
           Container(
@@ -265,7 +275,11 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
               color: context.trenzyColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(event.icon, color: context.trenzyColors.primary, size: 16),
+            child: Icon(
+              event.icon,
+              color: context.trenzyColors.primary,
+              size: 16,
+            ),
           ),
           SizedBox(width: 12),
           Expanded(

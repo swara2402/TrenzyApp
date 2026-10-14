@@ -57,8 +57,14 @@ abstract class ApiServiceBase {
 
   // ---------- Cart ----------
   Future<Map<String, dynamic>> getCart();
-  Future<Map<String, dynamic>> addCartItem({required String productId, int quantity = 1});
-  Future<Map<String, dynamic>> updateCartItem({required String productId, required int quantity});
+  Future<Map<String, dynamic>> addCartItem({
+    required String productId,
+    int quantity = 1,
+  });
+  Future<Map<String, dynamic>> updateCartItem({
+    required String productId,
+    required int quantity,
+  });
   Future<void> removeCartItem(String productId);
   Future<void> clearCart();
 
@@ -172,15 +178,10 @@ abstract class ApiServiceBase {
     String timeframe = 'daily',
     int limit = 20,
   });
-  Future<List<dynamic>> getTrendPredictions({
-    String? category,
-    int limit = 10,
-  });
+  Future<List<dynamic>> getTrendPredictions({String? category, int limit = 10});
   Future<void> trackProductView(String productId);
   Future<String?> trackAffiliateClick(String productId);
-  Future<Map<String, dynamic>> aggregateTrends({
-    String timeframe = 'daily',
-  });
+  Future<Map<String, dynamic>> aggregateTrends({String timeframe = 'daily'});
 
   // ---------- Campaigns ----------
   Future<Map<String, dynamic>?> getFeaturedCampaign();
@@ -239,7 +240,9 @@ abstract class ApiServiceBase {
 
   // ---------- Style Persona ----------
   Future<Map<String, dynamic>?> getPersona();
-  Future<Map<String, dynamic>> generatePersona({Map<String, dynamic>? preferences});
+  Future<Map<String, dynamic>> generatePersona({
+    Map<String, dynamic>? preferences,
+  });
 
   // ---------- User Preferences ----------
   Future<Map<String, dynamic>> getPreferences();
@@ -276,7 +279,7 @@ abstract class ApiServiceBase {
 
   // ---------- Feed ----------
   Future<Map<String, dynamic>> getFeed({int offset = 0, int limit = 20});
- 
+
   // ---------- Direct Friend Chat ----------
   Future<Map<String, dynamic>> getDirectMessages({
     required String friendFirebaseUid,
@@ -300,7 +303,10 @@ abstract class ApiServiceBase {
 
   // ---------- Account ----------
   Future<void> deleteAccount();
-  Future<void> reportIssue({required String category, required String description});
+  Future<void> reportIssue({
+    required String category,
+    required String description,
+  });
   Future<void> resetPassword(String email);
 
   // ---------- Batch Operations ----------
@@ -335,7 +341,10 @@ abstract class ApiServiceBase {
 
   // ---------- Discover ----------
   Future<Map<String, dynamic>> discoverSwipe({int limit = 20});
-  Future<void> recordDiscoverySwipe({required String productId, required String swipeType});
+  Future<void> recordDiscoverySwipe({
+    required String productId,
+    required String swipeType,
+  });
 
   // ---------- Blends ----------
   Future<void> disbandBlend(String groupId);
@@ -344,8 +353,14 @@ abstract class ApiServiceBase {
   Future<Map<String, dynamic>> getBlendDashboard(String blendId);
 
   // ---------- Shared Wishlist ----------
-  Future<List<dynamic>> getSharedWishlist(String blendId, {String? sort, String? category, String? search});
-  Future<Map<String, dynamic>> addToSharedWishlist(String blendId, {
+  Future<List<dynamic>> getSharedWishlist(
+    String blendId, {
+    String? sort,
+    String? category,
+    String? search,
+  });
+  Future<Map<String, dynamic>> addToSharedWishlist(
+    String blendId, {
     required String productId,
     String productName = '',
     double? productPrice,
@@ -355,12 +370,19 @@ abstract class ApiServiceBase {
     String? productUrl,
     String? notes,
   });
-  Future<Map<String, dynamic>> updateWishlistItem(String blendId, int itemId, {String? notes, bool? isFavorite, String? purchaseLink});
+  Future<Map<String, dynamic>> updateWishlistItem(
+    String blendId,
+    int itemId, {
+    String? notes,
+    bool? isFavorite,
+    String? purchaseLink,
+  });
   Future<void> removeFromSharedWishlist(String blendId, int itemId);
 
   // ---------- Moodboard ----------
   Future<List<dynamic>> getMoodboard(String blendId, {String? itemType});
-  Future<Map<String, dynamic>> addToMoodboard(String blendId, {
+  Future<Map<String, dynamic>> addToMoodboard(
+    String blendId, {
     required String itemType,
     Map<String, dynamic>? content,
     String? imageUrl,
@@ -369,18 +391,32 @@ abstract class ApiServiceBase {
   Future<void> removeFromMoodboard(String blendId, int itemId);
 
   // ---------- Blend Insights ----------
-  Future<List<dynamic>> getBlendInsights(String blendId, {bool refresh = false});
+  Future<List<dynamic>> getBlendInsights(
+    String blendId, {
+    bool refresh = false,
+  });
   Future<Map<String, dynamic>> refreshBlendInsights(String blendId);
 
   // ---------- Blend Settings ----------
-  Future<void> updateBlendSettings(String blendId, {String? name, String? description, String? coverImage, bool? isPrivate});
+  Future<void> updateBlendSettings(
+    String blendId, {
+    String? name,
+    String? description,
+    String? coverImage,
+    bool? isPrivate,
+  });
   Future<Map<String, dynamic>> getBlendSettings(String blendId);
 
   // ---------- Blend Activity ----------
-  Future<Map<String, dynamic>> getBlendActivity(String blendId, {int limit = 50, int offset = 0});
+  Future<Map<String, dynamic>> getBlendActivity(
+    String blendId, {
+    int limit = 50,
+    int offset = 0,
+  });
 
   // ---------- Outfits ----------
-  Future<void> updateOutfit(int outfitId, {
+  Future<void> updateOutfit(
+    int outfitId, {
     String? name,
     String? occasion,
     List<int>? wardrobeItemIds,
@@ -392,9 +428,7 @@ abstract class ApiServiceBase {
   Future<List<Map<String, dynamic>>> getPersonaColors();
 
   // ---------- Payments ----------
-  Future<Map<String, dynamic>> createPaymentOrder({
-    required int amountPaise,
-  });
+  Future<Map<String, dynamic>> createPaymentOrder({required int amountPaise});
   Future<Map<String, dynamic>> verifyPayment({
     required String razorpayOrderId,
     required String razorpayPaymentId,

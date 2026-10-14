@@ -26,14 +26,14 @@ class ProductLoadException implements Exception {
 /// which clears the cache and triggers a fresh fetch.
 final productsProvider = FutureProvider.autoDispose
     .family<List<ProductModel>, ({String? category})>((ref, filters) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <ProductModel>[];
 
       final api = ref.watch(apiServiceProvider);
       try {
-        final result = await api.getProducts(
-          category: filters.category,
-        );
+        final result = await api.getProducts(category: filters.category);
         final products = result['products'] as List<dynamic>? ?? [];
 
         return products
@@ -50,7 +50,9 @@ final productsProvider = FutureProvider.autoDispose
 
 final subcategoriesProvider = FutureProvider.autoDispose
     .family<List<String>, String>((ref, categoryName) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <String>[];
 
       final api = ref.watch(apiServiceProvider);
@@ -61,7 +63,9 @@ final subcategoriesProvider = FutureProvider.autoDispose
       }
     });
 
-final brandsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+final brandsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((
+  ref,
+) async {
   final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
   if (uid == null) return {};
 
@@ -89,7 +93,9 @@ final categoriesProvider = FutureProvider.autoDispose<List<String>>((
 
 final productDetailsProvider = FutureProvider.autoDispose
     .family<ProductModel, String>((ref, productId) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
 
       if (uid == null) {
         return ProductModel(id: productId, name: 'Product unavailable');
@@ -118,7 +124,9 @@ final productSearchProvider = FutureProvider.autoDispose
         return [];
       }
 
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
 
       if (uid == null) return const <ProductModel>[];
 
@@ -159,7 +167,9 @@ final wishlistProductsProvider = FutureProvider.autoDispose<List<ProductModel>>(
       final result = await api.getBatchProducts(productIds.toList());
       final products = result['products'] as List<dynamic>? ?? [];
       return products
-          .map((e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
     } catch (_) {
       return const <ProductModel>[];
@@ -208,15 +218,15 @@ class ProductSearchParams {
 
   @override
   int get hashCode => Object.hash(
-        query,
-        category,
-        subcategory,
-        gender,
-        color,
-        season,
-        brand,
-        minPrice,
-        maxPrice,
-        sort,
-      );
+    query,
+    category,
+    subcategory,
+    gender,
+    color,
+    season,
+    brand,
+    minPrice,
+    maxPrice,
+    sort,
+  );
 }

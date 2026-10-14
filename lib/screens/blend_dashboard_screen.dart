@@ -19,7 +19,8 @@ class BlendDashboardScreen extends ConsumerStatefulWidget {
   final String groupId;
 
   @override
-  ConsumerState<BlendDashboardScreen> createState() => _BlendDashboardScreenState();
+  ConsumerState<BlendDashboardScreen> createState() =>
+      _BlendDashboardScreenState();
 }
 
 class _BlendDashboardScreenState extends ConsumerState<BlendDashboardScreen> {
@@ -58,18 +59,32 @@ class _BlendDashboardScreenState extends ConsumerState<BlendDashboardScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 80, height: 80,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: context.trenzyColors.glass,
                   border: Border.all(color: context.trenzyColors.glassBorder),
                 ),
-                child: Icon(Icons.dashboard_outlined, color: context.trenzyColors.primary, size: 36),
+                child: Icon(
+                  Icons.dashboard_outlined,
+                  color: context.trenzyColors.primary,
+                  size: 36,
+                ),
               ),
               SizedBox(height: 20),
-              DisplayText('No blend selected', fontSize: 18, weight: FontWeight.w600),
+              DisplayText(
+                'No blend selected',
+                fontSize: 18,
+                weight: FontWeight.w600,
+              ),
               SizedBox(height: 16),
-              GlowButton(label: 'Go to Blend Hub', width: 180, height: 46, onTap: () => context.go(AppRoutes.blendHub)),
+              GlowButton(
+                label: 'Go to Blend Hub',
+                width: 180,
+                height: 46,
+                onTap: () => context.go(AppRoutes.blendHub),
+              ),
             ],
           ),
         ),
@@ -89,11 +104,21 @@ class _BlendDashboardScreenState extends ConsumerState<BlendDashboardScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline, color: context.trenzyColors.crimson, size: 48),
+              Icon(
+                Icons.error_outline,
+                color: context.trenzyColors.crimson,
+                size: 48,
+              ),
               SizedBox(height: 16),
               DisplayText('Could not load dashboard', fontSize: 16),
               SizedBox(height: 12),
-              GlowButton(label: 'Retry', width: 120, height: 40, onTap: () => ref.invalidate(blendDashboardProvider(widget.groupId))),
+              GlowButton(
+                label: 'Retry',
+                width: 120,
+                height: 40,
+                onTap: () =>
+                    ref.invalidate(blendDashboardProvider(widget.groupId)),
+              ),
             ],
           ),
         ),
@@ -175,7 +200,11 @@ class _BlendDashboardContent extends ConsumerWidget {
         children: [
           Text(
             dashboard.name ?? '',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: context.trenzyColors.foreground,
+            ),
           ),
           Text(
             '${dashboard.memberCount} ${dashboard.memberCount == 1 ? 'member' : 'members'}',
@@ -185,7 +214,8 @@ class _BlendDashboardContent extends ConsumerWidget {
       ),
       actions: [
         Container(
-          width: 36, height: 36,
+          width: 36,
+          height: 36,
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             color: context.trenzyColors.glass,
@@ -194,7 +224,11 @@ class _BlendDashboardContent extends ConsumerWidget {
           ),
           child: PopupMenuButton<String>(
             color: context.trenzyColors.graphite,
-            icon: Icon(Icons.more_horiz, color: context.trenzyColors.mutedFg, size: 18),
+            icon: Icon(
+              Icons.more_horiz,
+              color: context.trenzyColors.mutedFg,
+              size: 18,
+            ),
             onSelected: (value) {
               switch (value) {
                 case 'chat':
@@ -210,9 +244,51 @@ class _BlendDashboardContent extends ConsumerWidget {
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(value: 'chat', child: ListTile(leading: Icon(Icons.chat, color: context.trenzyColors.primary, size: 20), title: Text('Chat', style: TextStyle(color: context.trenzyColors.foreground)), dense: true)),
-              PopupMenuItem(value: 'results', child: ListTile(leading: Icon(Icons.analytics, color: context.trenzyColors.primary, size: 20), title: Text('Results', style: TextStyle(color: context.trenzyColors.foreground)), dense: true)),
-              PopupMenuItem(value: 'settings', child: ListTile(leading: Icon(Icons.settings, color: context.trenzyColors.mutedFg, size: 20), title: Text('Settings', style: TextStyle(color: context.trenzyColors.foreground)), dense: true)),
+              PopupMenuItem(
+                value: 'chat',
+                child: ListTile(
+                  leading: Icon(
+                    Icons.chat,
+                    color: context.trenzyColors.primary,
+                    size: 20,
+                  ),
+                  title: Text(
+                    'Chat',
+                    style: TextStyle(color: context.trenzyColors.foreground),
+                  ),
+                  dense: true,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'results',
+                child: ListTile(
+                  leading: Icon(
+                    Icons.analytics,
+                    color: context.trenzyColors.primary,
+                    size: 20,
+                  ),
+                  title: Text(
+                    'Results',
+                    style: TextStyle(color: context.trenzyColors.foreground),
+                  ),
+                  dense: true,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(
+                    Icons.settings,
+                    color: context.trenzyColors.mutedFg,
+                    size: 20,
+                  ),
+                  title: Text(
+                    'Settings',
+                    style: TextStyle(color: context.trenzyColors.foreground),
+                  ),
+                  dense: true,
+                ),
+              ),
             ],
           ),
         ),
@@ -230,10 +306,7 @@ class _BlendDashboardContent extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              context.trenzyColors.graphite,
-              context.trenzyColors.glass,
-            ],
+            colors: [context.trenzyColors.graphite, context.trenzyColors.glass],
           ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: context.trenzyColors.glassBorder),
@@ -248,25 +321,47 @@ class _BlendDashboardContent extends ConsumerWidget {
                   children: [
                     Text(
                       'COMPATIBILITY',
-                      style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: context.trenzyColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      dashboard.compatibilityLevel.isNotEmpty ? dashboard.compatibilityLevel : 'Getting Started',
-                      style: TextStyle(fontSize: 14, color: context.trenzyColors.foreground, fontWeight: FontWeight.w500),
+                      dashboard.compatibilityLevel.isNotEmpty
+                          ? dashboard.compatibilityLevel
+                          : 'Getting Started',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.trenzyColors.foreground,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: context.trenzyColors.emerald.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: context.trenzyColors.emerald.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: context.trenzyColors.emerald.withValues(
+                        alpha: 0.3,
+                      ),
+                    ),
                   ),
                   child: Text(
                     '${dashboard.totalSwipes} swipes',
-                    style: TextStyle(fontSize: 11, color: context.trenzyColors.emerald, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.trenzyColors.emerald,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -276,15 +371,23 @@ class _BlendDashboardContent extends ConsumerWidget {
               borderRadius: BorderRadius.circular(99),
               child: LinearProgressIndicator(
                 value: pct.clamp(0.0, 1.0),
-                backgroundColor: context.trenzyColors.glass.withValues(alpha: 0.5),
-                valueColor: AlwaysStoppedAnimation<Color>(context.trenzyColors.primary),
+                backgroundColor: context.trenzyColors.glass.withValues(
+                  alpha: 0.5,
+                ),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  context.trenzyColors.primary,
+                ),
                 minHeight: 8,
               ),
             ),
             SizedBox(height: 12),
             Text(
               '${dashboard.fashionScore}%',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: context.trenzyColors.foreground),
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                color: context.trenzyColors.foreground,
+              ),
             ),
           ],
         ),
@@ -297,13 +400,35 @@ class _BlendDashboardContent extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          _ActionButton(icon: Icons.swipe, label: 'Swipe', color: context.trenzyColors.primary, onTap: () => context.go('${AppRoutes.blendSwipe}?groupId=$groupId')),
+          _ActionButton(
+            icon: Icons.swipe,
+            label: 'Swipe',
+            color: context.trenzyColors.primary,
+            onTap: () => context.go('${AppRoutes.blendSwipe}?groupId=$groupId'),
+          ),
           SizedBox(width: 12),
-          _ActionButton(icon: Icons.chat, label: 'Chat', color: context.trenzyColors.emerald, onTap: () => context.go('${AppRoutes.blendChat}?groupId=$groupId')),
+          _ActionButton(
+            icon: Icons.chat,
+            label: 'Chat',
+            color: context.trenzyColors.emerald,
+            onTap: () => context.go('${AppRoutes.blendChat}?groupId=$groupId'),
+          ),
           SizedBox(width: 12),
-          _ActionButton(icon: Icons.favorite, label: 'Wishlist', color: context.trenzyColors.crimson, onTap: () => context.go('${AppRoutes.blendWishlist}?groupId=$groupId')),
+          _ActionButton(
+            icon: Icons.favorite,
+            label: 'Wishlist',
+            color: context.trenzyColors.crimson,
+            onTap: () =>
+                context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
+          ),
           SizedBox(width: 12),
-          _ActionButton(icon: Icons.dashboard, label: 'Moodboard', color: context.trenzyColors.primary, onTap: () => context.go('${AppRoutes.blendMoodboard}?groupId=$groupId')),
+          _ActionButton(
+            icon: Icons.dashboard,
+            label: 'Moodboard',
+            color: context.trenzyColors.primary,
+            onTap: () =>
+                context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
+          ),
         ],
       ),
     );
@@ -320,21 +445,41 @@ class _BlendDashboardContent extends ConsumerWidget {
             children: [
               Text(
                 'AI INSIGHTS',
-                style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: context.trenzyColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              Icon(Icons.auto_awesome, color: context.trenzyColors.primary, size: 16),
+              Icon(
+                Icons.auto_awesome,
+                color: context.trenzyColors.primary,
+                size: 16,
+              ),
             ],
           ),
           SizedBox(height: 12),
-          ...dashboard.insights.take(3).map((insight) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _InsightCard(insight: insight),
-          )),
+          ...dashboard.insights
+              .take(3)
+              .map(
+                (insight) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _InsightCard(insight: insight),
+                ),
+              ),
           if (dashboard.insights.length > 3)
             Center(
               child: TextButton(
-                onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=$groupId'),
-                child: Text('View all ${dashboard.insights.length} insights', style: TextStyle(color: context.trenzyColors.primary, fontSize: 12)),
+                onPressed: () =>
+                    context.go('${AppRoutes.blendDashboard}?groupId=$groupId'),
+                child: Text(
+                  'View all ${dashboard.insights.length} insights',
+                  style: TextStyle(
+                    color: context.trenzyColors.primary,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ),
         ],
@@ -353,11 +498,23 @@ class _BlendDashboardContent extends ConsumerWidget {
             children: [
               Text(
                 'SHARED WISHLIST',
-                style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: context.trenzyColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               GestureDetector(
-                onTap: () => context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
-                child: Text('See all (${dashboard.totalWishlistItems})', style: TextStyle(fontSize: 11, color: context.trenzyColors.mutedFg)),
+                onTap: () =>
+                    context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
+                child: Text(
+                  'See all (${dashboard.totalWishlistItems})',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
               ),
             ],
           ),
@@ -391,11 +548,23 @@ class _BlendDashboardContent extends ConsumerWidget {
             children: [
               Text(
                 'MOODBOARD',
-                style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: context.trenzyColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               GestureDetector(
-                onTap: () => context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
-                child: Text('See all (${dashboard.totalMoodboardItems})', style: TextStyle(fontSize: 11, color: context.trenzyColors.mutedFg)),
+                onTap: () =>
+                    context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
+                child: Text(
+                  'See all (${dashboard.totalMoodboardItems})',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
               ),
             ],
           ),
@@ -432,33 +601,65 @@ class _BlendDashboardContent extends ConsumerWidget {
                   color: context.trenzyColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.auto_awesome, color: context.trenzyColors.primary, size: 14),
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: context.trenzyColors.primary,
+                  size: 14,
+                ),
               ),
               SizedBox(width: 8),
               Text(
                 'STYLE DNA',
-                style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: context.trenzyColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
           SizedBox(height: 16),
           _buildDnaRow('Colors', dna.colors, context),
-          if (dna.brands.isNotEmpty) ...[SizedBox(height: 12), _buildDnaRow('Brands', dna.brands, context)],
-          if (dna.categories.isNotEmpty) ...[SizedBox(height: 12), _buildDnaRow('Categories', dna.categories, context)],
-          if (dna.aesthetics.isNotEmpty) ...[SizedBox(height: 12), _buildDnaRow('Aesthetics', dna.aesthetics, context)],
-          if (dna.occasions.isNotEmpty) ...[SizedBox(height: 12), _buildDnaRow('Occasions', dna.occasions, context)],
+          if (dna.brands.isNotEmpty) ...[
+            SizedBox(height: 12),
+            _buildDnaRow('Brands', dna.brands, context),
+          ],
+          if (dna.categories.isNotEmpty) ...[
+            SizedBox(height: 12),
+            _buildDnaRow('Categories', dna.categories, context),
+          ],
+          if (dna.aesthetics.isNotEmpty) ...[
+            SizedBox(height: 12),
+            _buildDnaRow('Aesthetics', dna.aesthetics, context),
+          ],
+          if (dna.occasions.isNotEmpty) ...[
+            SizedBox(height: 12),
+            _buildDnaRow('Occasions', dna.occasions, context),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildDnaRow(String label, List<StyleDnaItem> items, BuildContext context) {
+  Widget _buildDnaRow(
+    String label,
+    List<StyleDnaItem> items,
+    BuildContext context,
+  ) {
     if (items.isEmpty) return SizedBox.shrink();
     final topItems = items.take(4).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 11, color: context.trenzyColors.mutedFg, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: context.trenzyColors.mutedFg,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         SizedBox(height: 6),
         Row(
           children: topItems.map((item) {
@@ -466,18 +667,29 @@ class _BlendDashboardContent extends ConsumerWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: isTop ? context.trenzyColors.primary.withValues(alpha: 0.12) : context.trenzyColors.glass,
+                  color: isTop
+                      ? context.trenzyColors.primary.withValues(alpha: 0.12)
+                      : context.trenzyColors.glass,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isTop ? context.trenzyColors.primary.withValues(alpha: 0.3) : context.trenzyColors.glassBorder),
+                  border: Border.all(
+                    color: isTop
+                        ? context.trenzyColors.primary.withValues(alpha: 0.3)
+                        : context.trenzyColors.glassBorder,
+                  ),
                 ),
                 child: Text(
                   '${item.name} ${item.confidence.toStringAsFixed(0)}%',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isTop ? FontWeight.w700 : FontWeight.w500,
-                    color: isTop ? context.trenzyColors.primary : context.trenzyColors.foreground,
+                    color: isTop
+                        ? context.trenzyColors.primary
+                        : context.trenzyColors.foreground,
                   ),
                 ),
               ),
@@ -496,13 +708,22 @@ class _BlendDashboardContent extends ConsumerWidget {
         children: [
           Text(
             'RECENT ACTIVITY',
-            style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 2,
+              color: context.trenzyColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           SizedBox(height: 12),
-          ...dashboard.recentActivity.take(5).map((event) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _ActivityRow(event: event),
-          )),
+          ...dashboard.recentActivity
+              .take(5)
+              .map(
+                (event) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ActivityRow(event: event),
+                ),
+              ),
         ],
       ),
     );
@@ -516,7 +737,12 @@ class _BlendDashboardContent extends ConsumerWidget {
         children: [
           Text(
             'MEMBERS',
-            style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 2,
+              color: context.trenzyColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           SizedBox(height: 12),
           Wrap(
@@ -526,24 +752,45 @@ class _BlendDashboardContent extends ConsumerWidget {
               return Column(
                 children: [
                   Container(
-                    width: 52, height: 52,
+                    width: 52,
+                    height: 52,
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(colors: [context.trenzyColors.primary, context.trenzyColors.emerald]),
+                      gradient: LinearGradient(
+                        colors: [
+                          context.trenzyColors.primary,
+                          context.trenzyColors.emerald,
+                        ],
+                      ),
                     ),
                     child: Container(
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: context.trenzyColors.graphite),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.trenzyColors.graphite,
+                      ),
                       child: Center(
                         child: Text(
-                          member.userName.isNotEmpty == true ? member.userName[0].toUpperCase() : '?',
-                          style: TextStyle(color: context.trenzyColors.primary, fontSize: 20, fontWeight: FontWeight.bold),
+                          member.userName.isNotEmpty == true
+                              ? member.userName[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            color: context.trenzyColors.primary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
                   SizedBox(height: 4),
-                  Text(member.userName, style: TextStyle(fontSize: 12, color: context.trenzyColors.foreground)),
+                  Text(
+                    member.userName,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.trenzyColors.foreground,
+                    ),
+                  ),
                 ],
               );
             }).toList(),
@@ -560,7 +807,12 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final VoidCallback? onTap;
 
-  const _ActionButton({required this.icon, required this.label, required this.color, this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -578,7 +830,14 @@ class _ActionButton extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 24),
               SizedBox(height: 6),
-              Text(label, style: TextStyle(fontSize: 10, color: context.trenzyColors.foreground, fontWeight: FontWeight.w600)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: context.trenzyColors.foreground,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -610,16 +869,33 @@ class _InsightCard extends StatelessWidget {
               color: context.trenzyColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.lightbulb_outline, color: context.trenzyColors.primary, size: 16),
+            child: Icon(
+              Icons.lightbulb_outline,
+              color: context.trenzyColors.primary,
+              size: 16,
+            ),
           ),
           SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(insight.title ?? '', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground)),
+                Text(
+                  insight.title ?? '',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: context.trenzyColors.foreground,
+                  ),
+                ),
                 SizedBox(height: 4),
-                Text(insight.description ?? '', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+                Text(
+                  insight.description ?? '',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
               ],
             ),
           ),
@@ -627,12 +903,20 @@ class _InsightCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: (insight.confidence ?? 0.0) >= 0.7 ? context.trenzyColors.emerald.withValues(alpha: 0.12) : context.trenzyColors.primary.withValues(alpha: 0.12),
+                color: (insight.confidence ?? 0.0) >= 0.7
+                    ? context.trenzyColors.emerald.withValues(alpha: 0.12)
+                    : context.trenzyColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '${((insight.confidence ?? 0.0) * 100).round()}%',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: (insight.confidence ?? 0.0) >= 0.7 ? context.trenzyColors.emerald : context.trenzyColors.primary),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: (insight.confidence ?? 0.0) >= 0.7
+                      ? context.trenzyColors.emerald
+                      : context.trenzyColors.primary,
+                ),
               ),
             ),
         ],
@@ -660,15 +944,38 @@ class _MiniWishlistCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: CachedNetworkImage(imageUrl: item.productImage, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
+            child: CachedNetworkImage(
+              imageUrl: item.productImage,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              placeholder: (_, _) =>
+                  Container(color: context.trenzyColors.glass),
+              errorWidget: (_, _, _) =>
+                  Icon(Icons.image, color: context.trenzyColors.mutedFg),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.productName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(item.productBrand, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
+                Text(
+                  item.productName,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: context.trenzyColors.foreground,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  item.productBrand,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
               ],
             ),
           ),
@@ -686,14 +993,27 @@ class _MiniMoodboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100, height: 120,
+      width: 100,
+      height: 120,
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       clipBehavior: Clip.antiAlias,
-      child: CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)), errorWidget: (_, _, _) => Icon(Icons.image, color: context.trenzyColors.mutedFg)),
+      child: CachedNetworkImage(
+        imageUrl: item.imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        placeholder: (_, _) => Center(
+          child: CircularProgressIndicator(
+            color: context.trenzyColors.primary,
+            strokeWidth: 2,
+          ),
+        ),
+        errorWidget: (_, _, _) =>
+            Icon(Icons.image, color: context.trenzyColors.mutedFg),
+      ),
     );
   }
 }
@@ -705,14 +1025,22 @@ class _ActivityRow extends StatelessWidget {
 
   IconData _iconForKind(String kind) {
     switch (kind) {
-      case 'wishlist_added': return Icons.favorite;
-      case 'moodboard_added': return Icons.palette;
-      case 'blend_updated': return Icons.settings;
-      case 'swipe': return Icons.swipe;
-      case 'member_joined': return Icons.person_add;
-      case 'member_left': return Icons.person_remove;
-      case 'vote_completed': return Icons.how_to_vote;
-      default: return Icons.circle;
+      case 'wishlist_added':
+        return Icons.favorite;
+      case 'moodboard_added':
+        return Icons.palette;
+      case 'blend_updated':
+        return Icons.settings;
+      case 'swipe':
+        return Icons.swipe;
+      case 'member_joined':
+        return Icons.person_add;
+      case 'member_left':
+        return Icons.person_remove;
+      case 'vote_completed':
+        return Icons.how_to_vote;
+      default:
+        return Icons.circle;
     }
   }
 
@@ -721,16 +1049,27 @@ class _ActivityRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 28, height: 28,
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             color: context.trenzyColors.glass,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(_iconForKind(event.kind), color: context.trenzyColors.primary, size: 14),
+          child: Icon(
+            _iconForKind(event.kind),
+            color: context.trenzyColors.primary,
+            size: 14,
+          ),
         ),
         SizedBox(width: 10),
         Expanded(
-          child: Text(event.description ?? '', style: TextStyle(fontSize: 12, color: context.trenzyColors.foreground)),
+          child: Text(
+            event.description ?? '',
+            style: TextStyle(
+              fontSize: 12,
+              color: context.trenzyColors.foreground,
+            ),
+          ),
         ),
       ],
     );

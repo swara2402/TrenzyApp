@@ -23,4 +23,3 @@ class AppLogger {
     debugPrint(details.join(' | '));
   }
 }
-

@@ -12,11 +12,11 @@ class AiProcessingScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          Builder(builder: (context) => Container(
-            decoration: BoxDecoration(
-              color: context.trenzyColors.background,
+          Builder(
+            builder: (context) => Container(
+              decoration: BoxDecoration(color: context.trenzyColors.background),
             ),
-          )),
+          ),
           const _GrainOverlay(),
           const _AiProcessingState(),
         ],
@@ -79,8 +79,10 @@ class _ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in particles) {
-      final x = (p.x * size.width + progress * p.drift * size.width) % size.width;
-      final y = (p.y * size.height - progress * p.speed * size.height) % size.height;
+      final x =
+          (p.x * size.width + progress * p.drift * size.width) % size.width;
+      final y =
+          (p.y * size.height - progress * p.speed * size.height) % size.height;
       final paint = Paint()
         ..color = p.color.withValues(alpha: p.opacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
@@ -119,8 +121,11 @@ class _NetworkPainter extends CustomPainter {
       final bx = b.x * size.width;
       final by = b.y * size.height;
 
-      final opacity = 0.15 + 0.15 * sin(progress * 2 * pi + conn.phase * 2 * pi);
-      linePaint.color = const Color(0xFFD79D8A).withValues(alpha: opacity); // rose-gold
+      final opacity =
+          0.15 + 0.15 * sin(progress * 2 * pi + conn.phase * 2 * pi);
+      linePaint.color = const Color(
+        0xFFD79D8A,
+      ).withValues(alpha: opacity); // rose-gold
       canvas.drawLine(Offset(ax, ay), Offset(bx, by), linePaint);
 
       final dotProgress = (progress + conn.phase) % 1.0;
@@ -133,7 +138,8 @@ class _NetworkPainter extends CustomPainter {
       canvas.drawCircle(Offset(dotX, dotY), 2.5, dotPaint);
 
       final glowPaint = Paint()
-        ..color = const Color(0xFFD79D8A).withValues(alpha: 0.2) // rose-gold
+        ..color = const Color(0xFFD79D8A)
+            .withValues(alpha: 0.2) // rose-gold
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
       canvas.drawCircle(Offset(dotX, dotY), 4, glowPaint);
     }
@@ -143,11 +149,15 @@ class _NetworkPainter extends CustomPainter {
       final ny = node.y * size.height;
       final pulse = 0.8 + 0.2 * sin(progress * 2 * pi + node.x + node.y);
       final nodePaint = Paint()
-        ..color = const Color(0xFFD79D8A).withValues(alpha: 0.25 * pulse); // rose-gold
+        ..color = const Color(
+          0xFFD79D8A,
+        ).withValues(alpha: 0.25 * pulse); // rose-gold
       canvas.drawCircle(Offset(nx, ny), node.radius * pulse, nodePaint);
 
       final innerPaint = Paint()
-        ..color = const Color(0xFFD79D8A).withValues(alpha: 0.4 * pulse); // rose-gold
+        ..color = const Color(
+          0xFFD79D8A,
+        ).withValues(alpha: 0.4 * pulse); // rose-gold
       canvas.drawCircle(Offset(nx, ny), node.radius * 0.4 * pulse, innerPaint);
     }
   }
@@ -169,8 +179,18 @@ class _AiProcessingStateState extends State<_AiProcessingState>
   static const _steps = [
     _StepData('Analyzing preferences...', Icons.analytics_outlined, 0.0, 0.25),
     _StepData('Mapping your aesthetic...', Icons.palette_outlined, 0.25, 0.5),
-    _StepData('Finding your style tribe...', Icons.diversity_3_outlined, 0.5, 0.75),
-    _StepData('Crafting your persona...', Icons.auto_fix_high_outlined, 0.75, 1.0),
+    _StepData(
+      'Finding your style tribe...',
+      Icons.diversity_3_outlined,
+      0.5,
+      0.75,
+    ),
+    _StepData(
+      'Crafting your persona...',
+      Icons.auto_fix_high_outlined,
+      0.75,
+      1.0,
+    ),
   ];
 
   late final AnimationController _progressCtrl;
@@ -261,26 +281,36 @@ class _AiProcessingStateState extends State<_AiProcessingState>
     final rng = Random(42);
     for (int i = 0; i < 35; i++) {
       final isForeground = i < 15;
-      _particles.add(_ParticleData(
-        x: rng.nextDouble(),
-        y: rng.nextDouble(),
-        speed: 0.015 + rng.nextDouble() * 0.025,
-        drift: (rng.nextDouble() - 0.5) * 0.015,
-        radius: isForeground ? 2.5 + rng.nextDouble() * 1.5 : 1.0 + rng.nextDouble() * 1.0,
-        color: rng.nextBool() ? const Color(0xFFD79D8A) : const Color(0xFFA89F95), // rose-gold / cashmere
-        opacity: isForeground ? 0.4 + rng.nextDouble() * 0.3 : 0.1 + rng.nextDouble() * 0.15,
-      ));
+      _particles.add(
+        _ParticleData(
+          x: rng.nextDouble(),
+          y: rng.nextDouble(),
+          speed: 0.015 + rng.nextDouble() * 0.025,
+          drift: (rng.nextDouble() - 0.5) * 0.015,
+          radius: isForeground
+              ? 2.5 + rng.nextDouble() * 1.5
+              : 1.0 + rng.nextDouble() * 1.0,
+          color: rng.nextBool()
+              ? const Color(0xFFD79D8A)
+              : const Color(0xFFA89F95), // rose-gold / cashmere
+          opacity: isForeground
+              ? 0.4 + rng.nextDouble() * 0.3
+              : 0.1 + rng.nextDouble() * 0.15,
+        ),
+      );
     }
   }
 
   void _initNetwork() {
     final rng = Random(123);
     for (int i = 0; i < 9; i++) {
-      _nodes.add(_NetworkNode(
-        rng.nextDouble(),
-        rng.nextDouble(),
-        6.0 + rng.nextDouble() * 6.0,
-      ));
+      _nodes.add(
+        _NetworkNode(
+          rng.nextDouble(),
+          rng.nextDouble(),
+          6.0 + rng.nextDouble() * 6.0,
+        ),
+      );
     }
     final connectionSet = <String>{};
     for (int i = 0; i < _nodes.length; i++) {
@@ -410,11 +440,19 @@ class _AiProcessingStateState extends State<_AiProcessingState>
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: context.trenzyColors.primary.withValues(alpha: 0.2),
+              ),
             ),
             child: CircleAvatar(
               backgroundColor: context.trenzyColors.graphite,
-              child: Text('U', style: TextStyle(color: context.trenzyColors.primary, fontWeight: FontWeight.bold)),
+              child: Text(
+                'U',
+                style: TextStyle(
+                  color: context.trenzyColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),
@@ -427,10 +465,13 @@ class _AiProcessingStateState extends State<_AiProcessingState>
           ),
         ),
         actions: [
-            IconButton(
-              icon: Icon(Icons.notifications, color: context.trenzyColors.primary),
-              onPressed: () => context.push(AppRoutes.notifications),
+          IconButton(
+            icon: Icon(
+              Icons.notifications,
+              color: context.trenzyColors.primary,
             ),
+            onPressed: () => context.push(AppRoutes.notifications),
+          ),
         ],
       ),
     );
@@ -467,7 +508,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
             height: 288,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD79D8A).withValues(alpha: 0.05)),
+              border: Border.all(
+                color: const Color(0xFFD79D8A).withValues(alpha: 0.05),
+              ),
             ),
           ),
           Container(
@@ -487,7 +530,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                 child: CircularProgressIndicator(
                   value: _currentProgress,
                   strokeWidth: 2.5,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD79D8A)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFFD79D8A),
+                  ),
                   backgroundColor: const Color(0xFF251F1D),
                 ),
               );
@@ -584,7 +629,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                       child: Transform.translate(
                         offset: Offset(0, 20 * (1 - _leftCardAnim.value)),
                         child: _buildGlassCard(
-                          'Logic', 'Vector Mapping', Icons.model_training,
+                          'Logic',
+                          'Vector Mapping',
+                          Icons.model_training,
                           _leftCardAnim,
                         ),
                       ),
@@ -602,7 +649,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                       child: Transform.translate(
                         offset: Offset(0, 20 * (1 - _rightCardAnim.value)),
                         child: _buildGlassCard(
-                          'Vision', 'Aesthetic Engine', Icons.auto_awesome,
+                          'Vision',
+                          'Aesthetic Engine',
+                          Icons.auto_awesome,
                           _rightCardAnim,
                         ),
                       ),
@@ -620,7 +669,11 @@ class _AiProcessingStateState extends State<_AiProcessingState>
   }
 
   Widget _buildGlassCard(
-      String title, String subtitle, IconData icon, Animation<double> anim) {
+    String title,
+    String subtitle,
+    IconData icon,
+    Animation<double> anim,
+  ) {
     return AnimatedBuilder(
       animation: _iconPulseCtrl,
       builder: (context, _) {
@@ -628,11 +681,14 @@ class _AiProcessingStateState extends State<_AiProcessingState>
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1715).withValues(alpha: 0.4), // warm obsidian
+            color: const Color(
+              0xFF1C1715,
+            ).withValues(alpha: 0.4), // warm obsidian
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFD79D8A)
-                  .withValues(alpha: 0.08 + 0.04 * _iconPulseCtrl.value),
+              color: const Color(
+                0xFFD79D8A,
+              ).withValues(alpha: 0.08 + 0.04 * _iconPulseCtrl.value),
             ),
           ),
           child: Column(
@@ -643,10 +699,16 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD79D8A).withValues(alpha: 0.1), // rose-gold tint
+                    color: const Color(
+                      0xFFD79D8A,
+                    ).withValues(alpha: 0.1), // rose-gold tint
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: const Color(0xFFD79D8A), size: 20), // rose-gold
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFFD79D8A),
+                    size: 20,
+                  ), // rose-gold
                 ),
               ),
               const SizedBox(height: 12),
@@ -655,7 +717,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                 style: TextStyle(
                   fontSize: 10,
                   letterSpacing: 1.2,
-                  color: const Color(0xFFA89F95).withValues(alpha: 0.6), // cashmere
+                  color: const Color(
+                    0xFFA89F95,
+                  ).withValues(alpha: 0.6), // cashmere
                 ),
               ),
               Text(
@@ -679,12 +743,18 @@ class _AiProcessingStateState extends State<_AiProcessingState>
       decoration: BoxDecoration(
         color: const Color(0xFF1C1715).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFAF6F0).withValues(alpha: 0.1)),
+        border: Border.all(
+          color: const Color(0xFFFAF6F0).withValues(alpha: 0.1),
+        ),
       ),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.checkroom, color: Color(0xFFD79D8A), size: 20), // rose-gold
+          Icon(
+            Icons.checkroom,
+            color: Color(0xFFD79D8A),
+            size: 20,
+          ), // rose-gold
           SizedBox(width: 12),
           Text(
             'Processing 3,400+ Silhouette Matrices',
@@ -755,8 +825,10 @@ class _AiProcessingStateState extends State<_AiProcessingState>
             topRight: Radius.circular(32),
           ),
           border: Border(
-              top: BorderSide(
-                  color: context.trenzyColors.foreground.withValues(alpha: 0.05))),
+            top: BorderSide(
+              color: context.trenzyColors.foreground.withValues(alpha: 0.05),
+            ),
+          ),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -776,10 +848,8 @@ class _AiProcessingStateState extends State<_AiProcessingState>
     return AnimatedBuilder(
       animation: _glowCtrl,
       builder: (context, _) {
-        final glowScale =
-            1.0 + 0.12 * sin(_glowCtrl.value * 2 * pi);
-        final glowOffset =
-            0.05 * sin(_glowCtrl.value * 2 * pi + 1.0);
+        final glowScale = 1.0 + 0.12 * sin(_glowCtrl.value * 2 * pi);
+        final glowOffset = 0.05 * sin(_glowCtrl.value * 2 * pi + 1.0);
         return Stack(
           children: [
             Positioned(
@@ -792,7 +862,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                   height: 500,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFD79D8A).withValues(alpha: 0.05), // rose-gold glow
+                    color: const Color(
+                      0xFFD79D8A,
+                    ).withValues(alpha: 0.05), // rose-gold glow
                   ),
                 ),
               ),
@@ -807,7 +879,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                   height: 400,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFA89F95).withValues(alpha: 0.08), // cashmere soft glow
+                    color: const Color(
+                      0xFFA89F95,
+                    ).withValues(alpha: 0.08), // cashmere soft glow
                   ),
                 ),
               ),
@@ -822,7 +896,9 @@ class _AiProcessingStateState extends State<_AiProcessingState>
                   height: 300,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFD79D8A).withValues(alpha: 0.04), // rose-gold tertiary glow
+                    color: const Color(
+                      0xFFD79D8A,
+                    ).withValues(alpha: 0.04), // rose-gold tertiary glow
                   ),
                 ),
               ),
@@ -845,7 +921,8 @@ class _GrainOverlay extends StatelessWidget {
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(
-                'https://www.transparenttextures.com/patterns/p6-dark.png'),
+              'https://www.transparenttextures.com/patterns/p6-dark.png',
+            ),
             repeat: ImageRepeat.repeat,
           ),
         ),

@@ -20,8 +20,11 @@ class _SeeMoreSection extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.explore_rounded,
-                  size: 18, color: context.trenzyColors.primary),
+              Icon(
+                Icons.explore_rounded,
+                size: 18,
+                color: context.trenzyColors.primary,
+              ),
               SizedBox(width: 6),
               Text(
                 'See more styles',
@@ -33,8 +36,11 @@ class _SeeMoreSection extends ConsumerWidget {
                 ),
               ),
               SizedBox(width: 6),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: context.trenzyColors.primary),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: context.trenzyColors.primary,
+              ),
             ],
           ),
         ),

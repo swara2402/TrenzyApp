@@ -20,7 +20,8 @@ class GroupMessage {
   final bool isRead;
   final bool read;
 
-  String? get displayName => senderName.isNotEmpty ? senderName : sender?.displayName ?? sender?.name;
+  String? get displayName =>
+      senderName.isNotEmpty ? senderName : sender?.displayName ?? sender?.name;
 
   GroupMessage({
     String? id,
@@ -42,22 +43,22 @@ class GroupMessage {
     this.createdAt,
     bool? isRead,
     bool? read,
-  })  : id = id ?? '',
-        roomId = roomId ?? '',
-        groupId = groupId ?? '',
-        senderId = senderId ?? '',
-        senderName = senderName ?? displayName ?? '',
-        content = content ?? '',
-        message = message ?? '',
-        type = type ?? '',
-        attachments = attachments ?? const [],
-        attachment = attachment ?? '',
-        attachedProductId = attachedProductId ?? '',
-        attachedProductTitle = attachedProductTitle ?? '',
-        attachedProductImage = attachedProductImage ?? '',
-        attachedProductPrice = attachedProductPrice ?? '',
-        isRead = isRead ?? read ?? false,
-        read = read ?? isRead ?? false;
+  }) : id = id ?? '',
+       roomId = roomId ?? '',
+       groupId = groupId ?? '',
+       senderId = senderId ?? '',
+       senderName = senderName ?? displayName ?? '',
+       content = content ?? '',
+       message = message ?? '',
+       type = type ?? '',
+       attachments = attachments ?? const [],
+       attachment = attachment ?? '',
+       attachedProductId = attachedProductId ?? '',
+       attachedProductTitle = attachedProductTitle ?? '',
+       attachedProductImage = attachedProductImage ?? '',
+       attachedProductPrice = attachedProductPrice ?? '',
+       isRead = isRead ?? read ?? false,
+       read = read ?? isRead ?? false;
 
   factory GroupMessage.fromJson(Map<String, dynamic> json) {
     return GroupMessage(
@@ -65,7 +66,8 @@ class GroupMessage {
       roomId: json['roomId'] as String?,
       groupId: json['groupId'] as String?,
       senderId: json['senderId'] as String?,
-      senderName: json['senderName'] as String? ?? json['displayName'] as String?,
+      senderName:
+          json['senderName'] as String? ?? json['displayName'] as String?,
       sender: json['sender'] != null
           ? UserModel.fromJson(json['sender'] as Map<String, dynamic>)
           : null,

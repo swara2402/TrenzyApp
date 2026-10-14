@@ -45,12 +45,22 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           children: [
             // ── Header ──────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(GlassSpacing.lg, 8, GlassSpacing.lg, 0),
+              padding: const EdgeInsets.fromLTRB(
+                GlassSpacing.lg,
+                8,
+                GlassSpacing.lg,
+                0,
+              ),
               child: Row(
                 children: [
                   GlassBackButton(onTap: () => context.pop()),
                   SizedBox(width: 8),
-                  DisplayText('Categories', fontSize: 24, weight: FontWeight.w600, color: context.trenzyColors.primary),
+                  DisplayText(
+                    'Categories',
+                    fontSize: 24,
+                    weight: FontWeight.w600,
+                    color: context.trenzyColors.primary,
+                  ),
                 ],
               ),
             ),
@@ -59,7 +69,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: GlassSpacing.lg),
               child: Text(
                 'Explore fashion by category',
-                style: GlassTypography.body(color: context.trenzyColors.mutedFg.withValues(alpha: 0.7)),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.7),
+                ),
               ),
             ),
             SizedBox(height: 20),
@@ -68,17 +80,28 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             Expanded(
               child: categoriesAsync.when(
                 loading: () => Center(
-                  child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: context.trenzyColors.primary,
+                    strokeWidth: 2,
+                  ),
                 ),
                 error: (err, _) => Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.error_outline, size: 48, color: context.trenzyColors.mutedFg.withValues(alpha: 0.4)),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: context.trenzyColors.mutedFg.withValues(
+                          alpha: 0.4,
+                        ),
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'Could not load categories',
-                        style: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                        style: GlassTypography.body(
+                          color: context.trenzyColors.mutedFg,
+                        ),
                       ),
                       SizedBox(height: 12),
                       GlowButton(
@@ -96,13 +119,26 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.category_outlined, size: 64, color: context.trenzyColors.mutedFg.withValues(alpha: 0.3)),
+                          Icon(
+                            Icons.category_outlined,
+                            size: 64,
+                            color: context.trenzyColors.mutedFg.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
                           SizedBox(height: 16),
-                          DisplayText('No categories yet', fontSize: 18, weight: FontWeight.w600),
+                          DisplayText(
+                            'No categories yet',
+                            fontSize: 18,
+                            weight: FontWeight.w600,
+                          ),
                           SizedBox(height: 8),
                           Text(
                             'Categories will appear once products are loaded.',
-                            style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 14),
+                            style: GlassTypography.body(
+                              color: context.trenzyColors.mutedFg,
+                              fontSize: 14,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -116,18 +152,24 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       Expanded(
                         flex: _selectedCategory != null ? 1 : 1,
                         child: GridView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: GlassSpacing.lg),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1.0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: GlassSpacing.lg,
                           ),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 1.0,
+                              ),
                           itemCount: categories.length,
                           itemBuilder: (context, index) {
                             final cat = categories[index];
-                            final icon = _rootCategoryIcons[cat] ?? Icons.category_outlined;
-                            final color = _tileColors[index % _tileColors.length];
+                            final icon =
+                                _rootCategoryIcons[cat] ??
+                                Icons.category_outlined;
+                            final color =
+                                _tileColors[index % _tileColors.length];
                             final isSelected = _selectedCategory == cat;
 
                             return GestureDetector(
@@ -141,7 +183,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                   color: color,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: isSelected ? context.trenzyColors.primary : context.trenzyColors.glassBorder,
+                                    color: isSelected
+                                        ? context.trenzyColors.primary
+                                        : context.trenzyColors.glassBorder,
                                     width: isSelected ? 2 : 0.5,
                                   ),
                                 ),
@@ -152,10 +196,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                       width: 52,
                                       height: 52,
                                       decoration: BoxDecoration(
-                                        color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                                        color: context.trenzyColors.primary
+                                            .withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(icon, size: 24, color: context.trenzyColors.primary),
+                                      child: Icon(
+                                        icon,
+                                        size: 24,
+                                        color: context.trenzyColors.primary,
+                                      ),
                                     ),
                                     SizedBox(height: 12),
                                     Text(
@@ -180,7 +229,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       if (_selectedCategory != null)
                         Expanded(
                           flex: 2,
-                          child: _buildSubcategoriesList(ref, _selectedCategory!),
+                          child: _buildSubcategoriesList(
+                            ref,
+                            _selectedCategory!,
+                          ),
                         ),
                     ],
                   );
@@ -196,20 +248,35 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   Widget _buildSubcategoriesList(WidgetRef ref, String categoryName) {
     final subcategoriesAsync = ref.watch(subcategoriesProvider(categoryName));
     return Padding(
-      padding: const EdgeInsets.only(top: 24, left: GlassSpacing.lg, right: GlassSpacing.lg),
+      padding: const EdgeInsets.only(
+        top: 24,
+        left: GlassSpacing.lg,
+        right: GlassSpacing.lg,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Subcategories for $categoryName',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           SizedBox(height: 16),
           Expanded(
             child: subcategoriesAsync.when(
-              loading: () => Center(child: CircularProgressIndicator(color: context.trenzyColors.primary)),
+              loading: () => Center(
+                child: CircularProgressIndicator(
+                  color: context.trenzyColors.primary,
+                ),
+              ),
               error: (err, _) => Center(
-                child: Text('Failed to load subcategories', style: TextStyle(color: context.trenzyColors.mutedFg)),
+                child: Text(
+                  'Failed to load subcategories',
+                  style: TextStyle(color: context.trenzyColors.mutedFg),
+                ),
               ),
               data: (subcategories) {
                 return ListView.builder(
@@ -217,8 +284,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   itemBuilder: (context, index) {
                     final subcat = subcategories[index];
                     return ListTile(
-                      title: Text(subcat, style: TextStyle(color: Colors.white)),
-                      trailing: Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+                      title: Text(
+                        subcat,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white70,
+                        size: 16,
+                      ),
                       onTap: () {
                         context.push(
                           '${AppRoutes.search}?category=${Uri.encodeComponent(categoryName)}&subcategory=${Uri.encodeComponent(subcat)}',

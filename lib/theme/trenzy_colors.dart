@@ -192,7 +192,11 @@ class TrenzyColors extends ThemeExtension<TrenzyColors> {
       glassDock: Color.lerp(glassDock, other.glassDock, t)!,
       mutedFg: Color.lerp(mutedFg, other.mutedFg, t)!,
       graphite: Color.lerp(graphite, other.graphite, t)!,
-      surfaceContainer: Color.lerp(surfaceContainer, other.surfaceContainer, t)!,
+      surfaceContainer: Color.lerp(
+        surfaceContainer,
+        other.surfaceContainer,
+        t,
+      )!,
       destructive: Color.lerp(destructive, other.destructive, t)!,
       fg08: Color.lerp(fg08, other.fg08, t)!,
       fg10: Color.lerp(fg10, other.fg10, t)!,

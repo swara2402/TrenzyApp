@@ -140,7 +140,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _navigateAfterSplash() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.emailVerified && !FeatureFlags.skipEmailVerification) {
+    if (user != null &&
+        !user.emailVerified &&
+        !FeatureFlags.skipEmailVerification) {
       if (!mounted) return;
       context.go(AppRoutes.verifyEmail);
       return;

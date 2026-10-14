@@ -32,7 +32,8 @@ String friendlyError(Object error) {
   if (text.toLowerCase().contains('timeout')) {
     return 'This is taking longer than usual. Try again in a moment.';
   }
-  if (text.toLowerCase().contains('404') || text.toLowerCase().contains('not found')) {
+  if (text.toLowerCase().contains('404') ||
+      text.toLowerCase().contains('not found')) {
     return 'Content not found or no longer available.';
   }
   return 'Something went wrong. Please try again.';
@@ -74,19 +75,29 @@ class ErrorSection extends StatelessWidget {
             color: context.trenzyColors.crimson.withValues(alpha: 0.12),
           ),
           alignment: Alignment.center,
-          child: Icon(icon, size: compact ? 20 : 26, color: context.trenzyColors.crimson),
+          child: Icon(
+            icon,
+            size: compact ? 20 : 26,
+            color: context.trenzyColors.crimson,
+          ),
         ),
         SizedBox(height: 10),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: GlassTypography.body(fontSize: compact ? 13 : 15, weight: FontWeight.w800),
+          style: GlassTypography.body(
+            fontSize: compact ? 13 : 15,
+            weight: FontWeight.w800,
+          ),
         ),
         SizedBox(height: 4),
         Text(
           message,
           textAlign: TextAlign.center,
-          style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg),
+          style: GlassTypography.body(
+            fontSize: 13,
+            color: context.trenzyColors.mutedFg,
+          ),
         ),
         SizedBox(height: 12),
         TapScale(
@@ -96,16 +107,26 @@ class ErrorSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.trenzyColors.crimson.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(GlassRadius.button),
-              border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.35)),
+              border: Border.all(
+                color: context.trenzyColors.crimson.withValues(alpha: 0.35),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.refresh_rounded, size: 16, color: context.trenzyColors.crimson),
+                Icon(
+                  Icons.refresh_rounded,
+                  size: 16,
+                  color: context.trenzyColors.crimson,
+                ),
                 SizedBox(width: 6),
                 Text(
                   'Retry',
-                  style: GlassTypography.body(fontSize: 12, weight: FontWeight.w700, color: context.trenzyColors.crimson),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    weight: FontWeight.w700,
+                    color: context.trenzyColors.crimson,
+                  ),
                 ),
               ],
             ),
@@ -142,7 +163,13 @@ class ErrorSectionSliver extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       sliver: SliverToBoxAdapter(
-        child: ErrorSection(title: title, message: message, icon: icon, onRetry: onRetry, padding: EdgeInsets.zero),
+        child: ErrorSection(
+          title: title,
+          message: message,
+          icon: icon,
+          onRetry: onRetry,
+          padding: EdgeInsets.zero,
+        ),
       ),
     );
   }
@@ -192,28 +219,45 @@ class EmptySection extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GlassTypography.body(fontSize: 16, weight: FontWeight.w800),
+              style: GlassTypography.body(
+                fontSize: 16,
+                weight: FontWeight.w800,
+              ),
             ),
             SizedBox(height: 6),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg),
+              style: GlassTypography.body(
+                fontSize: 13,
+                color: context.trenzyColors.mutedFg,
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               SizedBox(height: 16),
               TapScale(
                 onTap: onAction,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: context.trenzyColors.primary.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(GlassRadius.button),
-                    border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.4,
+                      ),
+                    ),
                   ),
                   child: Text(
                     actionLabel!,
-                    style: GlassTypography.body(fontSize: 12, weight: FontWeight.w700, color: context.trenzyColors.primary),
+                    style: GlassTypography.body(
+                      fontSize: 12,
+                      weight: FontWeight.w700,
+                      color: context.trenzyColors.primary,
+                    ),
                   ),
                 ),
               ),

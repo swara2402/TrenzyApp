@@ -4,10 +4,7 @@ import '../../models/blend_model.dart';
 import '../../theme/glass_theme.dart';
 
 class BlendHeroCard extends StatefulWidget {
-  const BlendHeroCard({
-    super.key,
-    required this.results,
-  });
+  const BlendHeroCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -50,7 +47,9 @@ class _BlendHeroCardState extends State<BlendHeroCard>
     final r = widget.results;
     final scoreInt = (r.fashionScore ?? 0).toInt();
     final levelColor = _levelColor(scoreInt);
-    final compatLevel = r.compatibilityLevel != null ? '${r.compatibilityLevel}' : '';
+    final compatLevel = r.compatibilityLevel != null
+        ? '${r.compatibilityLevel}'
+        : '';
 
     return FadeTransition(
       opacity: _fadeIn,
@@ -58,7 +57,12 @@ class _BlendHeroCardState extends State<BlendHeroCard>
         scale: _scaleIn,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(GlassSpacing.xl, GlassSpacing.xxl, GlassSpacing.xl, GlassSpacing.xxl),
+          padding: const EdgeInsets.fromLTRB(
+            GlassSpacing.xl,
+            GlassSpacing.xxl,
+            GlassSpacing.xl,
+            GlassSpacing.xxl,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(GlassRadius.card),
             gradient: LinearGradient(
@@ -80,22 +84,31 @@ class _BlendHeroCardState extends State<BlendHeroCard>
             children: [
               Text(
                 'Fashion Match',
-                style: GlassTypography.meta(fontSize: 12, color: context.trenzyColors.primary)
-                    .copyWith(fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                style: GlassTypography.meta(
+                  fontSize: 12,
+                  color: context.trenzyColors.primary,
+                ).copyWith(fontWeight: FontWeight.w800, letterSpacing: 0.5),
               ),
               const SizedBox(height: 8),
               if (compatLevel.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: levelColor.withValues(alpha: 0.13),
                     borderRadius: BorderRadius.circular(GlassRadius.pill),
-                    border: Border.all(color: levelColor.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: levelColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     compatLevel,
-                    style: GlassTypography.meta(fontSize: 12, color: levelColor)
-                        .copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                    style: GlassTypography.meta(
+                      fontSize: 12,
+                      color: levelColor,
+                    ).copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.3),
                   ),
                 ),
               const SizedBox(height: 20),
@@ -106,37 +119,50 @@ class _BlendHeroCardState extends State<BlendHeroCard>
                 builder: (context, value, _) {
                   return Text(
                     '${value.round()}%',
-                    style: GlassTypography.display(fontSize: 72, weight: FontWeight.w900, color: levelColor)
-                        .copyWith(height: 1),
+                    style: GlassTypography.display(
+                      fontSize: 72,
+                      weight: FontWeight.w900,
+                      color: levelColor,
+                    ).copyWith(height: 1),
                   );
                 },
               ),
               const SizedBox(height: 4),
               Text(
                 'compatibility',
-                style: GlassTypography.body(fontSize: 16, weight: FontWeight.w600, color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  fontSize: 16,
+                  weight: FontWeight.w600,
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 (r.memberCount ?? 0) > 2
                     ? "Based on your group's wishlists and purchase history"
                     : 'Based on your wishlists and purchase history',
-                style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.fg50),
+                style: GlassTypography.body(
+                  fontSize: 12,
+                  color: context.trenzyColors.fg50,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              Container(
-                height: 1,
-                color: context.trenzyColors.glassBorder,
-              ),
+              Container(height: 1, color: context.trenzyColors.glassBorder),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _StatTile(label: 'Members', value: '${r.memberCount ?? 0}'),
                   _StatTile(label: 'Swipes', value: '${r.totalSwipes ?? 0}'),
-                  _StatTile(label: 'Brands', value: '${r.sharedBrands?.length ?? 0}'),
-                  _StatTile(label: 'Overlap', value: '${r.wardrobeOverlap ?? 0}'),
+                  _StatTile(
+                    label: 'Brands',
+                    value: '${r.sharedBrands?.length ?? 0}',
+                  ),
+                  _StatTile(
+                    label: 'Overlap',
+                    value: '${r.wardrobeOverlap ?? 0}',
+                  ),
                 ],
               ),
             ],
@@ -155,10 +181,7 @@ class _BlendHeroCardState extends State<BlendHeroCard>
 }
 
 class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.label,
-    required this.value,
-  });
+  const _StatTile({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -175,7 +198,11 @@ class _StatTile extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: GlassTypography.body(fontSize: 12, weight: FontWeight.w600, color: context.trenzyColors.mutedFg),
+          style: GlassTypography.body(
+            fontSize: 12,
+            weight: FontWeight.w600,
+            color: context.trenzyColors.mutedFg,
+          ),
         ),
       ],
     );

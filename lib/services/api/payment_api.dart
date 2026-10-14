@@ -7,9 +7,10 @@ class PaymentApi {
   Future<Map<String, dynamic>> createPaymentOrder({
     required int amountPaise,
   }) async {
-    final data = await _client.post('/payments/order', body: {
-      'amount_paise': amountPaise,
-    });
+    final data = await _client.post(
+      '/payments/order',
+      body: {'amount_paise': amountPaise},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -18,11 +19,14 @@ class PaymentApi {
     required String razorpayPaymentId,
     required String razorpaySignature,
   }) async {
-    final data = await _client.post('/payments/verify', body: {
-      'razorpay_order_id': razorpayOrderId,
-      'razorpay_payment_id': razorpayPaymentId,
-      'razorpay_signature': razorpaySignature,
-    });
+    final data = await _client.post(
+      '/payments/verify',
+      body: {
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_signature': razorpaySignature,
+      },
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 

@@ -26,14 +26,18 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPreferencesProvider);
     final userCategories = prefs.preferredCategories;
-    final categoriesParam = userCategories.isNotEmpty ? userCategories.join(',') : null;
+    final categoriesParam = userCategories.isNotEmpty
+        ? userCategories.join(',')
+        : null;
 
     final trendsAsync = ref.watch(
-      trendingProductsProvider(TrendingParams(
-        categories: categoriesParam,
-        timeframe: 'daily',
-        limit: 10,
-      )),
+      trendingProductsProvider(
+        TrendingParams(
+          categories: categoriesParam,
+          timeframe: 'daily',
+          limit: 10,
+        ),
+      ),
     );
 
     return Column(
@@ -48,7 +52,10 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
                 height: 18,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [context.trenzyColors.crimson, context.trenzyColors.primary],
+                    colors: [
+                      context.trenzyColors.crimson,
+                      context.trenzyColors.primary,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(2),
                 ),
@@ -88,22 +95,23 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: 3,
               separatorBuilder: (_, _) => SizedBox(width: 12),
-              itemBuilder: (_, _) => LoadingSkeletonShimmer(
-                height: 190,
-                width: 130,
-                radius: 16,
-              ),
+              itemBuilder: (_, _) =>
+                  LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
             ),
           ),
           error: (err, _) => ErrorSection(
             title: 'Couldn\u2019t load trending',
             message: friendlyError(err),
             compact: true,
-            onRetry: () => ref.invalidate(trendingProductsProvider(TrendingParams(
-              categories: categoriesParam,
-              timeframe: 'daily',
-              limit: 10,
-            ))),
+            onRetry: () => ref.invalidate(
+              trendingProductsProvider(
+                TrendingParams(
+                  categories: categoriesParam,
+                  timeframe: 'daily',
+                  limit: 10,
+                ),
+              ),
+            ),
           ),
           data: (trends) {
             if (trends.isEmpty) {
@@ -211,15 +219,20 @@ class _TrendingProductCardState extends State<_TrendingProductCard>
                   children: [
                     Positioned.fill(
                       child: CachedNetworkImage(
-                        imageUrl: ApiService.resolveImageUrl(widget.trend.imageUrl) ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
+                        imageUrl:
+                            ApiService.resolveImageUrl(widget.trend.imageUrl) ??
+                            'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
                         width: double.infinity,
                         fit: BoxFit.cover,
                         memCacheWidth: 260,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[900],
                           child: Center(
-                            child: Icon(Icons.image_outlined,
-                                color: context.trenzyColors.mutedFg, size: 24),
+                            child: Icon(
+                              Icons.image_outlined,
+                              color: context.trenzyColors.mutedFg,
+                              size: 24,
+                            ),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
@@ -280,8 +293,11 @@ class _TrendingProductCardState extends State<_TrendingProductCard>
                       Spacer(),
                       Row(
                         children: [
-                          Icon(Icons.trending_up,
-                              size: 10, color: context.trenzyColors.emerald),
+                          Icon(
+                            Icons.trending_up,
+                            size: 10,
+                            color: context.trenzyColors.emerald,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             '${widget.trend.trendingScore.toStringAsFixed(0)}%',
@@ -304,4 +320,3 @@ class _TrendingProductCardState extends State<_TrendingProductCard>
     );
   }
 }
-

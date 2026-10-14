@@ -32,8 +32,9 @@ class ProductCard extends ConsumerStatefulWidget {
 }
 
 class _ProductCardState extends ConsumerState<ProductCard> {
-  bool _isWishlisted(String productId) =>
-      ref.watch(wishlistProvider.select((w) => w.valueOrNull?.contains(productId) ?? false));
+  bool _isWishlisted(String productId) => ref.watch(
+    wishlistProvider.select((w) => w.valueOrNull?.contains(productId) ?? false),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +59,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
           decoration: BoxDecoration(
             color: context.trenzyColors.background,
             borderRadius: BorderRadius.circular(GlassRadius.card),
-            border: Border.all(color: context.trenzyColors.glassBorder.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: context.trenzyColors.glassBorder.withValues(alpha: 0.2),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
@@ -76,25 +79,43 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                   child: Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.card)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(AppRadius.card),
+                        ),
                         child: widget.product.imageUrl.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl,
+                                imageUrl:
+                                    ApiService.resolveImageUrl(
+                                      widget.product.imageUrl,
+                                    ) ??
+                                    widget.product.imageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 memCacheWidth: 400,
                                 placeholder: (context, url) => SizedBox(
                                   width: double.infinity,
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
                                 ),
                                 errorWidget: (context, url, error) => Container(
                                   color: context.trenzyColors.graphite,
-                                  child: Icon(Icons.shopping_bag_rounded, size: 48, color: context.trenzyColors.foreground.withValues(alpha: 0.3)),
+                                  child: Icon(
+                                    Icons.shopping_bag_rounded,
+                                    size: 48,
+                                    color: context.trenzyColors.foreground
+                                        .withValues(alpha: 0.3),
+                                  ),
                                 ),
                               )
                             : Container(
                                 color: context.trenzyColors.graphite,
-                                child: Icon(Icons.shopping_bag_rounded, size: 48, color: context.trenzyColors.foreground.withValues(alpha: 0.3)),
+                                child: Icon(
+                                  Icons.shopping_bag_rounded,
+                                  size: 48,
+                                  color: context.trenzyColors.foreground
+                                      .withValues(alpha: 0.3),
+                                ),
                               ),
                       ),
                       Positioned(
@@ -104,7 +125,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         child: TapScale(
                           onTap: () {
                             HapticFeedback.mediumImpact();
-                            ref.read(wishlistProvider.notifier).toggle(widget.product.id);
+                            ref
+                                .read(wishlistProvider.notifier)
+                                .toggle(widget.product.id);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Saved to wishlist'),
@@ -121,7 +144,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: context.trenzyColors.primary.withAlpha(77),
+                                  color: context.trenzyColors.primary.withAlpha(
+                                    77,
+                                  ),
                                   blurRadius: 8,
                                   offset: Offset(0, 2),
                                 ),
@@ -133,7 +158,11 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.bookmark_add_outlined, size: 14, color: context.trenzyColors.primaryFg),
+                                  Icon(
+                                    Icons.bookmark_add_outlined,
+                                    size: 14,
+                                    color: context.trenzyColors.primaryFg,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'SAVE',
@@ -170,79 +199,88 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                    Text(
-                      widget.customPriceText ?? '${widget.product.effectivePrice}',
+                        Text(
+                          widget.customPriceText ??
+                              '${widget.product.effectivePrice}',
                           style: GlassTypography.body(
                             fontSize: 14,
                             weight: FontWeight.w800,
                             color: context.trenzyColors.primary,
                           ),
                         ),
-                    ...[
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star, size: 11, color: Colors.amber),
-                        SizedBox(width: 2),
-                        Text(
-                          widget.product.rating.toStringAsFixed(1),
-                          style: GlassTypography.body(fontSize: 10, color: context.trenzyColors.mutedFg),
-                        ),
-                      ],
-                    ),
-                  ],
-                    // Show recommendation reason if available
-                    if (widget.product.reason.isNotEmpty) ...[
-                      SizedBox(height: 4),
-                      Text(
-                        widget.product.reason,
-                        style: GlassTypography.body(fontSize: 10, color: context.trenzyColors.mutedFg.withValues(alpha: 0.8)),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    Spacer(),
+                        ...[
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star, size: 11, color: Colors.amber),
+                              SizedBox(width: 2),
+                              Text(
+                                widget.product.rating.toStringAsFixed(1),
+                                style: GlassTypography.body(
+                                  fontSize: 10,
+                                  color: context.trenzyColors.mutedFg,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        // Show recommendation reason if available
+                        if (widget.product.reason.isNotEmpty) ...[
+                          SizedBox(height: 4),
+                          Text(
+                            widget.product.reason,
+                            style: GlassTypography.body(
+                              fontSize: 10,
+                              color: context.trenzyColors.mutedFg.withValues(
+                                alpha: 0.8,
+                              ),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        Spacer(),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                        LikeBounce(
-                          isLiked: _isWishlisted(widget.product.id),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            ref
-                                .read(wishlistProvider.notifier)
-                                .toggle(widget.product.id);
-                          },
-                          child: Icon(
-                            _isWishlisted(widget.product.id)
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            size: 18,
-                            color: _isWishlisted(widget.product.id)
-                                ? context.trenzyColors.crimson
-                                : context.trenzyColors.mutedFg,
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        SaveSlide(
-                          isSaved: _isWishlisted(widget.product.id),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            ref
-                                .read(wishlistProvider.notifier)
-                                .toggle(widget.product.id);
-                          },
-                          child: Icon(
-                            _isWishlisted(widget.product.id)
-                                ? Icons.bookmark
-                                : Icons.bookmark_border,
-                            size: 18,
-                            color: _isWishlisted(widget.product.id)
-                                ? context.trenzyColors.primary
-                                : context.trenzyColors.mutedFg,
-                          ),
-                        ),
+                            LikeBounce(
+                              isLiked: _isWishlisted(widget.product.id),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(wishlistProvider.notifier)
+                                    .toggle(widget.product.id);
+                              },
+                              child: Icon(
+                                _isWishlisted(widget.product.id)
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 18,
+                                color: _isWishlisted(widget.product.id)
+                                    ? context.trenzyColors.crimson
+                                    : context.trenzyColors.mutedFg,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            SaveSlide(
+                              isSaved: _isWishlisted(widget.product.id),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(wishlistProvider.notifier)
+                                    .toggle(widget.product.id);
+                              },
+                              child: Icon(
+                                _isWishlisted(widget.product.id)
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                size: 18,
+                                color: _isWishlisted(widget.product.id)
+                                    ? context.trenzyColors.primary
+                                    : context.trenzyColors.mutedFg,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -265,7 +303,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         child: Stack(
           children: [
             CachedNetworkImage(
-              imageUrl: ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl,
+              imageUrl:
+                  ApiService.resolveImageUrl(widget.product.imageUrl) ??
+                  widget.product.imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
@@ -281,7 +321,11 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               ),
               errorWidget: (context, url, error) => Container(
                 color: context.trenzyColors.surfaceContainer,
-                child: Icon(Icons.shopping_bag_rounded, size: 48, color: context.trenzyColors.mutedFg),
+                child: Icon(
+                  Icons.shopping_bag_rounded,
+                  size: 48,
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
             ),
             Container(
@@ -339,7 +383,10 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(ApiService.resolveImageUrl(widget.product.imageUrl) ?? widget.product.imageUrl),
+                  image: CachedNetworkImageProvider(
+                    ApiService.resolveImageUrl(widget.product.imageUrl) ??
+                        widget.product.imageUrl,
+                  ),
                   fit: BoxFit.cover,
                 ),
                 border: Border.all(color: context.trenzyColors.glassBorder),

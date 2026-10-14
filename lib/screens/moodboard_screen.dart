@@ -42,7 +42,8 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
       backgroundColor: context.trenzyColors.background,
       appBar: _buildAppBar(context),
       body: moodboardAsync.when(
-        loading: () => Center(child: LoadingSkeletonShimmer(height: 400, radius: 20)),
+        loading: () =>
+            Center(child: LoadingSkeletonShimmer(height: 400, radius: 20)),
         error: (err, _) => Center(
           child: AsyncRetryErrorState(
             title: 'Could not load moodboard',
@@ -66,18 +67,78 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
       backgroundColor: context.trenzyColors.background,
       elevation: 0,
       leading: GlassBackButton(),
-      title: Text('Moodboard', style: TextStyle(color: context.trenzyColors.foreground, fontWeight: FontWeight.bold)),
+      title: Text(
+        'Moodboard',
+        style: TextStyle(
+          color: context.trenzyColors.foreground,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       actions: [
         PopupMenuButton<String>(
           color: context.trenzyColors.graphite,
-          icon: Icon(Icons.filter_list_rounded, color: context.trenzyColors.mutedFg),
-          onSelected: (value) => setState(() => _itemTypeFilter = value == 'all' ? null : value),
+          icon: Icon(
+            Icons.filter_list_rounded,
+            color: context.trenzyColors.mutedFg,
+          ),
+          onSelected: (value) =>
+              setState(() => _itemTypeFilter = value == 'all' ? null : value),
           itemBuilder: (context) => [
-            PopupMenuItem(value: 'all', child: Text('All', style: TextStyle(color: _itemTypeFilter == null ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'product', child: Text('Products', style: TextStyle(color: _itemTypeFilter == 'product' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'image', child: Text('Images', style: TextStyle(color: _itemTypeFilter == 'image' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'note', child: Text('Notes', style: TextStyle(color: _itemTypeFilter == 'note' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'palette', child: Text('Palettes', style: TextStyle(color: _itemTypeFilter == 'palette' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
+            PopupMenuItem(
+              value: 'all',
+              child: Text(
+                'All',
+                style: TextStyle(
+                  color: _itemTypeFilter == null
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'product',
+              child: Text(
+                'Products',
+                style: TextStyle(
+                  color: _itemTypeFilter == 'product'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'image',
+              child: Text(
+                'Images',
+                style: TextStyle(
+                  color: _itemTypeFilter == 'image'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'note',
+              child: Text(
+                'Notes',
+                style: TextStyle(
+                  color: _itemTypeFilter == 'note'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'palette',
+              child: Text(
+                'Palettes',
+                style: TextStyle(
+                  color: _itemTypeFilter == 'palette'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
           ],
         ),
       ],
@@ -92,7 +153,8 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
     if (filtered.isEmpty) {
       return FriendlyEmptyState(
         title: 'Moodboard is empty',
-        message: 'Tap + to add inspiration images, products, notes, and color palettes',
+        message:
+            'Tap + to add inspiration images, products, notes, and color palettes',
         icon: Icons.palette_outlined,
         actionLabel: 'Add Inspiration',
         onActionPressed: () => _showAddItemSheet(context),
@@ -127,23 +189,37 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.trenzyColors.graphite,
-        title: Text('Remove item?', style: TextStyle(color: context.trenzyColors.foreground)),
-        content: Text('Remove this ${item.itemType.replaceAll('_', ' ')} from the moodboard?', style: TextStyle(color: context.trenzyColors.mutedFg)),
+        title: Text(
+          'Remove item?',
+          style: TextStyle(color: context.trenzyColors.foreground),
+        ),
+        content: Text(
+          'Remove this ${item.itemType.replaceAll('_', ' ')} from the moodboard?',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: TextStyle(color: context.trenzyColors.mutedFg)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.trenzyColors.mutedFg),
+            ),
           ),
           TextButton(
             onPressed: () {
-              ref.read(moodboardNotifierProvider.notifier).removeItem(
-                blendId: widget.groupId,
-                itemId: int.tryParse(item.id) ?? -1,
-              );
+              ref
+                  .read(moodboardNotifierProvider.notifier)
+                  .removeItem(
+                    blendId: widget.groupId,
+                    itemId: int.tryParse(item.id) ?? -1,
+                  );
               Navigator.of(ctx).pop();
               ref.invalidate(moodboardProvider(widget.groupId));
             },
-            child: Text('Remove', style: TextStyle(color: context.trenzyColors.crimson)),
+            child: Text(
+              'Remove',
+              style: TextStyle(color: context.trenzyColors.crimson),
+            ),
           ),
         ],
       ),
@@ -171,24 +247,43 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                 children: [
                   Text(
                     item.itemType.replaceAll('_', ' ').toUpperCase(),
-                    style: TextStyle(fontSize: 10, letterSpacing: 2, color: context.trenzyColors.primary, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      color: context.trenzyColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(ctx).pop(),
-                    child: Icon(Icons.close_rounded, color: context.trenzyColors.mutedFg),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ],
               ),
               SizedBox(height: 16),
               ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: CachedNetworkImage(imageUrl: item.imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover),
-              ),
-              SizedBox(height: 16),
-            ],
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CachedNetworkImage(
+                    imageUrl: item.imageUrl,
+                    height: 250,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                SizedBox(height: 16),
+              ],
               if (item.caption.isNotEmpty) ...[
-                Text(item.caption, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
+                Text(
+                  item.caption,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: context.trenzyColors.foreground,
+                  ),
+                ),
                 SizedBox(height: 12),
               ],
               if (item.content.isNotEmpty) ...[
@@ -201,12 +296,21 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                   ),
                   child: Text(
                     item.content,
-                    style: TextStyle(fontSize: 13, color: context.trenzyColors.mutedFg),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ),
                 SizedBox(height: 12),
               ],
-              Text('Added by ${item.addedByName}', style: TextStyle(fontSize: 11, color: context.trenzyColors.mutedFg)),
+              Text(
+                'Added by ${item.addedByName}',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
               SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -219,9 +323,15 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                   label: Text('Remove from Moodboard'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: context.trenzyColors.crimson,
-                    side: BorderSide(color: context.trenzyColors.crimson.withValues(alpha: 0.5)),
+                    side: BorderSide(
+                      color: context.trenzyColors.crimson.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
@@ -257,38 +367,99 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Add to Moodboard', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground)),
-                    GestureDetector(onTap: () => Navigator.of(ctx).pop(), child: Icon(Icons.close_rounded, color: context.trenzyColors.mutedFg)),
+                    Text(
+                      'Add to Moodboard',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: context.trenzyColors.foreground,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: context.trenzyColors.mutedFg,
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 20),
-                Text('Type', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+                Text(
+                  'Type',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
                 SizedBox(height: 8),
                 Row(
                   children: [
-                    _TypeChip(label: 'Image', value: 'image', selected: selectedType == 'image', onTap: () => setState(() => selectedType = 'image')),
+                    _TypeChip(
+                      label: 'Image',
+                      value: 'image',
+                      selected: selectedType == 'image',
+                      onTap: () => setState(() => selectedType = 'image'),
+                    ),
                     SizedBox(width: 8),
-                    _TypeChip(label: 'Note', value: 'note', selected: selectedType == 'note', onTap: () => setState(() => selectedType = 'note')),
+                    _TypeChip(
+                      label: 'Note',
+                      value: 'note',
+                      selected: selectedType == 'note',
+                      onTap: () => setState(() => selectedType = 'note'),
+                    ),
                     SizedBox(width: 8),
-                    _TypeChip(label: 'Product', value: 'product', selected: selectedType == 'product', onTap: () => setState(() => selectedType = 'product')),
+                    _TypeChip(
+                      label: 'Product',
+                      value: 'product',
+                      selected: selectedType == 'product',
+                      onTap: () => setState(() => selectedType = 'product'),
+                    ),
                     SizedBox(width: 8),
-                    _TypeChip(label: 'Palette', value: 'palette', selected: selectedType == 'palette', onTap: () => setState(() => selectedType = 'palette')),
+                    _TypeChip(
+                      label: 'Palette',
+                      value: 'palette',
+                      selected: selectedType == 'palette',
+                      onTap: () => setState(() => selectedType = 'palette'),
+                    ),
                   ],
                 ),
                 SizedBox(height: 16),
-                if (selectedType == 'image' || selectedType == 'product' || selectedType == 'palette') ...[
+                if (selectedType == 'image' ||
+                    selectedType == 'product' ||
+                    selectedType == 'palette') ...[
                   TextField(
                     controller: imageUrlCtrl,
                     style: TextStyle(color: context.trenzyColors.foreground),
                     decoration: InputDecoration(
                       labelText: 'Image URL',
-                      labelStyle: TextStyle(color: context.trenzyColors.mutedFg),
+                      labelStyle: TextStyle(
+                        color: context.trenzyColors.mutedFg,
+                      ),
                       filled: true,
                       fillColor: context.trenzyColors.glass,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.glassBorder)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.glassBorder)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.primary)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: context.trenzyColors.glassBorder,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: context.trenzyColors.glassBorder,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: context.trenzyColors.primary,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                   SizedBox(height: 12),
@@ -302,10 +473,28 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                     labelStyle: TextStyle(color: context.trenzyColors.mutedFg),
                     filled: true,
                     fillColor: context.trenzyColors.glass,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.glassBorder)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.glassBorder)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.trenzyColors.primary)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.trenzyColors.glassBorder,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.trenzyColors.glassBorder,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.trenzyColors.primary,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -314,12 +503,18 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                   child: GlowButton(
                     label: 'Add to Moodboard',
                     onTap: () async {
-                      final success = await ref.read(moodboardNotifierProvider.notifier).addItem(
-                        blendId: widget.groupId,
-                        itemType: selectedType,
-                        imageUrl: imageUrlCtrl.text.trim().isEmpty ? null : imageUrlCtrl.text.trim(),
-                        caption: captionCtrl.text.trim().isEmpty ? null : captionCtrl.text.trim(),
-                      );
+                      final success = await ref
+                          .read(moodboardNotifierProvider.notifier)
+                          .addItem(
+                            blendId: widget.groupId,
+                            itemType: selectedType,
+                            imageUrl: imageUrlCtrl.text.trim().isEmpty
+                                ? null
+                                : imageUrlCtrl.text.trim(),
+                            caption: captionCtrl.text.trim().isEmpty
+                                ? null
+                                : captionCtrl.text.trim(),
+                          );
                       if (success && ctx.mounted) {
                         Navigator.of(ctx).pop();
                         ref.invalidate(moodboardProvider(widget.groupId));
@@ -343,7 +538,12 @@ class _TypeChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _TypeChip({required this.label, required this.value, required this.selected, required this.onTap});
+  const _TypeChip({
+    required this.label,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -352,16 +552,24 @@ class _TypeChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? context.trenzyColors.primary.withValues(alpha: 0.15) : context.trenzyColors.glass,
+          color: selected
+              ? context.trenzyColors.primary.withValues(alpha: 0.15)
+              : context.trenzyColors.glass,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? context.trenzyColors.primary.withValues(alpha: 0.5) : context.trenzyColors.glassBorder),
+          border: Border.all(
+            color: selected
+                ? context.trenzyColors.primary.withValues(alpha: 0.5)
+                : context.trenzyColors.glassBorder,
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: selected ? context.trenzyColors.primary : context.trenzyColors.mutedFg,
+            color: selected
+                ? context.trenzyColors.primary
+                : context.trenzyColors.mutedFg,
           ),
         ),
       ),
@@ -382,21 +590,36 @@ class _AddTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.trenzyColors.glass,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.trenzyColors.glassBorder, style: BorderStyle.solid),
+          border: Border.all(
+            color: context.trenzyColors.glassBorder,
+            style: BorderStyle.solid,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: context.trenzyColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.add_rounded, color: context.trenzyColors.primary, size: 24),
+              child: Icon(
+                Icons.add_rounded,
+                color: context.trenzyColors.primary,
+                size: 24,
+              ),
             ),
             SizedBox(height: 8),
-            Text('Add Inspiration', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg, fontWeight: FontWeight.w500)),
+            Text(
+              'Add Inspiration',
+              style: TextStyle(
+                fontSize: 12,
+                color: context.trenzyColors.mutedFg,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -409,7 +632,11 @@ class _MoodboardTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onRemove;
 
-  const _MoodboardTile({required this.item, required this.onTap, required this.onRemove});
+  const _MoodboardTile({
+    required this.item,
+    required this.onTap,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +653,13 @@ class _MoodboardTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => _itemPlaceholder(item, context), errorWidget: (_, _, _) => _itemPlaceholder(item, context)),
+              child: CachedNetworkImage(
+                imageUrl: item.imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                placeholder: (_, _) => _itemPlaceholder(item, context),
+                errorWidget: (_, _, _) => _itemPlaceholder(item, context),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -436,15 +669,33 @@ class _MoodboardTile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.itemType.replaceAll('_', ' '), style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
+                        Text(
+                          item.itemType.replaceAll('_', ' '),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
                         if (item.caption.isNotEmpty)
-                          Text(item.caption, style: TextStyle(fontSize: 11, color: context.trenzyColors.foreground), maxLines: 2, overflow: TextOverflow.ellipsis),
+                          Text(
+                            item.caption,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: context.trenzyColors.foreground,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                       ],
                     ),
                   ),
                   GestureDetector(
                     onTap: onRemove,
-                    child: Icon(Icons.close_rounded, size: 16, color: context.trenzyColors.mutedFg),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ],
               ),
@@ -472,7 +723,9 @@ class _MoodboardTile extends StatelessWidget {
     }
     return Container(
       color: context.trenzyColors.glass,
-      child: Center(child: Icon(icon, color: context.trenzyColors.mutedFg, size: 28)),
+      child: Center(
+        child: Icon(icon, color: context.trenzyColors.mutedFg, size: 28),
+      ),
     );
   }
 }

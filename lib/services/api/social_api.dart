@@ -9,7 +9,9 @@ class SocialApi {
   Future<List<Friend>> getFriends() async {
     final data = await _client.get('/friends');
     if (data is List) {
-      return data.map((e) => Friend.fromJson(e as Map<String, dynamic>)).toList();
+      return data
+          .map((e) => Friend.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
     if (data is Map<String, dynamic> && data['friends'] is List) {
       return (data['friends'] as List)
@@ -20,11 +22,17 @@ class SocialApi {
   }
 
   Future<void> sendFriendRequest({required String toFirebaseUid}) async {
-    await _client.post('/friends/request', body: {'toFirebaseUid': toFirebaseUid});
+    await _client.post(
+      '/friends/request',
+      body: {'toFirebaseUid': toFirebaseUid},
+    );
   }
 
   Future<List<dynamic>> getFriendRequests({String box = 'incoming'}) async {
-    final data = await _client.get('/friends/requests', queryParams: {'box': box});
+    final data = await _client.get(
+      '/friends/requests',
+      queryParams: {'box': box},
+    );
     if (data is List) return data;
     if (data is Map<String, dynamic> && data['requests'] is List) {
       return data['requests'] as List<dynamic>;
@@ -47,7 +55,9 @@ class SocialApi {
   Future<List<FriendSuggestion>> getFriendSuggestions() async {
     final data = await _client.get('/friends/suggestions');
     if (data is List) {
-      return data.map((e) => FriendSuggestion.fromJson(e as Map<String, dynamic>)).toList();
+      return data
+          .map((e) => FriendSuggestion.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
     if (data is Map<String, dynamic> && data['suggestions'] is List) {
       return (data['suggestions'] as List)
@@ -68,13 +78,18 @@ class SocialApi {
       'target_id': targetFirebaseUid,
       'reason': reason,
     };
-    if (details != null && details.trim().isNotEmpty) body['details'] = details.trim();
+    if (details != null && details.trim().isNotEmpty) {
+      body['details'] = details.trim();
+    }
     await _client.post('/moderation/reports', body: body);
   }
 
   // ---------- Follow ----------
   Future<void> followUser(String targetFirebaseUid) async {
-    await _client.post('/follow', body: {'target_firebase_uid': targetFirebaseUid});
+    await _client.post(
+      '/follow',
+      body: {'target_firebase_uid': targetFirebaseUid},
+    );
   }
 
   Future<void> unfollowUser(String targetFirebaseUid) async {
@@ -82,7 +97,10 @@ class SocialApi {
   }
 
   Future<bool> getFollowStatus(String targetFirebaseUid) async {
-    final data = await _client.get('/follow/status', queryParams: {'target': targetFirebaseUid});
+    final data = await _client.get(
+      '/follow/status',
+      queryParams: {'target': targetFirebaseUid},
+    );
     if (data is Map<String, dynamic>) {
       return data['is_following'] == true || data['isFollowing'] == true;
     }
@@ -137,7 +155,10 @@ class SocialApi {
   }
 
   Future<Map<String, dynamic>> commentOnPost(int postId, String content) async {
-    final data = await _client.post('/posts/$postId/comments', body: {'content': content});
+    final data = await _client.post(
+      '/posts/$postId/comments',
+      body: {'content': content},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -148,10 +169,10 @@ class SocialApi {
 
   // ---------- Feed ----------
   Future<Map<String, dynamic>> getFeed({int offset = 0, int limit = 20}) async {
-    final data = await _client.get('/feed', queryParams: {
-      'offset': offset.toString(),
-      'limit': limit.toString(),
-    });
+    final data = await _client.get(
+      '/feed',
+      queryParams: {'offset': offset.toString(), 'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -160,9 +181,10 @@ class SocialApi {
     required String groupId,
     int limit = 50,
   }) async {
-    final data = await _client.get('/blends/$groupId/messages', queryParams: {
-      'limit': limit.toString(),
-    });
+    final data = await _client.get(
+      '/blends/$groupId/messages',
+      queryParams: {'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -174,18 +196,23 @@ class SocialApi {
     String? attachedProductImage,
     String? attachedProductPrice,
   }) async {
-    final body = <String, dynamic>{
-      'groupId': groupId,
-      'message': message,
-    };
-    if (attachedProductId != null) body['attachedProductId'] = attachedProductId;
-    if (attachedProductTitle != null) body['attachedProductTitle'] = attachedProductTitle;
-    if (attachedProductImage != null) body['attachedProductImage'] = attachedProductImage;
-    if (attachedProductPrice != null) body['attachedProductPrice'] = attachedProductPrice;
+    final body = <String, dynamic>{'groupId': groupId, 'message': message};
+    if (attachedProductId != null) {
+      body['attachedProductId'] = attachedProductId;
+    }
+    if (attachedProductTitle != null) {
+      body['attachedProductTitle'] = attachedProductTitle;
+    }
+    if (attachedProductImage != null) {
+      body['attachedProductImage'] = attachedProductImage;
+    }
+    if (attachedProductPrice != null) {
+      body['attachedProductPrice'] = attachedProductPrice;
+    }
 
     await _client.post('/blends/messages/send', body: body);
   }
- 
+
   // ---------- Direct Friend Chat ----------
   Future<Map<String, dynamic>> getDirectMessages({
     required String friendFirebaseUid,
@@ -207,20 +234,20 @@ class SocialApi {
   }) async {
     final data = await _client.post(
       '/chat/messages',
-      body: {
-        'toFirebaseUid': toFirebaseUid,
-        'message': message,
-      },
+      body: {'toFirebaseUid': toFirebaseUid, 'message': message},
     );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   // ---------- Activity ----------
-  Future<Map<String, dynamic>> getActivity({int limit = 20, int offset = 0}) async {
-    final data = await _client.get('/activity', queryParams: {
-      'limit': limit.toString(),
-      'offset': offset.toString(),
-    });
+  Future<Map<String, dynamic>> getActivity({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final data = await _client.get(
+      '/activity',
+      queryParams: {'limit': limit.toString(), 'offset': offset.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -231,10 +258,7 @@ class SocialApi {
     String? targetType,
     Map<String, dynamic>? metadataJson,
   }) async {
-    final body = <String, dynamic>{
-      'kind': kind,
-      'description': description,
-    };
+    final body = <String, dynamic>{'kind': kind, 'description': description};
     if (targetId != null) body['target_id'] = targetId;
     if (targetType != null) body['target_type'] = targetType;
     if (metadataJson != null) body['metadata_json'] = metadataJson;

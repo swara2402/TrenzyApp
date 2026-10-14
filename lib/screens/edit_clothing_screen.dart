@@ -76,10 +76,14 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
     }
 
     final rawImageUrl = _imageUrlController.text.trim();
-    final imageUrl = rawImageUrl.isEmpty ? null : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
+    final imageUrl = rawImageUrl.isEmpty
+        ? null
+        : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
     if (rawImageUrl.isNotEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image URL must start with http:// or https://')),
+        const SnackBar(
+          content: Text('Image URL must start with http:// or https://'),
+        ),
       );
       return;
     }
@@ -195,7 +199,9 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image: ${friendlyError(e)}')),
+          SnackBar(
+            content: Text('Failed to upload image: ${friendlyError(e)}'),
+          ),
         );
       }
       setState(() => _isUploading = false);
@@ -213,11 +219,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
           icon: Icon(Icons.close, color: context.trenzyColors.foreground),
           onPressed: () => context.pop(),
         ),
-        title: DisplayText(
-          'Edit Item',
-          fontSize: 20,
-          weight: FontWeight.w600,
-        ),
+        title: DisplayText('Edit Item', fontSize: 20, weight: FontWeight.w600),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -280,14 +282,19 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.broken_image,
-                                color: context.trenzyColors.mutedFg,
-                                size: 40),
+                            Icon(
+                              Icons.broken_image,
+                              color: context.trenzyColors.mutedFg,
+                              size: 40,
+                            ),
                             const SizedBox(height: 8),
-                            Text('Invalid Image URL',
-                                style: TextStyle(
-                                    color: context.trenzyColors.mutedFg,
-                                    fontSize: 12)),
+                            Text(
+                              'Invalid Image URL',
+                              style: TextStyle(
+                                color: context.trenzyColors.mutedFg,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -328,7 +335,10 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
                       top: 8,
                       right: 8,
                       child: IconButton(
-                        icon: Icon(Icons.clear, color: context.trenzyColors.foreground),
+                        icon: Icon(
+                          Icons.clear,
+                          color: context.trenzyColors.foreground,
+                        ),
                         onPressed: () {
                           setState(() {
                             _imageUrlController.clear();
@@ -485,9 +495,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
             final isSelected = _selectedSeason == season;
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                  right: season != seasons.last ? 8 : 0,
-                ),
+                padding: EdgeInsets.only(right: season != seasons.last ? 8 : 0),
                 child: ElevatedButton(
                   onPressed: () => setState(() => _selectedSeason = season),
                   style: ElevatedButton.styleFrom(
@@ -498,8 +506,9 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
                       borderRadius: BorderRadius.circular(12),
                       side: isSelected
                           ? BorderSide(
-                              color: context.trenzyColors.primary
-                                  .withValues(alpha: 0.3),
+                              color: context.trenzyColors.primary.withValues(
+                                alpha: 0.3,
+                              ),
                             )
                           : BorderSide.none,
                     ),
@@ -548,11 +557,10 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: context.trenzyColors.primary,
         minimumSize: const Size(double.infinity, 64),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(99),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+        disabledBackgroundColor: context.trenzyColors.primary.withValues(
+          alpha: 0.5,
         ),
-        disabledBackgroundColor:
-            context.trenzyColors.primary.withValues(alpha: 0.5),
       ),
     );
   }
@@ -566,19 +574,23 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Delete Item'),
-                  content:
-                      const Text('Are you sure you want to delete this item?'),
+                  content: const Text(
+                    'Are you sure you want to delete this item?',
+                  ),
                   actions: [
                     TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: const Text('Cancel')),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Cancel'),
+                    ),
                     TextButton(
                       onPressed: () {
                         Navigator.of(ctx).pop();
                         _deleteItem();
                       },
-                      child: const Text('Delete',
-                          style: TextStyle(color: Colors.red)),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.red),
+                      ),
                     ),
                   ],
                 ),
@@ -598,9 +610,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
         _isDeleting ? 'Deleting...' : 'Delete Item',
         style: const TextStyle(color: Colors.redAccent),
       ),
-      style: TextButton.styleFrom(
-        minimumSize: const Size(double.infinity, 44),
-      ),
+      style: TextButton.styleFrom(minimumSize: const Size(double.infinity, 44)),
     );
   }
 }

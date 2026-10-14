@@ -79,7 +79,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       }
       if (!mounted) return;
       final user = ref.read(authProvider).valueOrNull;
-      if (user != null && !user.emailVerified && !FeatureFlags.skipEmailVerification) {
+      if (user != null &&
+          !user.emailVerified &&
+          !FeatureFlags.skipEmailVerification) {
         if (!mounted) return;
         context.go(AppRoutes.verifyEmail);
         return;
@@ -91,7 +93,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     } catch (e) {
       if (!mounted) return;
       final currentUser = FirebaseAuth.instance.currentUser;
-      final createdForThisEmail = currentUser != null &&
+      final createdForThisEmail =
+          currentUser != null &&
           currentUser.email?.trim().toLowerCase() == email.toLowerCase();
       setState(() {
         _accountCreatedButSetupFailed =
@@ -141,7 +144,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                     text: 'LOG IN',
                                     style: GlassTypography.meta(
                                       fontSize: 11,
-                                      color: context.trenzyColors.primary
+                                      color: context.trenzyColors.primary,
                                     ),
                                   ),
                                 ],
@@ -225,10 +228,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    Color(0x2CF2CA50),
-                    Colors.transparent,
-                  ],
+                  colors: [Color(0x2CF2CA50), Colors.transparent],
                 ),
               ),
             ),
@@ -242,10 +242,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    Color(0x1A2ECC71),
-                    Colors.transparent,
-                  ],
+                  colors: [Color(0x1A2ECC71), Colors.transparent],
                 ),
               ),
             ),
@@ -293,11 +290,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               SizedBox(height: 24),
                               Row(
                                 children: [
-                                  _FeaturePill(icon: Icons.auto_awesome, label: 'AI Styling'),
+                                  _FeaturePill(
+                                    icon: Icons.auto_awesome,
+                                    label: 'AI Styling',
+                                  ),
                                   SizedBox(width: 8),
-                                  _FeaturePill(icon: Icons.groups, label: 'Social'),
+                                  _FeaturePill(
+                                    icon: Icons.groups,
+                                    label: 'Social',
+                                  ),
                                   SizedBox(width: 8),
-                                  _FeaturePill(icon: Icons.explore, label: 'Discovery'),
+                                  _FeaturePill(
+                                    icon: Icons.explore,
+                                    label: 'Discovery',
+                                  ),
                                 ],
                               ),
                             ],
@@ -329,7 +335,9 @@ class _FeaturePill extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: context.trenzyColors.primary.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -340,7 +348,7 @@ class _FeaturePill extends StatelessWidget {
             label,
             style: GlassTypography.meta(
               fontSize: 11,
-              color: context.trenzyColors.primary
+              color: context.trenzyColors.primary,
             ),
           ),
         ],
@@ -366,12 +374,16 @@ class _StepIndicator extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: isActive ? context.trenzyColors.primary : context.trenzyColors.fg10,
+                  color: isActive
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.fg10,
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: context.trenzyColors.primary.withValues(alpha: 0.4),
+                            color: context.trenzyColors.primary.withValues(
+                              alpha: 0.4,
+                            ),
                             blurRadius: 8,
                           ),
                         ]
@@ -395,7 +407,6 @@ class _StepIndicator extends StatelessWidget {
                   color: currentStep == index
                       ? context.trenzyColors.primary
                       : context.trenzyColors.mutedFg.withValues(alpha: 0.5),
-                  
                 ),
               ),
             );
@@ -458,35 +469,47 @@ class _Step1State extends State<_Step1> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                          color: context.trenzyColors.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.person_outline_rounded,
                           size: 40,
-                          color: context.trenzyColors.primary
+                          color: context.trenzyColors.primary,
                         ),
                       ),
                       SizedBox(height: 24),
                       TextFormField(
                         controller: widget.nameController,
-                        style: GlassTypography.body(color: context.trenzyColors.foreground),
+                        style: GlassTypography.body(
+                          color: context.trenzyColors.foreground,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Full Name',
-                          labelStyle: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                          labelStyle: GlassTypography.body(
+                            color: context.trenzyColors.mutedFg,
+                          ),
                           filled: true,
                           fillColor: context.trenzyColors.graphite,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.primary),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.primary,
+                            ),
                           ),
                           counterText: '',
                         ),
@@ -577,7 +600,9 @@ class _Step2State extends State<_Step2> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: context.trenzyColors.emerald.withValues(alpha: 0.1),
+                          color: context.trenzyColors.emerald.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -589,23 +614,33 @@ class _Step2State extends State<_Step2> {
                       SizedBox(height: 24),
                       TextFormField(
                         controller: widget.emailController,
-                        style: GlassTypography.body(color: context.trenzyColors.foreground),
+                        style: GlassTypography.body(
+                          color: context.trenzyColors.foreground,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Email Address',
-                          labelStyle: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                          labelStyle: GlassTypography.body(
+                            color: context.trenzyColors.mutedFg,
+                          ),
                           filled: true,
                           fillColor: context.trenzyColors.graphite,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.emerald),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.emerald,
+                            ),
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
@@ -725,7 +760,9 @@ class _Step3State extends State<_Step3> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: context.trenzyColors.crimson.withValues(alpha: 0.1),
+                          color: context.trenzyColors.crimson.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -737,29 +774,43 @@ class _Step3State extends State<_Step3> {
                       SizedBox(height: 24),
                       TextFormField(
                         controller: widget.passwordController,
-                        style: GlassTypography.body(color: context.trenzyColors.foreground),
+                        style: GlassTypography.body(
+                          color: context.trenzyColors.foreground,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          labelStyle: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                          labelStyle: GlassTypography.body(
+                            color: context.trenzyColors.mutedFg,
+                          ),
                           filled: true,
                           fillColor: context.trenzyColors.graphite,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.glassBorder),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.glassBorder,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.trenzyColors.crimson),
+                            borderSide: BorderSide(
+                              color: context.trenzyColors.crimson,
+                            ),
                           ),
                           suffixIcon: Semantics(
-                            label: _passwordVisible ? 'Hide password' : 'Show password',
+                            label: _passwordVisible
+                                ? 'Hide password'
+                                : 'Show password',
                             child: IconButton(
                               icon: Icon(
-                                _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                                _passwordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: context.trenzyColors.mutedFg,
                               ),
                               onPressed: () {
@@ -791,7 +842,9 @@ class _Step3State extends State<_Step3> {
                           SizedBox(width: 12),
                           _PasswordRequirement(
                             label: 'Has uppercase',
-                            met: _passwordText.length >= 8 && _passwordText != _passwordText.toLowerCase(),
+                            met:
+                                _passwordText.length >= 8 &&
+                                _passwordText != _passwordText.toLowerCase(),
                           ),
                         ],
                       ),
@@ -803,7 +856,10 @@ class _Step3State extends State<_Step3> {
             if (widget.errorMessage != null) ...[
               SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: context.trenzyColors.crimson.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
@@ -892,14 +948,18 @@ class _PasswordRequirement extends StatelessWidget {
           Icon(
             met ? Icons.check_circle : Icons.circle_outlined,
             size: 12,
-            color: met ? context.trenzyColors.emerald : context.trenzyColors.mutedFg.withValues(alpha: 0.5),
+            color: met
+                ? context.trenzyColors.emerald
+                : context.trenzyColors.mutedFg.withValues(alpha: 0.5),
           ),
           SizedBox(width: 4),
           Text(
             label,
             style: GlassTypography.meta(
               fontSize: 10,
-              color: met ? context.trenzyColors.emerald : context.trenzyColors.mutedFg.withValues(alpha: 0.5),
+              color: met
+                  ? context.trenzyColors.emerald
+                  : context.trenzyColors.mutedFg.withValues(alpha: 0.5),
             ),
           ),
         ],

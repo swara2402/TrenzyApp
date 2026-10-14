@@ -64,7 +64,11 @@ class ProductModel {
        effectivePrice = effectivePrice ?? (price ?? 0.0),
        rating = rating ?? 0.0,
        reason = reason ?? '',
-       effectiveBrand = effectiveBrand ?? ((brand?.isEmpty ?? true) ? 'Unknown Brand' : (brand ?? 'Unknown Brand')),
+       effectiveBrand =
+           effectiveBrand ??
+           ((brand?.isEmpty ?? true)
+               ? 'Unknown Brand'
+               : (brand ?? 'Unknown Brand')),
        gender = gender ?? '',
        season = season ?? '',
        occasion = occasion ?? '',

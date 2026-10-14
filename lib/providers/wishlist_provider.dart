@@ -24,9 +24,8 @@ class WishlistNotifier extends AutoDisposeAsyncNotifier<WishlistState> {
     final api = ref.read(apiServiceProvider);
     try {
       final raw = await api.getWishlist();
-      final ids = (raw['productIds'] as List?)
-              ?.map((e) => e.toString())
-              .toSet() ??
+      final ids =
+          (raw['productIds'] as List?)?.map((e) => e.toString()).toSet() ??
           const <String>{};
       return WishlistState(productIds: ids, isLoaded: true);
     } catch (e) {

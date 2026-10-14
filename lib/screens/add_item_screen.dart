@@ -56,10 +56,14 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     }
 
     final rawImageUrl = _imageUrlController.text.trim();
-    final imageUrl = rawImageUrl.isEmpty ? null : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
+    final imageUrl = rawImageUrl.isEmpty
+        ? null
+        : ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
     if (rawImageUrl.isNotEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image URL must start with http:// or https://')),
+        const SnackBar(
+          content: Text('Image URL must start with http:// or https://'),
+        ),
       );
       return;
     }
@@ -86,9 +90,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       ref.invalidate(aiOutfitMatchesProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Saved to wardrobe')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Saved to wardrobe')));
         context.pop();
       }
     } catch (e) {
@@ -113,11 +117,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
           icon: Icon(Icons.close, color: context.trenzyColors.foreground),
           onPressed: () => context.pop(),
         ),
-        title: DisplayText(
-          'New Item',
-          fontSize: 20,
-          weight: FontWeight.w600,
-        ),
+        title: DisplayText('New Item', fontSize: 20, weight: FontWeight.w600),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -156,9 +156,19 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.broken_image, color: context.trenzyColors.mutedFg, size: 40),
+                    Icon(
+                      Icons.broken_image,
+                      color: context.trenzyColors.mutedFg,
+                      size: 40,
+                    ),
                     const SizedBox(height: 8),
-                    Text('Invalid Image URL', style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 12)),
+                    Text(
+                      'Invalid Image URL',
+                      style: TextStyle(
+                        color: context.trenzyColors.mutedFg,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -352,8 +362,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       borderRadius: BorderRadius.circular(12),
                       side: isSelected
                           ? BorderSide(
-                              color: context.trenzyColors.primary
-                                  .withValues(alpha: 0.3),
+                              color: context.trenzyColors.primary.withValues(
+                                alpha: 0.3,
+                              ),
                             )
                           : BorderSide.none,
                     ),
@@ -402,11 +413,10 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: context.trenzyColors.primary,
         minimumSize: const Size(double.infinity, 64),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(99),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+        disabledBackgroundColor: context.trenzyColors.primary.withValues(
+          alpha: 0.5,
         ),
-        disabledBackgroundColor:
-            context.trenzyColors.primary.withValues(alpha: 0.5),
       ),
     );
   }

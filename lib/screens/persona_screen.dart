@@ -38,15 +38,15 @@ class _ConfettiParticle {
 
   factory _ConfettiParticle.random(Random rng, Size size) {
     const palette = [
-      Color(0xFFF2CA50),  // gold/primary
-      Color(0xFF2ECC71),  // green
-      Color(0xFF9B59B6),  // purple
-      Color(0xFFE74C3C),  // red
-      Color(0xFF3498DB),  // blue
-      Color(0xFF1ABC9C),  // teal
-      Color(0xFFE91E63),  // pink
-      Color(0xFFFF8800),  // orange
-      Color(0xFFFFFFFF),  // white
+      Color(0xFFF2CA50), // gold/primary
+      Color(0xFF2ECC71), // green
+      Color(0xFF9B59B6), // purple
+      Color(0xFFE74C3C), // red
+      Color(0xFF3498DB), // blue
+      Color(0xFF1ABC9C), // teal
+      Color(0xFFE91E63), // pink
+      Color(0xFFFF8800), // orange
+      Color(0xFFFFFFFF), // white
     ];
 
     return _ConfettiParticle._(
@@ -105,7 +105,9 @@ class _ConfettiPainter extends CustomPainter {
       );
 
       final paint = Paint()
-        ..color = p.color.withValues(alpha: (1.0 - localProgress * 0.3).clamp(0.0, 1.0))
+        ..color = p.color.withValues(
+          alpha: (1.0 - localProgress * 0.3).clamp(0.0, 1.0),
+        )
         ..style = PaintingStyle.fill;
 
       canvas.drawRRect(
@@ -149,13 +151,11 @@ class _DelayedFadeInState extends State<_DelayedFadeIn>
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
-    _opacity = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    );
-    _slide = Tween<double>(begin: 15.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slide = Tween<double>(
+      begin: 15.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     Future.delayed(widget.delay, () {
       if (mounted) _controller.forward();
@@ -213,26 +213,34 @@ class _PulseTextState extends State<_PulseText>
     );
     _scale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.06)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.06,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.06, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween(
+          begin: 1.06,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 60,
       ),
     ]).animate(_controller);
     // Glow opacity pulses 0.0 → 0.55 → 0.0 in lockstep with the scale
     _glowOpacity = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 0.55)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 0.0,
+          end: 0.55,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 0.55, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween(
+          begin: 0.55,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 60,
       ),
     ]).animate(_controller);
@@ -348,10 +356,7 @@ class _ConfettiOverlayState extends State<_ConfettiOverlay>
             return IgnorePointer(
               child: RepaintBoundary(
                 child: CustomPaint(
-                  painter: _ConfettiPainter(
-                    _particles,
-                    _controller.value,
-                  ),
+                  painter: _ConfettiPainter(_particles, _controller.value),
                   size: Size.infinite,
                 ),
               ),
@@ -403,7 +408,9 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
       if (mounted) {
         setState(() => _generationFailed = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not create your style persona: $error')),
+          SnackBar(
+            content: Text('Could not create your style persona: $error'),
+          ),
         );
       }
     }
@@ -431,7 +438,9 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
         context.go(AppRoutes.home);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Some preferences could not be saved, but you can retry later from settings: $error'),
+            content: Text(
+              'Some preferences could not be saved, but you can retry later from settings: $error',
+            ),
             action: SnackBarAction(
               label: 'Retry',
               onPressed: () => _onContinue(),
@@ -449,208 +458,224 @@ class _PersonaScreenState extends ConsumerState<PersonaScreen> {
     final personaAsync = ref.watch(personaProvider);
 
     ref.listen(personaProvider, (prev, next) {
-      next.whenOrNull(data: (StylePersona? data) {
-        // Generate persona if needed (also when placeholder default is returned)
-        if ((data == null || data.id == 0) && !_generatedOnce) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _ensurePersona());
-        }
-        // Celebrate once on first successful generation (null → non-null)
-        if (data != null && data.id != 0 && prev?.valueOrNull == null && !_hasCelebrated) {
-          _hasCelebrated = true;
-          Future.delayed(Duration(milliseconds: 200), () {
-            if (mounted) {
-              _confettiKey.currentState?.trigger();
-              _pulseKey.currentState?.trigger();
-            }
-          });
-        }
-      });
+      next.whenOrNull(
+        data: (StylePersona? data) {
+          // Generate persona if needed (also when placeholder default is returned)
+          if ((data == null || data.id == 0) && !_generatedOnce) {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _ensurePersona(),
+            );
+          }
+          // Celebrate once on first successful generation (null → non-null)
+          if (data != null &&
+              data.id != 0 &&
+              prev?.valueOrNull == null &&
+              !_hasCelebrated) {
+            _hasCelebrated = true;
+            Future.delayed(Duration(milliseconds: 200), () {
+              if (mounted) {
+                _confettiKey.currentState?.trigger();
+                _pulseKey.currentState?.trigger();
+              }
+            });
+          }
+        },
+      );
     });
 
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
       body: LayoutBuilder(
         builder: (context, constraints) => _ConfettiOverlay(
-        key: _confettiKey,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: personaAsync.when(
-        loading: () => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: context.trenzyColors.primary),
-              SizedBox(height: 24),
-              Text(
-                'Understanding your fashion taste...',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: context.trenzyColors.mutedFg,
-                ),
-              ),
-            ],
-          ),
-        ),
-        error: (_, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Could not determine your style persona yet.',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: context.trenzyColors.mutedFg,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isSaving ? null : _onContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.trenzyColors.primary,
-                    foregroundColor: context.trenzyColors.primaryFg,
-                  ),
-                  child: _isSaving
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text('Continue to Home'),
-                ),
-              ],
-            ),
-          ),
-        ),
-        data: (StylePersona? persona) {
-          if (persona == null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _generationFailed
-                          ? 'We could not create your style persona.'
-                          : 'Creating your style persona...',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: context.trenzyColors.mutedFg,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (_generationFailed) ...[
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _ensurePersona,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.trenzyColors.primary,
-                          foregroundColor: context.trenzyColors.primaryFg,
-                        ),
-                        child: const Text('Retry'),
-                      ),
-                    ] else ...[
-                      const SizedBox(height: 24),
+          key: _confettiKey,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: personaAsync.when(
+                loading: () => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       CircularProgressIndicator(
                         color: context.trenzyColors.primary,
                       ),
+                      SizedBox(height: 24),
+                      Text(
+                        'Understanding your fashion taste...',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: context.trenzyColors.mutedFg,
+                        ),
+                      ),
                     ],
-                    SizedBox(height: 48),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _onContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.trenzyColors.primary,
-                        foregroundColor: context.trenzyColors.primaryFg,
-                      ),
-                      child: _isSaving
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text('Continue to Home'),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }
+                error: (_, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Could not determine your style persona yet.',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _isSaving ? null : _onContinue,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.trenzyColors.primary,
+                            foregroundColor: context.trenzyColors.primaryFg,
+                          ),
+                          child: _isSaving
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text('Continue to Home'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                data: (StylePersona? persona) {
+                  if (persona == null) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _generationFailed
+                                  ? 'We could not create your style persona.'
+                                  : 'Creating your style persona...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: context.trenzyColors.mutedFg,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (_generationFailed) ...[
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: _ensurePersona,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: context.trenzyColors.primary,
+                                  foregroundColor:
+                                      context.trenzyColors.primaryFg,
+                                ),
+                                child: const Text('Retry'),
+                              ),
+                            ] else ...[
+                              const SizedBox(height: 24),
+                              CircularProgressIndicator(
+                                color: context.trenzyColors.primary,
+                              ),
+                            ],
+                            SizedBox(height: 48),
+                            ElevatedButton(
+                              onPressed: _isSaving ? null : _onContinue,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.trenzyColors.primary,
+                                foregroundColor: context.trenzyColors.primaryFg,
+                              ),
+                              child: _isSaving
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text('Continue to Home'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
 
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _DelayedFadeIn(
-                    delay: Duration(milliseconds: 400),
-                    child: Text(
-                      'Your AI Style Persona is',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: context.trenzyColors.mutedFg,
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _DelayedFadeIn(
+                            delay: Duration(milliseconds: 400),
+                            child: Text(
+                              'Your AI Style Persona is',
+                              style: TextStyle(
+                                fontSize: 22,
+                                color: context.trenzyColors.mutedFg,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          _PulseText(
+                            key: _pulseKey,
+                            child: Text(
+                              persona.name,
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: context.trenzyColors.primary,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          _DelayedFadeIn(
+                            delay: Duration(milliseconds: 550),
+                            child: Text(
+                              persona.description,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: context.trenzyColors.mutedFg,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 48),
+                          ElevatedButton(
+                            onPressed: _isSaving ? null : _onContinue,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.trenzyColors.primary,
+                              foregroundColor: context.trenzyColors.primaryFg,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: _isSaving
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text('Continue to Home'),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  _PulseText(
-                    key: _pulseKey,
-                    child: Text(
-                      persona.name,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: context.trenzyColors.primary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  _DelayedFadeIn(
-                    delay: Duration(milliseconds: 550),
-                    child: Text(
-                      persona.description,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: context.trenzyColors.mutedFg,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 48),
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.trenzyColors.primary,
-                      foregroundColor: context.trenzyColors.primaryFg,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                    ),
-                    child: _isSaving
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text('Continue to Home'),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          );
-        },
-      ),
+          ),
         ),
       ),
-      ),
-    ),
-  );
+    );
   }
 }

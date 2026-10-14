@@ -5,10 +5,7 @@ import '../../models/blend_model.dart';
 import '../../theme/glass_theme.dart';
 
 class BlendOutfitCard extends StatelessWidget {
-  const BlendOutfitCard({
-    super.key,
-    required this.results,
-  });
+  const BlendOutfitCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -51,14 +48,20 @@ class BlendOutfitCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Your Shared Outfit',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Top picks you both love',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -67,7 +70,9 @@ class BlendOutfitCard extends StatelessWidget {
               separatorBuilder: (_, a) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
                 final slot = _outfitSlots[index];
-                final product = index < allProducts.length ? allProducts[index] : null;
+                final product = index < allProducts.length
+                    ? allProducts[index]
+                    : null;
                 return _OutfitSlot(
                   slotLabel: slot,
                   rankedProduct: product,
@@ -88,18 +93,12 @@ class BlendOutfitCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: GlassColors.graphite.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(GlassRadius.card),
-        border: Border.all(
-          color: GlassColors.glassBorder,
-        ),
+        border: Border.all(color: GlassColors.glassBorder),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.checkroom_rounded,
-            size: 40,
-            color: GlassColors.fg20,
-          ),
+          Icon(Icons.checkroom_rounded, size: 40, color: GlassColors.fg20),
           const SizedBox(height: 12),
           Text(
             'No outfit picks yet',
@@ -108,7 +107,10 @@ class BlendOutfitCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Start swiping to build your shared outfit',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -162,9 +164,7 @@ class _OutfitSlot extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: context.trenzyColors.glassBorder,
-        ),
+        border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       child: Row(
         children: [
@@ -178,8 +178,10 @@ class _OutfitSlot extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '${index + 1}',
-              style: GlassTypography.meta(fontSize: 12, color: context.trenzyColors.primary)
-                  .copyWith(fontWeight: FontWeight.w900),
+              style: GlassTypography.meta(
+                fontSize: 12,
+                color: context.trenzyColors.primary,
+              ).copyWith(fontWeight: FontWeight.w900),
             ),
           ),
           const SizedBox(width: 10),
@@ -192,9 +194,8 @@ class _OutfitSlot extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: product.imageUrl,
                   fit: BoxFit.cover,
-                  placeholder: (_, a) => Container(
-                    color: context.trenzyColors.fg10,
-                  ),
+                  placeholder: (_, a) =>
+                      Container(color: context.trenzyColors.fg10),
                   errorWidget: (_, a, b) => Container(
                     color: context.trenzyColors.fg10,
                     child: const Icon(Icons.image_outlined, size: 16),
@@ -209,11 +210,18 @@ class _OutfitSlot extends StatelessWidget {
               children: [
                 Text(
                   slotLabel,
-                  style: GlassTypography.body(fontSize: 12, weight: FontWeight.w600, color: context.trenzyColors.mutedFg),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    weight: FontWeight.w600,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
                 Text(
                   product?.name ?? 'Swipe to discover',
-                  style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700),
+                  style: GlassTypography.body(
+                    fontSize: 14,
+                    weight: FontWeight.w700,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -223,8 +231,10 @@ class _OutfitSlot extends StatelessWidget {
           if (rp != null)
             Text(
               '${(rp.matchScore ?? 0).toInt()}%',
-              style: GlassTypography.buttonLabel(fontSize: 14, color: context.trenzyColors.primary)
-                  .copyWith(fontWeight: FontWeight.w900),
+              style: GlassTypography.buttonLabel(
+                fontSize: 14,
+                color: context.trenzyColors.primary,
+              ).copyWith(fontWeight: FontWeight.w900),
             ),
         ],
       ),

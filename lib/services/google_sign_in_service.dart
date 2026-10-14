@@ -35,8 +35,9 @@ class GoogleSignInService {
         idToken: idToken,
       );
 
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
 
       final user = userCredential.user;
       if (user == null) {

@@ -116,7 +116,8 @@ class CartState {
 
   factory CartState.fromJson(Map<String, dynamic> json) {
     return CartState(
-      items: (json['items'] as List<dynamic>?)
+      items:
+          (json['items'] as List<dynamic>?)
               ?.map((item) => CartItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],

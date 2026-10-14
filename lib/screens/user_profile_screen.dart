@@ -105,9 +105,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = _profileData?['name'] as String? ??
-        'User';
-    final rawAvatarUrl = _profileData?['avatarUrl'] as String? ??
+    final userName = _profileData?['name'] as String? ?? 'User';
+    final rawAvatarUrl =
+        _profileData?['avatarUrl'] as String? ??
         _profileData?['avatar_url'] as String?;
     final avatarUrl = rawAvatarUrl != null
         ? ApiService.resolveImageUrl(rawAvatarUrl) ?? rawAvatarUrl
@@ -138,36 +138,49 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF2CA50)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFF2CA50)),
+            )
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error!, style: const TextStyle(color: Color(0xFFD0C5AF))),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() { _isLoading = true; _error = null; });
-                          _loadProfile();
-                        },
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF2CA50)),
-                        child: const Text('Retry', style: TextStyle(color: Color(0xFF16130B))),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: Color(0xFFD0C5AF)),
                   ),
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildProfileHeader(userName, avatarUrl),
-                      const SizedBox(height: 24),
-                      _buildStats(),
-                      const SizedBox(height: 24),
-                      _buildTabs(),
-                    ],
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = true;
+                        _error = null;
+                      });
+                      _loadProfile();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2CA50),
+                    ),
+                    child: const Text(
+                      'Retry',
+                      style: TextStyle(color: Color(0xFF16130B)),
+                    ),
                   ),
-                ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildProfileHeader(userName, avatarUrl),
+                  const SizedBox(height: 24),
+                  _buildStats(),
+                  const SizedBox(height: 24),
+                  _buildTabs(),
+                ],
+              ),
+            ),
     );
   }
 
@@ -212,10 +225,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   onPressed: _toggleFollow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF2CA50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: Text(_isFollowing ? 'Unfollow' : 'Follow',
-                      style: const TextStyle(color: Color(0xFF16130B), fontWeight: FontWeight.bold)),
+                  child: Text(
+                    _isFollowing ? 'Unfollow' : 'Follow',
+                    style: const TextStyle(
+                      color: Color(0xFF16130B),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 16),
               ],
@@ -227,9 +247,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFF2CA50)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text('Message', style: TextStyle(color: Color(0xFFF2CA50), fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Message',
+                  style: TextStyle(
+                    color: Color(0xFFF2CA50),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -267,10 +295,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFE9C349),
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Color(0xFFE9C349), fontSize: 14),
         ),
       ],
     );
@@ -288,7 +313,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             indicatorColor: Color(0xFFF2CA50),
             labelColor: Color(0xFFF2CA50),
             unselectedLabelColor: Color(0xFFEAE1D4),
-            tabs: [Tab(text: 'Posts'), Tab(text: 'Tagged')],
+            tabs: [
+              Tab(text: 'Posts'),
+              Tab(text: 'Tagged'),
+            ],
           ),
           SizedBox(
             height: 500,
@@ -296,12 +324,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               children: [
                 posts.isEmpty
                     ? const Center(
-                        child: Text('No posts yet', style: TextStyle(color: Color(0xFF99907C))),
+                        child: Text(
+                          'No posts yet',
+                          style: TextStyle(color: Color(0xFF99907C)),
+                        ),
                       )
                     : _buildGrid(posts),
                 tagged.isEmpty
                     ? const Center(
-                        child: Text('No tagged posts', style: TextStyle(color: Color(0xFF99907C))),
+                        child: Text(
+                          'No tagged posts',
+                          style: TextStyle(color: Color(0xFF99907C)),
+                        ),
                       )
                     : _buildGrid(tagged),
               ],
@@ -323,7 +357,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index] as Map<String, dynamic>;
-        final imageUrl = item['imageUrl']?.toString() ?? item['image']?.toString() ?? '';
+        final imageUrl =
+            item['imageUrl']?.toString() ?? item['image']?.toString() ?? '';
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),

@@ -19,7 +19,7 @@ class WhoToFollowCarousel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authAsync = ref.watch(authProvider);
     final currentUser = authAsync.valueOrNull;
-    
+
     if (currentUser == null) return SizedBox.shrink();
 
     return Semantics(
@@ -36,7 +36,10 @@ class WhoToFollowCarousel extends ConsumerWidget {
                   height: 18,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [context.trenzyColors.crimson, context.trenzyColors.primary],
+                      colors: [
+                        context.trenzyColors.crimson,
+                        context.trenzyColors.primary,
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(2),
                   ),
@@ -81,10 +84,7 @@ class WhoToFollowCarousel extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 12),
-          SizedBox(
-            height: 160,
-            child: _SuggestedUsersList(),
-          ),
+          SizedBox(height: 160, child: _SuggestedUsersList()),
         ],
       ),
     );
@@ -97,7 +97,7 @@ class _SuggestedUsersList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final suggestedUsersAsync = ref.watch(discoverTrendingCreatorsProvider);
-    
+
     return suggestedUsersAsync.when(
       loading: () => _buildLoadingSkeleton(context),
       error: (_, _) => _buildEmptyState(context, 'Could not load suggestions'),
@@ -130,11 +130,7 @@ class _SuggestedUsersList extends ConsumerWidget {
         itemCount: 4,
         itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: LoadingSkeletonShimmer(
-            height: 140,
-            width: 120,
-            radius: 16,
-          ),
+          child: LoadingSkeletonShimmer(height: 140, width: 120, radius: 16),
         ),
       ),
     );
@@ -188,9 +184,10 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
       vsync: this,
       duration: Duration(milliseconds: 200),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -204,15 +201,15 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
     _controller.forward().then((_) {
       _controller.reverse();
     });
-    
+
     final api = ref.read(apiServiceProvider);
     final targetUid = widget.user.id;
     final currentStatus = ref.read(followStatusProvider(targetUid));
     final isCurrentlyFollowing = currentStatus.valueOrNull ?? false;
-    
+
     // Optimistic update - immediately update the UI
     ref.invalidate(followStatusProvider(targetUid));
-    
+
     try {
       // Make the API call based on the optimistic state
       if (isCurrentlyFollowing) {
@@ -224,20 +221,20 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
         // Track follow event
         trackUserFollow(ref, targetUid, source: 'who_to_follow_carousel');
       }
-      
+
       // Refresh the suggested users list to reflect changes
       ref.invalidate(discoverTrendingCreatorsProvider);
     } catch (e) {
       // Revert optimistic update on error
       ref.invalidate(followStatusProvider(targetUid));
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isCurrentlyFollowing 
-                ? 'Failed to unfollow. Please try again.'
-                : 'Failed to follow. Please try again.',
+              isCurrentlyFollowing
+                  ? 'Failed to unfollow. Please try again.'
+                  : 'Failed to follow. Please try again.',
             ),
             backgroundColor: context.trenzyColors.crimson,
             action: SnackBarAction(
@@ -256,20 +253,19 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
     final targetUid = widget.user.id;
     final followStatusAsync = ref.watch(followStatusProvider(targetUid));
     final isFollowing = followStatusAsync.valueOrNull ?? false;
-    
+
     // Calculate style match based on user data (simplified)
     final styleMatch = _calculateStyleMatch(widget.user);
 
     return Semantics(
-      label: '${widget.user.name}. Style match: $styleMatch percent. ${isFollowing ? "Following" : "Not following"}.',
+      label:
+          '${widget.user.name}. Style match: $styleMatch percent. ${isFollowing ? "Following" : "Not following"}.',
       button: true,
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: GestureDetector(
-          onTap: () => context.push(
-            AppRoutes.userProfile,
-            extra: widget.user.id,
-          ),
+          onTap: () =>
+              context.push(AppRoutes.userProfile, extra: widget.user.id),
           child: Container(
             width: 120,
             margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -294,7 +290,9 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: _getMatchColor(styleMatch).withValues(alpha: 0.3),
+                            color: _getMatchColor(
+                              styleMatch,
+                            ).withValues(alpha: 0.3),
                             width: 2,
                           ),
                         ),
@@ -309,13 +307,18 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
                         child: Semantics(
                           label: 'Style match: $styleMatch percent',
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: _getMatchColor(styleMatch),
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: _getMatchColor(styleMatch).withValues(alpha: 0.3),
+                                  color: _getMatchColor(
+                                    styleMatch,
+                                  ).withValues(alpha: 0.3),
                                   blurRadius: 4,
                                 ),
                               ],
@@ -352,19 +355,26 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
                 SizedBox(height: 8),
                 // Follow button
                 Semantics(
-                  label: isFollowing ? 'Unfollow ${widget.user.name}' : 'Follow ${widget.user.name}',
+                  label: isFollowing
+                      ? 'Unfollow ${widget.user.name}'
+                      : 'Follow ${widget.user.name}',
                   button: true,
                   child: GestureDetector(
                     onTap: _toggleFollow,
                     child: AnimatedContainer(
                       duration: Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         gradient: isFollowing ? null : GlassGradients.primary,
                         color: isFollowing ? context.trenzyColors.glass : null,
                         borderRadius: BorderRadius.circular(12),
                         border: isFollowing
-                            ? Border.all(color: context.trenzyColors.glassBorder)
+                            ? Border.all(
+                                color: context.trenzyColors.glassBorder,
+                              )
                             : null,
                       ),
                       child: Text(
@@ -406,7 +416,7 @@ class _SuggestedUserCardState extends ConsumerState<_SuggestedUserCard>
         ),
       );
     }
-    
+
     return _buildInitialsAvatar(initials);
   }
 

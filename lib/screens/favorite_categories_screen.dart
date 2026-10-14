@@ -6,7 +6,9 @@ import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
-final _productCategoriesProvider = FutureProvider.autoDispose<List<String>>((ref) async {
+final _productCategoriesProvider = FutureProvider.autoDispose<List<String>>((
+  ref,
+) async {
   final api = ref.watch(apiServiceProvider);
   try {
     return await api.getPersonaProductTypes();
@@ -49,7 +51,9 @@ class _FavoriteCategoriesScreenState
         _selectedCategories.add(category);
       }
     });
-    ref.read(userPreferencesProvider.notifier).setCategories(_selectedCategories);
+    ref
+        .read(userPreferencesProvider.notifier)
+        .setCategories(_selectedCategories);
   }
 
   bool get canContinue => _selectedCategories.isNotEmpty;
@@ -59,10 +63,12 @@ class _FavoriteCategoriesScreenState
     setState(() => _isSaving = true);
 
     try {
-      await ref.read(apiServiceProvider).savePreferences(
-        preferredCategories: _selectedCategories,
-        onboardingStep: 2,
-      );
+      await ref
+          .read(apiServiceProvider)
+          .savePreferences(
+            preferredCategories: _selectedCategories,
+            onboardingStep: 2,
+          );
       if (mounted) context.go(AppRoutes.preferredStyles);
     } catch (error) {
       // For intermediate onboarding steps, if save fails, don't navigate forward automatically
@@ -70,7 +76,9 @@ class _FavoriteCategoriesScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not save your progress: $error. Please retry to continue.'),
+          content: Text(
+            'Could not save your progress: $error. Please retry to continue.',
+          ),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () => _continueToStyles(),
@@ -83,7 +91,8 @@ class _FavoriteCategoriesScreenState
   }
 
   void _onBack() {
-    final source = GoRouterState.of(context).uri.queryParameters['source'] ?? 'onboarding';
+    final source =
+        GoRouterState.of(context).uri.queryParameters['source'] ?? 'onboarding';
     if (source == 'signup') {
       // If coming from signup, go back to sign-up screen instead of login
       context.go(AppRoutes.signUp);
@@ -114,7 +123,9 @@ class _FavoriteCategoriesScreenState
                   child: LinearProgressIndicator(
                     value: 1 / 3, // Step 1 of 3
                     backgroundColor: Colors.grey[800],
-                    valueColor: AlwaysStoppedAnimation<Color>(context.trenzyColors.primary),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      context.trenzyColors.primary,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -235,7 +246,9 @@ class _CategoriesList extends ConsumerWidget {
                   child: AnimatedContainer(
                     duration: Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 18),
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? context.trenzyColors.primary
@@ -250,10 +263,12 @@ class _CategoriesList extends ConsumerWidget {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: context.trenzyColors.primary.withAlpha(77),
+                                color: context.trenzyColors.primary.withAlpha(
+                                  77,
+                                ),
                                 blurRadius: 8,
                                 offset: Offset(0, 4),
-                              )
+                              ),
                             ]
                           : null,
                     ),

@@ -29,12 +29,12 @@ class BlendMember {
     bool? isReady,
     int? swipeCount,
     this.joinedAt,
-  })  : userId = userId ?? '',
-        userName = userName ?? '',
-        avatarUrl = _normalizeAvatarUrl(avatarUrl),
-        isOnline = isOnline ?? false,
-        isReady = isReady ?? true,
-        swipeCount = swipeCount ?? 0;
+  }) : userId = userId ?? '',
+       userName = userName ?? '',
+       avatarUrl = _normalizeAvatarUrl(avatarUrl),
+       isOnline = isOnline ?? false,
+       isReady = isReady ?? true,
+       swipeCount = swipeCount ?? 0;
 
   factory BlendMember.fromJson(Map<String, dynamic> json) {
     return BlendMember(
@@ -50,13 +50,13 @@ class BlendMember {
   }
 
   Map<String, dynamic> toJson() => {
-        'userId': userId,
-        'userName': userName,
-        'avatarUrl': avatarUrl,
-        'isOnline': isOnline,
-        'swipeCount': swipeCount,
-        'joinedAt': joinedAt?.toIso8601String(),
-      };
+    'userId': userId,
+    'userName': userName,
+    'avatarUrl': avatarUrl,
+    'isOnline': isOnline,
+    'swipeCount': swipeCount,
+    'joinedAt': joinedAt?.toIso8601String(),
+  };
 }
 
 /// Live state of a blend session received via WebSocket
@@ -70,10 +70,10 @@ class BlendLiveState {
   final double? agreementScore;
   final Map<String, int>? _swipesByMemberMap;
 
-  int get memberCount => members.isNotEmpty ? members.length : onlineUserIds.length;
-  Map<String, int> get swipesByMember => _swipesByMemberMap ?? {
-    for (var m in members) m.userId: m.swipeCount
-  };
+  int get memberCount =>
+      members.isNotEmpty ? members.length : onlineUserIds.length;
+  Map<String, int> get swipesByMember =>
+      _swipesByMemberMap ?? {for (var m in members) m.userId: m.swipeCount};
 
   BlendLiveState({
     this.groupId,
@@ -89,7 +89,8 @@ class BlendLiveState {
   factory BlendLiveState.fromJson(Map<String, dynamic> json) {
     return BlendLiveState(
       groupId: json['groupId'] as String?,
-      members: (json['members'] as List<dynamic>?)
+      members:
+          (json['members'] as List<dynamic>?)
               ?.map((e) => BlendMember.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -98,7 +99,8 @@ class BlendLiveState {
       totalSwipes: (json['totalSwipes'] as num?)?.toInt() ?? 0,
       currentProduct: json['currentProduct'] != null
           ? ProductModel.fromJson(
-              json['currentProduct'] as Map<String, dynamic>)
+              json['currentProduct'] as Map<String, dynamic>,
+            )
           : null,
       isResultsReady: json['isResultsReady'] as bool?,
       agreementScore: (json['agreementScore'] as num?)?.toDouble(),
@@ -109,15 +111,15 @@ class BlendLiveState {
   }
 
   Map<String, dynamic> toJson() => {
-        'groupId': groupId,
-        'members': members.map((e) => e.toJson()).toList(),
-        'onlineUserIds': onlineUserIds,
-        'totalSwipes': totalSwipes,
-        'currentProduct': currentProduct?.toJson(),
-        'isResultsReady': isResultsReady,
-        'agreementScore': agreementScore,
-        'swipesByMember': swipesByMember,
-      };
+    'groupId': groupId,
+    'members': members.map((e) => e.toJson()).toList(),
+    'onlineUserIds': onlineUserIds,
+    'totalSwipes': totalSwipes,
+    'currentProduct': currentProduct?.toJson(),
+    'isResultsReady': isResultsReady,
+    'agreementScore': agreementScore,
+    'swipesByMember': swipesByMember,
+  };
 }
 
 class BlendGroup {
@@ -139,14 +141,14 @@ class BlendGroup {
     List<BlendMember>? members,
     List<BlendRankedProduct>? products,
     List<ProductModel>? options,
-  })  : id = id ?? '',
-        name = name ?? '',
-        description = description ?? '',
-        inviteCode = inviteCode ?? '',
-        memberCount = memberCount ?? 0,
-        members = members ?? const [],
-        products = products ?? const [],
-        options = options ?? const [];
+  }) : id = id ?? '',
+       name = name ?? '',
+       description = description ?? '',
+       inviteCode = inviteCode ?? '',
+       memberCount = memberCount ?? 0,
+       members = members ?? const [],
+       products = products ?? const [],
+       options = options ?? const [];
 
   factory BlendGroup.fromJson(Map<String, dynamic> json) {
     return BlendGroup(
@@ -159,12 +161,12 @@ class BlendGroup {
           ?.map((item) => BlendMember.fromJson(item as Map<String, dynamic>))
           .toList(),
       products: (json['products'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendRankedProduct.fromJson(item as Map<String, dynamic>))
+          ?.map(
+            (item) => BlendRankedProduct.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       options: (json['options'] as List<dynamic>?)
-          ?.map((item) =>
-              ProductModel.fromJson(item as Map<String, dynamic>))
+          ?.map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -213,9 +215,7 @@ class BlendRankedProduct {
       // while some payloads send the bare product object.
       product: productJson is Map
           ? ProductModel.fromJson(Map<String, dynamic>.from(productJson))
-          : (json['id'] != null
-              ? ProductModel.fromJson(json)
-              : null),
+          : (json['id'] != null ? ProductModel.fromJson(json) : null),
       score: (json['score'] as num?)?.toDouble(),
       matchScore: (json['matchScore'] as num?)?.toDouble(),
       rank: json['rank'] as int?,
@@ -242,11 +242,7 @@ class BlendCategoryWinner {
   final BlendRankedProduct? winner;
   final List<BlendRankedProduct>? products;
 
-  BlendCategoryWinner({
-    this.category,
-    this.winner,
-    this.products,
-  });
+  BlendCategoryWinner({this.category, this.winner, this.products});
 
   factory BlendCategoryWinner.fromJson(Map<String, dynamic> json) {
     return BlendCategoryWinner(
@@ -255,8 +251,9 @@ class BlendCategoryWinner {
           ? BlendRankedProduct.fromJson(json['winner'] as Map<String, dynamic>)
           : null,
       products: (json['products'] as List<dynamic>?)
-          ?.map((item) =>
-              BlendRankedProduct.fromJson(item as Map<String, dynamic>))
+          ?.map(
+            (item) => BlendRankedProduct.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
     );
   }
@@ -338,9 +335,8 @@ class BlendResults {
       categoryWinners = categoryRaw
           .whereType<Map>()
           .map(
-            (item) => BlendCategoryWinner.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) =>
+                BlendCategoryWinner.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
     }
@@ -403,11 +399,12 @@ class BlendResults {
     return BlendResults(
       groups: json['groups'] is List
           ? (json['groups'] as List)
-              .whereType<Map>()
-              .map(
-                (item) => BlendGroup.fromJson(Map<String, dynamic>.from(item)),
-              )
-              .toList()
+                .whereType<Map>()
+                .map(
+                  (item) =>
+                      BlendGroup.fromJson(Map<String, dynamic>.from(item)),
+                )
+                .toList()
           : null,
       topProducts: _rankedList(json['topProducts']),
       winners: winners,
@@ -420,8 +417,8 @@ class BlendResults {
       sharedBrands: (json['sharedBrands'] as List<dynamic>?)?.cast<String>(),
       sharedStyles: (json['sharedStyles'] as List<dynamic>?)?.cast<String>(),
       sharedColours: (json['sharedColours'] as List<dynamic>?)?.cast<String>(),
-      sharedCategories:
-          (json['sharedCategories'] as List<dynamic>?)?.cast<String>(),
+      sharedCategories: (json['sharedCategories'] as List<dynamic>?)
+          ?.cast<String>(),
       wardrobeOverlap: (json['wardrobeOverlap'] as num?)?.toDouble(),
       fashionScore: (json['fashionScore'] as num?)?.toDouble(),
       groupName: json['groupName'] as String?,

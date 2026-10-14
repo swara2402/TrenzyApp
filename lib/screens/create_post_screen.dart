@@ -24,9 +24,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   void _handleShare() {
     if (!_canPost) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Post shared!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Post shared!')));
     context.pop();
   }
 
@@ -110,10 +110,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ? Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
-                        _imageUrl!,
-                        fit: BoxFit.cover,
-                      ),
+                      Image.network(_imageUrl!, fit: BoxFit.cover),
                       Positioned(
                         top: 12,
                         right: 12,
@@ -161,10 +158,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             const SizedBox(height: 16),
             const Text(
               'Tap to add photo',
-              style: TextStyle(
-                color: Color(0xFFD0C5AF),
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Color(0xFFD0C5AF), fontSize: 14),
             ),
           ],
         ),
@@ -265,15 +259,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
         title: const Text(
           'Add Location',
-          style: TextStyle(
-            color: Color(0xFFD0C5AF),
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Color(0xFFD0C5AF), fontSize: 16),
         ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: Color(0xFFD0C5AF),
-        ),
+        trailing: const Icon(Icons.chevron_right, color: Color(0xFFD0C5AF)),
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Location picker coming soon')),
@@ -293,19 +281,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           onPressed: _canPost ? _handleShare : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFF2CA50),
-            disabledBackgroundColor: const Color(0xFFD0C5AF).withValues(alpha: 0.2),
+            disabledBackgroundColor: const Color(
+              0xFFD0C5AF,
+            ).withValues(alpha: 0.2),
             foregroundColor: const Color(0xFF241A00),
-            disabledForegroundColor: const Color(0xFFD0C5AF).withValues(alpha: 0.4),
+            disabledForegroundColor: const Color(
+              0xFFD0C5AF,
+            ).withValues(alpha: 0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
           ),
           child: const Text(
             'Share',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
       ),

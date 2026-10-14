@@ -164,7 +164,7 @@ class InspoScreen extends ConsumerWidget {
                         final creator = creators[index];
                         final resolvedAvatarUrl = creator.avatarUrl.isNotEmpty
                             ? ApiService.resolveImageUrl(creator.avatarUrl) ??
-                                creator.avatarUrl
+                                  creator.avatarUrl
                             : null;
                         return GestureDetector(
                           onTap: () => context.push(
@@ -325,8 +325,7 @@ class InspoScreen extends ConsumerWidget {
                                     child: Stack(
                                       children: [
                                         Positioned.fill(
-                                          child:
-                                              trend.imageUrl.isNotEmpty
+                                          child: trend.imageUrl.isNotEmpty
                                               ? ClipRRect(
                                                   borderRadius:
                                                       const BorderRadius.vertical(
@@ -335,7 +334,11 @@ class InspoScreen extends ConsumerWidget {
                                                         ),
                                                       ),
                                                   child: CachedNetworkImage(
-                                                    imageUrl: ApiService.resolveImageUrl(trend.imageUrl) ?? trend.imageUrl,
+                                                    imageUrl:
+                                                        ApiService.resolveImageUrl(
+                                                          trend.imageUrl,
+                                                        ) ??
+                                                        trend.imageUrl,
                                                     fit: BoxFit.cover,
                                                     placeholder:
                                                         (context, url) =>

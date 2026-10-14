@@ -38,10 +38,7 @@ class WelcomeScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        colors.surfaceContainer,
-                        colors.background,
-                      ],
+                      colors: [colors.surfaceContainer, colors.background],
                     ),
                   ),
                 );
@@ -100,9 +97,14 @@ class WelcomeScreen extends StatelessWidget {
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: 16.0,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,16 +149,30 @@ class WelcomeScreen extends StatelessWidget {
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerRight,
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(GlassRadius.pill),
+                                    borderRadius: BorderRadius.circular(
+                                      GlassRadius.pill,
+                                    ),
                                     child: BackdropFilter(
-                                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                      filter: ImageFilter.blur(
+                                        sigmaX: 16,
+                                        sigmaY: 16,
+                                      ),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: colors.foreground.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(GlassRadius.pill),
+                                          color: colors.foreground.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            GlassRadius.pill,
+                                          ),
                                           border: Border.all(
-                                            color: colors.foreground.withValues(alpha: 0.12),
+                                            color: colors.foreground.withValues(
+                                              alpha: 0.12,
+                                            ),
                                             width: 1,
                                           ),
                                         ),
@@ -171,7 +187,8 @@ class WelcomeScreen extends StatelessWidget {
                                                 shape: BoxShape.circle,
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: colors.primary.withValues(alpha: 0.6),
+                                                    color: colors.primary
+                                                        .withValues(alpha: 0.6),
                                                     blurRadius: 6,
                                                     spreadRadius: 1,
                                                   ),
@@ -182,11 +199,13 @@ class WelcomeScreen extends StatelessWidget {
                                             Text(
                                               'AUTUMN / WINTER',
                                               style: TextStyle(
-                                                fontFamily: GlassTypography.bodyFont,
+                                                fontFamily:
+                                                    GlassTypography.bodyFont,
                                                 fontSize: 9.5,
                                                 fontWeight: FontWeight.w600,
                                                 letterSpacing: 1.4,
-                                                color: colors.foreground.withValues(alpha: 0.85),
+                                                color: colors.foreground
+                                                    .withValues(alpha: 0.85),
                                               ),
                                             ),
                                           ],
@@ -210,16 +229,29 @@ class WelcomeScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(GlassRadius.pill),
+                                  borderRadius: BorderRadius.circular(
+                                    GlassRadius.pill,
+                                  ),
                                   child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 12,
+                                      sigmaY: 12,
+                                    ),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 5,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: colors.surfaceContainer.withValues(alpha: 0.7),
-                                        borderRadius: BorderRadius.circular(GlassRadius.pill),
+                                        color: colors.surfaceContainer
+                                            .withValues(alpha: 0.7),
+                                        borderRadius: BorderRadius.circular(
+                                          GlassRadius.pill,
+                                        ),
                                         border: Border.all(
-                                          color: colors.primary.withValues(alpha: 0.28),
+                                          color: colors.primary.withValues(
+                                            alpha: 0.28,
+                                          ),
                                           width: 1,
                                         ),
                                       ),
@@ -238,11 +270,13 @@ class WelcomeScreen extends StatelessWidget {
                                           Text(
                                             'PERSONAL STYLING & CURATION',
                                             style: TextStyle(
-                                              fontFamily: GlassTypography.bodyFont,
+                                              fontFamily:
+                                                  GlassTypography.bodyFont,
                                               fontSize: 10,
                                               fontWeight: FontWeight.w600,
                                               letterSpacing: 1.5,
-                                              color: colors.foreground.withValues(alpha: 0.90),
+                                              color: colors.foreground
+                                                  .withValues(alpha: 0.90),
                                             ),
                                           ),
                                         ],
@@ -296,44 +330,52 @@ class WelcomeScreen extends StatelessWidget {
                                     child: TapScale(
                                       onTap: () => context.go(AppRoutes.signUp),
                                       child: Container(
-                                      height: buttonHeight,
-                                      decoration: BoxDecoration(
-                                        color: colors.foreground,
-                                        borderRadius: BorderRadius.circular(GlassRadius.pill),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.35),
-                                            blurRadius: 18,
-                                            offset: const Offset(0, 6),
+                                        height: buttonHeight,
+                                        decoration: BoxDecoration(
+                                          color: colors.foreground,
+                                          borderRadius: BorderRadius.circular(
+                                            GlassRadius.pill,
                                           ),
-                                          BoxShadow(
-                                            color: colors.primary.withValues(alpha: 0.22),
-                                            blurRadius: 30,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Get Started',
-                                            style: TextStyle(
-                                              fontFamily: GlassTypography.bodyFont,
-                                              fontSize: isDesktop ? 18 : 16,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.2,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.35,
+                                              ),
+                                              blurRadius: 18,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                            BoxShadow(
+                                              color: colors.primary.withValues(
+                                                alpha: 0.22,
+                                              ),
+                                              blurRadius: 30,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Get Started',
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    GlassTypography.bodyFont,
+                                                fontSize: isDesktop ? 18 : 16,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: 0.2,
+                                                color: colors.background,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Icon(
+                                              Icons.arrow_forward_rounded,
+                                              size: 18,
                                               color: colors.background,
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            Icons.arrow_forward_rounded,
-                                            size: 18,
-                                            color: colors.background,
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -348,31 +390,46 @@ class WelcomeScreen extends StatelessWidget {
                                     child: TapScale(
                                       onTap: () => context.go(AppRoutes.login),
                                       child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(GlassRadius.pill),
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                                        child: Container(
-                                          height: isDesktop ? 60 : (isTablet ? 56 : 52),
-                                          decoration: BoxDecoration(
-                                            color: colors.foreground.withValues(alpha: 0.08),
-                                            borderRadius: BorderRadius.circular(GlassRadius.pill),
-                                            border: Border.all(
-                                              color: colors.foreground.withValues(alpha: 0.16),
-                                              width: 1,
-                                            ),
+                                        borderRadius: BorderRadius.circular(
+                                          GlassRadius.pill,
+                                        ),
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(
+                                            sigmaX: 16,
+                                            sigmaY: 16,
                                           ),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            'Sign in to your account',
-                                            style: TextStyle(
-                                              fontFamily: GlassTypography.bodyFont,
-                                              fontSize: isDesktop ? 17 : 15,                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: 0.1,
-                                              color: colors.foreground.withValues(alpha: 0.90),
+                                          child: Container(
+                                            height: isDesktop
+                                                ? 60
+                                                : (isTablet ? 56 : 52),
+                                            decoration: BoxDecoration(
+                                              color: colors.foreground
+                                                  .withValues(alpha: 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    GlassRadius.pill,
+                                                  ),
+                                              border: Border.all(
+                                                color: colors.foreground
+                                                    .withValues(alpha: 0.16),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Sign in to your account',
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    GlassTypography.bodyFont,
+                                                fontSize: isDesktop ? 17 : 15,
+                                                fontWeight: FontWeight.w500,
+                                                letterSpacing: 0.1,
+                                                color: colors.foreground
+                                                    .withValues(alpha: 0.90),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
                                       ),
                                     ),
                                   ),

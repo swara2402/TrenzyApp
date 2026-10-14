@@ -5,10 +5,7 @@ import '../../theme/glass_theme.dart';
 import 'blend_card_decoration.dart';
 
 class BlendBrandsCard extends StatelessWidget {
-  const BlendBrandsCard({
-    super.key,
-    required this.results,
-  });
+  const BlendBrandsCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -38,21 +35,29 @@ class BlendBrandsCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Shared Brands',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Brands you both love',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: brands.map((brand) => _BrandChip(brand: brand)).toList(),
+              children: brands
+                  .map((brand) => _BrandChip(brand: brand))
+                  .toList(),
             ),
           ),
           if (brands.length > 6)
@@ -60,7 +65,10 @@ class BlendBrandsCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12),
               child: Text(
                 'and ${brands.length - 6} more...',
-                style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.fg40),
+                style: GlassTypography.body(
+                  fontSize: 12,
+                  color: context.trenzyColors.fg40,
+                ),
               ),
             ),
         ],
@@ -80,11 +88,7 @@ class BlendBrandsCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.token_rounded,
-            size: 40,
-            color: GlassColors.fg20,
-          ),
+          Icon(Icons.token_rounded, size: 40, color: GlassColors.fg20),
           const SizedBox(height: 12),
           Text(
             'No brands in common yet',
@@ -93,7 +97,10 @@ class BlendBrandsCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Swipe on more products to discover shared brand preferences',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -120,7 +127,11 @@ class _BrandChip extends StatelessWidget {
       ),
       child: Text(
         brand,
-        style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700, color: context.trenzyColors.primary),
+        style: GlassTypography.body(
+          fontSize: 14,
+          weight: FontWeight.w700,
+          color: context.trenzyColors.primary,
+        ),
       ),
     );
   }

@@ -30,12 +30,20 @@ class FeedDetailScreen extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   height: 300,
                   color: context.trenzyColors.graphite,
-                  child: Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg)),
+                  child: Center(
+                    child: Icon(
+                      Icons.image_outlined,
+                      color: context.trenzyColors.mutedFg,
+                    ),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   height: 300,
                   color: context.trenzyColors.graphite,
-                  child: Icon(Icons.broken_image, color: context.trenzyColors.mutedFg),
+                  child: Icon(
+                    Icons.broken_image,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ),
               Padding(

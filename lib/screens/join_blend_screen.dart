@@ -16,11 +16,15 @@ class JoinBlendScreen extends ConsumerStatefulWidget {
 }
 
 class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-  final List<FocusNode> _keyboardFocusNodes =
-      List.generate(6, (_) => FocusNode());
+  final List<FocusNode> _keyboardFocusNodes = List.generate(
+    6,
+    (_) => FocusNode(),
+  );
   bool _isJoining = false;
 
   @override
@@ -42,11 +46,17 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
   String _formatJoinError(dynamic error) {
     final text = error.toString().toLowerCase();
     if (text.contains('full')) return 'This Blend session is full.';
-    if (text.contains('invalid') || text.contains('not found') || text.contains('404')) {
+    if (text.contains('invalid') ||
+        text.contains('not found') ||
+        text.contains('404')) {
       return 'Invalid invite code. Check and try again.';
     }
-    if (text.contains('private')) return 'This Blend session is private and requires an invite.';
-    if (text.contains('rate') || text.contains('limit') || text.contains('429')) {
+    if (text.contains('private')) {
+      return 'This Blend session is private and requires an invite.';
+    }
+    if (text.contains('rate') ||
+        text.contains('limit') ||
+        text.contains('429')) {
       return 'Too many join attempts. Please try again in a moment.';
     }
     return 'Could not join blend. Please check your code and try again.';
@@ -70,13 +80,15 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
       trackBlendJoined(ref, code);
       final blendId = res['id']?.toString();
       if (mounted) {
-        context.go('${AppRoutes.blendLobby}?groupId=${(blendId != null && blendId.isNotEmpty) ? blendId : code}');
+        context.go(
+          '${AppRoutes.blendLobby}?groupId=${(blendId != null && blendId.isNotEmpty) ? blendId : code}',
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_formatJoinError(e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_formatJoinError(e))));
       }
     } finally {
       if (mounted) setState(() => _isJoining = false);
@@ -95,9 +107,9 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_formatJoinError(e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_formatJoinError(e))));
       }
     } finally {
       if (mounted) setState(() => _isJoining = false);
@@ -159,10 +171,7 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
         Text(
           'Enter the secret code to sync your aesthetic with the collective.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFFD0C5AF),
-            fontSize: 16,
-          ),
+          style: TextStyle(color: const Color(0xFFD0C5AF), fontSize: 16),
         ),
       ],
     );
@@ -178,7 +187,11 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
         const SizedBox(height: 24),
         Row(
           children: [
-            Expanded(child: Divider(color: const Color(0xFF4D4635).withValues(alpha: 0.3))),
+            Expanded(
+              child: Divider(
+                color: const Color(0xFF4D4635).withValues(alpha: 0.3),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -190,7 +203,11 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
                 ),
               ),
             ),
-            Expanded(child: Divider(color: const Color(0xFF4D4635).withValues(alpha: 0.3))),
+            Expanded(
+              child: Divider(
+                color: const Color(0xFF4D4635).withValues(alpha: 0.3),
+              ),
+            ),
           ],
         ),
       ],
@@ -204,7 +221,8 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
       child: KeyboardListener(
         focusNode: _keyboardFocusNodes[index],
         onKeyEvent: (event) {
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.backspace) {
             if (_controllers[index].text.isEmpty && index > 0) {
               _controllers[index - 1].clear();
               _focusNodes[index - 1].requestFocus();
@@ -233,7 +251,10 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFF2CA50), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFF2CA50),
+                width: 1.5,
+              ),
             ),
           ),
           onChanged: (value) {
@@ -278,9 +299,9 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
               );
             }
             return Column(
-              children: groups
-                  .where((g) => g is Map || g is BlendGroup)
-                  .map((g) {
+              children: groups.where((g) => g is Map || g is BlendGroup).map((
+                g,
+              ) {
                 final map = g is BlendGroup
                     ? {'id': g.id, 'name': g.name, 'memberCount': g.memberCount}
                     : Map<String, dynamic>.from(g as Map);
@@ -297,7 +318,9 @@ class _JoinBlendScreenState extends ConsumerState<JoinBlendScreen> {
           },
           loading: () => const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator(color: Color(0xFFF2CA50))),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFFF2CA50)),
+            ),
           ),
           error: (e, _) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),

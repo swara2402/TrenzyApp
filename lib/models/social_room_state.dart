@@ -28,7 +28,10 @@ class SocialRoomState {
     this.unreadCount,
   });
 
-  factory SocialRoomState.fromJson(Map<String, dynamic> json, [dynamic options]) {
+  factory SocialRoomState.fromJson(
+    Map<String, dynamic> json, [
+    dynamic options,
+  ]) {
     return SocialRoomState(
       roomId: json['roomId'] as String?,
       roomName: json['roomName'] as String?,
@@ -55,16 +58,16 @@ class SocialRoomState {
   }
 
   Map<String, dynamic> toJson() => {
-        'roomId': roomId,
-        'roomName': roomName,
-        'roomType': roomType,
-        'participants': participants?.map((item) => item.toJson()).toList(),
-        'messages': messages?.map((item) => item.toJson()).toList(),
-        'createdBy': createdBy?.toJson(),
-        'createdAt': createdAt?.toIso8601String(),
-        'isActive': isActive,
-        'lastMessage': lastMessage,
-        'lastMessageTime': lastMessageTime?.toIso8601String(),
-        'unreadCount': unreadCount,
-      };
+    'roomId': roomId,
+    'roomName': roomName,
+    'roomType': roomType,
+    'participants': participants?.map((item) => item.toJson()).toList(),
+    'messages': messages?.map((item) => item.toJson()).toList(),
+    'createdBy': createdBy?.toJson(),
+    'createdAt': createdAt?.toIso8601String(),
+    'isActive': isActive,
+    'lastMessage': lastMessage,
+    'lastMessageTime': lastMessageTime?.toIso8601String(),
+    'unreadCount': unreadCount,
+  };
 }

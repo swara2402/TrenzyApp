@@ -22,10 +22,10 @@ class SocialActivity {
     this.metadata,
     this.createdAt,
     bool? isLoaded,
-  })  : id = id ?? '',
-        type = type ?? '',
-        description = description ?? '',
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       type = type ?? '',
+       description = description ?? '',
+       isLoaded = isLoaded ?? false;
 
   factory SocialActivity.fromJson(Map<String, dynamic> json) {
     return SocialActivity(
@@ -47,15 +47,15 @@ class SocialActivity {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'description': description,
-        'user': user?.toJson(),
-        'post': post?.toJson(),
-        'metadata': metadata,
-        'createdAt': createdAt?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'type': type,
+    'description': description,
+    'user': user?.toJson(),
+    'post': post?.toJson(),
+    'metadata': metadata,
+    'createdAt': createdAt?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }
 
 class PredictionModel {
@@ -91,20 +91,20 @@ class PredictionModel {
     List<Map<String, dynamic>>? predictedProducts,
     this.predictedAt,
     bool? isLoaded,
-  })  : id = id ?? '',
-        trendId = trendId ?? '',
-        productId = productId ?? '',
-        productName = productName ?? '',
-        category = category ?? '',
-        title = title ?? '',
-        description = description ?? '',
-        reasoning = reasoning ?? '',
-        imageUrl = imageUrl ?? '',
-        confidence = confidence ?? 0.0,
-        predictedTrendScore = predictedTrendScore ?? 0.0,
-        recommendedCategories = recommendedCategories ?? const [],
-        predictedProducts = predictedProducts ?? const [],
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       trendId = trendId ?? '',
+       productId = productId ?? '',
+       productName = productName ?? '',
+       category = category ?? '',
+       title = title ?? '',
+       description = description ?? '',
+       reasoning = reasoning ?? '',
+       imageUrl = imageUrl ?? '',
+       confidence = confidence ?? 0.0,
+       predictedTrendScore = predictedTrendScore ?? 0.0,
+       recommendedCategories = recommendedCategories ?? const [],
+       predictedProducts = predictedProducts ?? const [],
+       isLoaded = isLoaded ?? false;
 
   factory PredictionModel.fromJson(Map<String, dynamic> json) {
     return PredictionModel(
@@ -119,8 +119,10 @@ class PredictionModel {
       imageUrl: json['imageUrl'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble(),
       predictedTrendScore: (json['predictedTrendScore'] as num?)?.toDouble(),
-      recommendedCategories: (json['recommendedCategories'] as List<dynamic>?)?.cast<String>(),
-      predictedProducts: (json['predictedProducts'] as List<dynamic>?)?.cast<Map<String, dynamic>>(),
+      recommendedCategories: (json['recommendedCategories'] as List<dynamic>?)
+          ?.cast<String>(),
+      predictedProducts: (json['predictedProducts'] as List<dynamic>?)
+          ?.cast<Map<String, dynamic>>(),
       predictedAt: json['predictedAt'] != null
           ? DateTime.parse(json['predictedAt'] as String)
           : null,
@@ -129,20 +131,20 @@ class PredictionModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'trendId': trendId,
-        'productId': productId,
-        'productName': productName,
-        'category': category,
-        'title': title,
-        'description': description,
-        'reasoning': reasoning,
-        'imageUrl': imageUrl,
-        'confidence': confidence,
-        'predictedTrendScore': predictedTrendScore,
-        'recommendedCategories': recommendedCategories,
-        'predictedProducts': predictedProducts,
-        'predictedAt': predictedAt?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'trendId': trendId,
+    'productId': productId,
+    'productName': productName,
+    'category': category,
+    'title': title,
+    'description': description,
+    'reasoning': reasoning,
+    'imageUrl': imageUrl,
+    'confidence': confidence,
+    'predictedTrendScore': predictedTrendScore,
+    'recommendedCategories': recommendedCategories,
+    'predictedProducts': predictedProducts,
+    'predictedAt': predictedAt?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }

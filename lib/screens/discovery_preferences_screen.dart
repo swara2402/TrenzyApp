@@ -168,7 +168,9 @@ class _DiscoveryPreferencesScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not save your progress: $error. Please retry to continue.'),
+          content: Text(
+            'Could not save your progress: $error. Please retry to continue.',
+          ),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () => _finishOnboarding(),
@@ -515,8 +517,8 @@ class _DiscoveryPreferencesScreenState
                   label: _isSaving
                       ? 'SAVING...'
                       : canContinue
-                          ? 'FINISH'
-                          : 'Select budget and priorities',
+                      ? 'FINISH'
+                      : 'Select budget and priorities',
                   icon: Icons.auto_awesome_rounded,
                   enabled: canContinue && !_isSaving,
                   onTap: canContinue && !_isSaving ? _finishOnboarding : null,

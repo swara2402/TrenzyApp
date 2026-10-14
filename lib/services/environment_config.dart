@@ -12,14 +12,14 @@ class EnvConfig {
   static String get apiBaseUrl => FeatureFlags.apiUrlOverride.isNotEmpty
       ? FeatureFlags.apiUrlOverride
       : _override.isNotEmpty
-          ? _override
-          : _defaultApiBaseUrl;
+      ? _override
+      : _defaultApiBaseUrl;
 
   static String get socketBaseUrl => FeatureFlags.apiUrlOverride.isNotEmpty
       ? FeatureFlags.apiUrlOverride
       : _override.isNotEmpty
-          ? _override
-          : _defaultApiBaseUrl;
+      ? _override
+      : _defaultApiBaseUrl;
 
   static const bool useMockApi = bool.fromEnvironment(
     'TRENZY_USE_MOCK_API',

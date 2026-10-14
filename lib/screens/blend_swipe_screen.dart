@@ -93,17 +93,22 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _swipeAnimator = AnimationController(duration: Duration(milliseconds: 400), vsync: this);
-    _exitAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-      parent: _swipeAnimator,
-      curve: Curves.easeIn,
-    ));
+    _swipeAnimator = AnimationController(
+      duration: Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _exitAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _swipeAnimator, curve: Curves.easeIn));
 
-    _enterController = AnimationController(duration: Duration(milliseconds: 350), vsync: this);
-    _enterAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-      parent: _enterController,
-      curve: Curves.easeOutBack,
-    ));
+    _enterController = AnimationController(
+      duration: Duration(milliseconds: 350),
+      vsync: this,
+    );
+    _enterAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _enterController, curve: Curves.easeOutBack),
+    );
     _enterController.value = 1;
 
     _listenToLiveState();
@@ -118,7 +123,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
 
     // P1: Listen for lightweight swipe_applied events from other users
     // These provide immediate UI feedback (toast) without full state recompute
-    _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((swipeEvent) {
+    _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((
+      swipeEvent,
+    ) {
       if (!mounted) return;
 
       // Only show toast for other users' swipes, not our own
@@ -127,7 +134,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
       final swipeType = swipeEvent['swipeType'] ?? 'liked';
 
       if (userId != null) {
-        final verb = swipeType == 'love' ? 'loved' : (swipeType == 'like' ? 'liked' : 'passed on');
+        final verb = swipeType == 'love'
+            ? 'loved'
+            : (swipeType == 'like' ? 'liked' : 'passed on');
         GlassToast.info(context, '$userName $verb this');
       }
     });
@@ -143,7 +152,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
 
     // P1 RESYNC: Listen to connection state to trigger full state refresh on reconnect
     _connectionSub?.cancel();
-    _connectionSub = BlendSocketService.instance.connectionStateStream.listen((isConnected) {
+    _connectionSub = BlendSocketService.instance.connectionStateStream.listen((
+      isConnected,
+    ) {
       if (isConnected && mounted) {
         // On successful reconnect, fetch full blend state to sync any missed events
         BlendSocketService.instance.getBlendState(widget.groupId);
@@ -155,7 +166,8 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     if (!mounted) return;
 
     // Distinguish between critical auth failures and transient connection errors
-    bool isCritical = error.contains('token') ||
+    bool isCritical =
+        error.contains('token') ||
         error.contains('expired') ||
         error.contains('revoked') ||
         error.contains('Not authenticated') ||
@@ -212,13 +224,15 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
 
   void _sendSwipeToServer(String productId, String type) {
     final api = ref.read(apiServiceProvider);
-    api.recordBlendSwipe(
-      groupId: widget.groupId,
-      productId: productId,
-      swipeType: type,
-    ).catchError((e) {
-      debugPrint('[BlendSwipe] Failed to record swipe: $e');
-    });
+    api
+        .recordBlendSwipe(
+          groupId: widget.groupId,
+          productId: productId,
+          swipeType: type,
+        )
+        .catchError((e) {
+          debugPrint('[BlendSwipe] Failed to record swipe: $e');
+        });
   }
 
   bool get _allSwiped => _currentIndex >= _products.length;
@@ -252,12 +266,11 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     // Undo is now server-backed: remove the swipe vote so results and
     // other members' views reflect the correction, not just this device.
     final api = ref.read(apiServiceProvider);
-    api.undoBlendSwipe(
-      groupId: widget.groupId,
-      productId: undoneProduct.id,
-    ).catchError((e) {
-      debugPrint('[BlendSwipe] Failed to undo swipe: $e');
-    });
+    api
+        .undoBlendSwipe(groupId: widget.groupId, productId: undoneProduct.id)
+        .catchError((e) {
+          debugPrint('[BlendSwipe] Failed to undo swipe: $e');
+        });
     setState(() {
       _currentIndex--;
       if (_currentIndex < _products.length) {
@@ -286,12 +299,16 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
             icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
             onPressed: () => context.go(AppRoutes.blendHub),
           ),
-          title: Text('Swipe', style: TextStyle(color: context.trenzyColors.foreground)),
+          title: Text(
+            'Swipe',
+            style: TextStyle(color: context.trenzyColors.foreground),
+          ),
         ),
         body: Center(
           child: EmptySection(
             title: 'No products to swipe on',
-            subtitle: 'This Blend group doesn\u2019t have any products added yet.',
+            subtitle:
+                'This Blend group doesn\u2019t have any products added yet.',
             actionLabel: 'Go to Blend Hub',
             onAction: () => context.go(AppRoutes.blendHub),
           ),
@@ -308,7 +325,10 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
             icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
             onPressed: () => context.go(AppRoutes.blendHub),
           ),
-          title: Text('Session Complete', style: TextStyle(color: context.trenzyColors.foreground)),
+          title: Text(
+            'Session Complete',
+            style: TextStyle(color: context.trenzyColors.foreground),
+          ),
         ),
         body: Center(
           child: Padding(
@@ -323,14 +343,25 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                     shape: BoxShape.circle,
                     color: context.trenzyColors.primary.withValues(alpha: 0.12),
                   ),
-                  child: Icon(Icons.check_circle_outline, color: context.trenzyColors.primary, size: 48),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: context.trenzyColors.primary,
+                    size: 48,
+                  ),
                 ),
                 SizedBox(height: 24),
-                DisplayText("You've seen everything!", fontSize: 22, weight: FontWeight.w700),
+                DisplayText(
+                  "You've seen everything!",
+                  fontSize: 22,
+                  weight: FontWeight.w700,
+                ),
                 SizedBox(height: 8),
                 Text(
                   '${_swipeHistory.length} products swiped in this session',
-                  style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 14),
+                  style: TextStyle(
+                    color: context.trenzyColors.mutedFg,
+                    fontSize: 14,
+                  ),
                 ),
                 SizedBox(height: 32),
                 GlowButton(
@@ -338,7 +369,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                   icon: Icons.bar_chart_rounded,
                   width: 220,
                   height: 48,
-                  onTap: () => context.go('${AppRoutes.blendResults}?groupId=${widget.groupId}'),
+                  onTap: () => context.go(
+                    '${AppRoutes.blendResults}?groupId=${widget.groupId}',
+                  ),
                 ),
                 SizedBox(height: 12),
                 OutlinedButton(
@@ -346,7 +379,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                   style: OutlinedButton.styleFrom(
                     foregroundColor: context.trenzyColors.foreground,
                     side: BorderSide(color: context.trenzyColors.glassBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
                   child: Text('Explore More Styles'),
                 ),
@@ -376,7 +411,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     final enterOpacity = _enterAnimation.value;
 
     final mySwipes = _swipeHistory.length;
-    final groupSwipes = _liveState?.totalSwipes ?? widget.group.members.fold<int>(0, (sum, m) => sum + m.swipeCount);
+    final groupSwipes =
+        _liveState?.totalSwipes ??
+        widget.group.members.fold<int>(0, (sum, m) => sum + m.swipeCount);
 
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
@@ -406,8 +443,13 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                       radius: 14,
                       backgroundColor: context.trenzyColors.graphite,
                       child: Text(
-                        m.userName.isNotEmpty == true ? m.userName[0].toUpperCase() : '?',
-                        style: TextStyle(fontSize: 12, color: context.trenzyColors.primary),
+                        m.userName.isNotEmpty == true
+                            ? m.userName[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.trenzyColors.primary,
+                        ),
                       ),
                     ),
                   );
@@ -441,7 +483,10 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
               Opacity(
                 opacity: exitOpacity.clamp(0, 1),
                 child: Transform.translate(
-                  offset: Offset(_dragX + exitOffset.dx, _dragY + exitOffset.dy),
+                  offset: Offset(
+                    _dragX + exitOffset.dx,
+                    _dragY + exitOffset.dy,
+                  ),
                   child: Transform.rotate(
                     angle: exitRotation,
                     child: _ProductCard(product: product),
@@ -455,7 +500,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                 child: _isAnimating && _currentIndex + 1 < _products.length
                     ? Opacity(
                         opacity: 0.3,
-                        child: _ProductCard(product: _products[_currentIndex + 1]),
+                        child: _ProductCard(
+                          product: _products[_currentIndex + 1],
+                        ),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -486,7 +533,9 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                 icon: Icons.undo_rounded,
                 color: context.trenzyColors.mutedFg,
                 size: 40,
-                onTap: _currentIndex > 0 && !_isAnimating ? _undoLastSwipe : null,
+                onTap: _currentIndex > 0 && !_isAnimating
+                    ? _undoLastSwipe
+                    : null,
               ),
               _SwipeButton(
                 icon: Icons.favorite,
@@ -514,7 +563,9 @@ class _ProductCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: context.trenzyColors.foreground.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: context.trenzyColors.foreground.withValues(alpha: 0.1),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -530,13 +581,32 @@ class _ProductCard extends StatelessWidget {
           Expanded(
             child: product.imageUrl.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                    imageUrl:
+                        ApiService.resolveImageUrl(product.imageUrl) ??
+                        product.imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    placeholder: (_, _) => Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg, size: 24)),
-                  errorWidget: (_, _, _) => Center(child: Icon(Icons.image, color: context.trenzyColors.mutedFg)),
+                    placeholder: (_, _) => Center(
+                      child: Icon(
+                        Icons.image_outlined,
+                        color: context.trenzyColors.mutedFg,
+                        size: 24,
+                      ),
+                    ),
+                    errorWidget: (_, _, _) => Center(
+                      child: Icon(
+                        Icons.image,
+                        color: context.trenzyColors.mutedFg,
+                      ),
+                    ),
                   )
-                : Center(child: Icon(Icons.image, color: context.trenzyColors.mutedFg, size: 48)),
+                : Center(
+                    child: Icon(
+                      Icons.image,
+                      color: context.trenzyColors.mutedFg,
+                      size: 48,
+                    ),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -545,19 +615,30 @@ class _ProductCard extends StatelessWidget {
               children: [
                 Text(
                   product.name,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: context.trenzyColors.foreground,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 4),
                 Text(
                   product.brand,
-                  style: TextStyle(fontSize: 14, color: context.trenzyColors.mutedFg),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   product.effectivePrice.toString(),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.trenzyColors.primary),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.trenzyColors.primary,
+                  ),
                 ),
               ],
             ),

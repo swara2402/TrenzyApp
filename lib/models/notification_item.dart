@@ -27,19 +27,19 @@ class NotificationItem {
     DateTime? createdAt,
     String? relatedId,
     Map<String, dynamic>? details,
-  })  : id = id ?? '',
-        userId = userId ?? '',
-        type = type ?? '',
-        kind = kind ?? '',
-        title = title ?? 'Notification',
-        message = message ?? '',
-        body = body ?? '',
-        imageUrl = imageUrl ?? '',
-        isRead = isRead ?? read ?? false,
-        read = read ?? isRead ?? false,
-        createdAt = createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
-        relatedId = relatedId ?? '',
-        details = details ?? const {};
+  }) : id = id ?? '',
+       userId = userId ?? '',
+       type = type ?? '',
+       kind = kind ?? '',
+       title = title ?? 'Notification',
+       message = message ?? '',
+       body = body ?? '',
+       imageUrl = imageUrl ?? '',
+       isRead = isRead ?? read ?? false,
+       read = read ?? isRead ?? false,
+       createdAt = createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+       relatedId = relatedId ?? '',
+       details = details ?? const {};
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) {
     return NotificationItem(

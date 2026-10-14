@@ -11,11 +11,7 @@ class MockApiService implements ApiServiceBase {
     await _delay(const Duration(milliseconds: 500));
     return {
       'token': 'mock_token_123',
-      'user': {
-        'id': 'firebase_12345',
-        'name': 'Demo User',
-        'email': email,
-      },
+      'user': {'id': 'firebase_12345', 'name': 'Demo User', 'email': email},
     };
   }
 
@@ -28,11 +24,7 @@ class MockApiService implements ApiServiceBase {
     await _delay(const Duration(milliseconds: 500));
     return {
       'token': 'mock_token_123',
-      'user': {
-        'id': 'firebase_12345',
-        'name': name,
-        'email': email,
-      },
+      'user': {'id': 'firebase_12345', 'name': name, 'email': email},
     };
   }
 
@@ -134,7 +126,9 @@ class MockApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> getBrands({String? search}) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'brands': ['PEACHLUXE', 'NIKE', 'ADIDAS', 'LEVI\'S']};
+    return {
+      'brands': ['PEACHLUXE', 'NIKE', 'ADIDAS', 'LEVI\'S'],
+    };
   }
 
   @override
@@ -345,7 +339,9 @@ class MockApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> getUserProfile(String userId) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'user': {'id': userId, 'name': 'Test User', 'avatarUrl': '', 'bio': ''}};
+    return {
+      'user': {'id': userId, 'name': 'Test User', 'avatarUrl': '', 'bio': ''},
+    };
   }
 
   @override
@@ -386,13 +382,19 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<Map<String, dynamic>> unifiedSearch(String query, {int limit = 10}) async {
+  Future<Map<String, dynamic>> unifiedSearch(
+    String query, {
+    int limit = 10,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
     return {'products': [], 'users': [], 'blends': []};
   }
 
   @override
-  Future<void> registerPushToken(String token, {String platform = 'fcm'}) async {
+  Future<void> registerPushToken(
+    String token, {
+    String platform = 'fcm',
+  }) async {
     await _delay(const Duration(milliseconds: 100));
   }
 
@@ -403,14 +405,26 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<void> recordDiscoverySwipe({required String productId, required String swipeType}) async {
+  Future<void> recordDiscoverySwipe({
+    required String productId,
+    required String swipeType,
+  }) async {
     await _delay(const Duration(milliseconds: 100));
   }
 
   @override
   Future<List<String>> getPersonaStyles() async {
     await _delay(const Duration(milliseconds: 200));
-    return ['Casual', 'Formal', 'Sporty', 'Bohemian', 'Minimalist', 'Streetwear', 'Classic', 'Vintage'];
+    return [
+      'Casual',
+      'Formal',
+      'Sporty',
+      'Bohemian',
+      'Minimalist',
+      'Streetwear',
+      'Classic',
+      'Vintage',
+    ];
   }
 
   @override
@@ -436,7 +450,8 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<void> updateOutfit(int outfitId, {
+  Future<void> updateOutfit(
+    int outfitId, {
     String? name,
     String? occasion,
     List<int>? wardrobeItemIds,
@@ -515,22 +530,85 @@ class MockApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> getStyleDna() async {
     await _delay(const Duration(milliseconds: 150));
-    return {'style_scores': {'casual': 0.8}, 'color_scores': {'neutrals': 0.75}, 'fit_scores': {'relaxed': 0.7}, 'brand_scores': {}, 'category_scores': {'tops': 0.8}, 'occasion_scores': {'college': 0.85}, 'material_scores': {}, 'price_sensitivity': 0.5, 'confidence': 0.6, 'interaction_count': 12, 'explanation': 'Mock Style DNA'};
+    return {
+      'style_scores': {'casual': 0.8},
+      'color_scores': {'neutrals': 0.75},
+      'fit_scores': {'relaxed': 0.7},
+      'brand_scores': {},
+      'category_scores': {'tops': 0.8},
+      'occasion_scores': {'college': 0.85},
+      'material_scores': {},
+      'price_sensitivity': 0.5,
+      'confidence': 0.6,
+      'interaction_count': 12,
+      'explanation': 'Mock Style DNA',
+    };
   }
+
   @override
-  Future<Map<String, dynamic>> refreshStyleDna() async { await _delay(const Duration(milliseconds: 100)); return {'message': 'Style DNA refreshed', 'confidence': 0.6}; }
+  Future<Map<String, dynamic>> refreshStyleDna() async {
+    await _delay(const Duration(milliseconds: 100));
+    return {'message': 'Style DNA refreshed', 'confidence': 0.6};
+  }
+
   @override
-  Future<Map<String, dynamic>> getAiModelHealth() async { await _delay(const Duration(milliseconds: 100)); return {'status': 'degraded', 'models': {}}; }
+  Future<Map<String, dynamic>> getAiModelHealth() async {
+    await _delay(const Duration(milliseconds: 100));
+    return {'status': 'degraded', 'models': {}};
+  }
+
   @override
-  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) async { await _delay(const Duration(milliseconds: 100)); return {'products': [], 'explanations': [], 'source': 'mock', 'limit': limit}; }
+  Future<Map<String, dynamic>> getAiRecommendations({int limit = 20}) async {
+    await _delay(const Duration(milliseconds: 100));
+    return {
+      'products': [],
+      'explanations': [],
+      'source': 'mock',
+      'limit': limit,
+    };
+  }
+
   @override
-  Future<Map<String, dynamic>> generateAiOutfits({required String prompt, int numOptions = 3, Map<String, dynamic>? context}) async { await _delay(const Duration(milliseconds: 100)); return {'success': true, 'outfits': [], 'message': 'No mock outfits available.'}; }
+  Future<Map<String, dynamic>> generateAiOutfits({
+    required String prompt,
+    int numOptions = 3,
+    Map<String, dynamic>? context,
+  }) async {
+    await _delay(const Duration(milliseconds: 100));
+    return {
+      'success': true,
+      'outfits': [],
+      'message': 'No mock outfits available.',
+    };
+  }
+
   @override
-  Future<Map<String, dynamic>> aiStylistChat({required String message, int? conversationId}) async { await _delay(const Duration(milliseconds: 100)); return {'conversation_id': conversationId ?? 1, 'message': 'Mock stylist response', 'mentioned_products': []}; }
+  Future<Map<String, dynamic>> aiStylistChat({
+    required String message,
+    int? conversationId,
+  }) async {
+    await _delay(const Duration(milliseconds: 100));
+    return {
+      'conversation_id': conversationId ?? 1,
+      'message': 'Mock stylist response',
+      'mentioned_products': [],
+    };
+  }
+
   @override
-  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) async { await _delay(const Duration(milliseconds: 100)); return {'success': true, 'outfits': []}; }
+  Future<Map<String, dynamic>> aiStylistOutfit(String prompt) async {
+    await _delay(const Duration(milliseconds: 100));
+    return {'success': true, 'outfits': []};
+  }
+
   @override
-  Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) async { await _delay(const Duration(milliseconds: 100)); return {'products': [], 'similarities': []}; }
+  Future<Map<String, dynamic>> aiVisualSearch(
+    XFile image, {
+    int limit = 20,
+  }) async {
+    await _delay(const Duration(milliseconds: 100));
+    return {'products': [], 'similarities': []};
+  }
 
   @override
   Future<Map<String, dynamic>> getNotifications() async {
@@ -558,8 +636,18 @@ class MockApiService implements ApiServiceBase {
   Future<List<Friend>> getFriends() async {
     await _delay(const Duration(milliseconds: 200));
     return [
-      Friend(id: '1', firebaseUid: 'alice', name: 'Alice', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=A'),
-      Friend(id: '2', firebaseUid: 'bob', name: 'Bob', avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=B'),
+      Friend(
+        id: '1',
+        firebaseUid: 'alice',
+        name: 'Alice',
+        avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=A',
+      ),
+      Friend(
+        id: '2',
+        firebaseUid: 'bob',
+        name: 'Bob',
+        avatarUrl: 'https://placehold.co/150x150/1a1a2e/666.png?text=B',
+      ),
     ];
   }
 
@@ -693,14 +781,29 @@ class MockApiService implements ApiServiceBase {
     int limit = 50,
   }) async {
     await _delay(const Duration(milliseconds: 300));
-    return {'wardrobe': [], 'pagination': {'offset': offset, 'limit': limit, 'total': 0, 'hasMore': false}};
+    return {
+      'wardrobe': [],
+      'pagination': {
+        'offset': offset,
+        'limit': limit,
+        'total': 0,
+        'hasMore': false,
+      },
+    };
   }
 
   @override
-  Future<Map<String, dynamic>> getWardrobeRecommendations({int limit = 5}) async {
+  Future<Map<String, dynamic>> getWardrobeRecommendations({
+    int limit = 5,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
     return {
-      'summary': {'itemCount': 0, 'byRole': {}, 'byCategory': {}, 'topColors': []},
+      'summary': {
+        'itemCount': 0,
+        'byRole': {},
+        'byCategory': {},
+        'topColors': [],
+      },
       'gaps': [],
       'productSuggestions': [],
       'outfitIdeas': [],
@@ -772,8 +875,9 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<Map<String, dynamic>> generatePersona(
-      {Map<String, dynamic>? preferences}) async {
+  Future<Map<String, dynamic>> generatePersona({
+    Map<String, dynamic>? preferences,
+  }) async {
     await _delay(const Duration(milliseconds: 500));
     return {};
   }
@@ -851,7 +955,10 @@ class MockApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> getFeed({int offset = 0, int limit = 20}) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'sections': [], 'pagination': {'offset': offset, 'limit': limit}};
+    return {
+      'sections': [],
+      'pagination': {'offset': offset, 'limit': limit},
+    };
   }
 
   @override
@@ -861,7 +968,10 @@ class MockApiService implements ApiServiceBase {
     int? beforeId,
   }) async {
     await _delay(const Duration(milliseconds: 120));
-    return {'conversationId': 'mock-chat', 'messages': <Map<String, dynamic>>[]};
+    return {
+      'conversationId': 'mock-chat',
+      'messages': <Map<String, dynamic>>[],
+    };
   }
 
   @override
@@ -882,8 +992,10 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<Map<String, dynamic>> getActivity(
-      {int limit = 20, int offset = 0}) async {
+  Future<Map<String, dynamic>> getActivity({
+    int limit = 20,
+    int offset = 0,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
     return {'activity': []};
   }
@@ -1030,43 +1142,104 @@ class MockApiService implements ApiServiceBase {
       },
       'wishlistItems': [
         {
-          'id': 1, 'productId': 'p1', 'productName': 'Classic Sneakers',
-          'productPrice': 129.99, 'productImage': null, 'productBrand': 'Nike',
-          'productCategory': 'Footwear', 'addedByUid': 'user1', 'addedByName': 'Alice',
-          'isFavorite': true, 'notes': 'Love these!',
+          'id': 1,
+          'productId': 'p1',
+          'productName': 'Classic Sneakers',
+          'productPrice': 129.99,
+          'productImage': null,
+          'productBrand': 'Nike',
+          'productCategory': 'Footwear',
+          'addedByUid': 'user1',
+          'addedByName': 'Alice',
+          'isFavorite': true,
+          'notes': 'Love these!',
         },
       ],
       'moodboardItems': [],
       'insights': [
         {
-          'id': 1, 'insightType': 'color_preference', 'title': 'You prefer black tones',
+          'id': 1,
+          'insightType': 'color_preference',
+          'title': 'You prefer black tones',
           'description': '45% of your liked products feature black colors.',
-          'confidence': 0.75, 'category': 'colors',
+          'confidence': 0.75,
+          'category': 'colors',
         },
       ],
       'recentActivity': [
-        {'id': 1, 'kind': 'swipe', 'description': 'Alice liked Classic Sneakers', 'userId': 'user1'},
+        {
+          'id': 1,
+          'kind': 'swipe',
+          'description': 'Alice liked Classic Sneakers',
+          'userId': 'user1',
+        },
       ],
     };
   }
 
   @override
-  Future<List<dynamic>> getSharedWishlist(String blendId, {String? sort, String? category, String? search}) async {
+  Future<List<dynamic>> getSharedWishlist(
+    String blendId, {
+    String? sort,
+    String? category,
+    String? search,
+  }) async {
     await _delay(const Duration(milliseconds: 300));
     return [
-      {'id': 1, 'productId': 'p1', 'productName': 'Classic Sneakers', 'productPrice': 129.99, 'productBrand': 'Nike', 'productCategory': 'Footwear', 'addedByUid': 'user1', 'addedByName': 'Alice', 'isFavorite': true},
-      {'id': 2, 'productId': 'p2', 'productName': 'Leather Jacket', 'productPrice': 299.99, 'productBrand': 'Zara', 'productCategory': 'Outerwear', 'addedByUid': 'user2', 'addedByName': 'Bob', 'isFavorite': false},
+      {
+        'id': 1,
+        'productId': 'p1',
+        'productName': 'Classic Sneakers',
+        'productPrice': 129.99,
+        'productBrand': 'Nike',
+        'productCategory': 'Footwear',
+        'addedByUid': 'user1',
+        'addedByName': 'Alice',
+        'isFavorite': true,
+      },
+      {
+        'id': 2,
+        'productId': 'p2',
+        'productName': 'Leather Jacket',
+        'productPrice': 299.99,
+        'productBrand': 'Zara',
+        'productCategory': 'Outerwear',
+        'addedByUid': 'user2',
+        'addedByName': 'Bob',
+        'isFavorite': false,
+      },
     ];
   }
 
   @override
-  Future<Map<String, dynamic>> addToSharedWishlist(String blendId, {required String productId, String productName = '', double? productPrice, String? productImage, String? productBrand, String? productCategory, String? productUrl, String? notes}) async {
+  Future<Map<String, dynamic>> addToSharedWishlist(
+    String blendId, {
+    required String productId,
+    String productName = '',
+    double? productPrice,
+    String? productImage,
+    String? productBrand,
+    String? productCategory,
+    String? productUrl,
+    String? notes,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'id': 99, 'status': 'added', 'productId': productId, 'productName': productName};
+    return {
+      'id': 99,
+      'status': 'added',
+      'productId': productId,
+      'productName': productName,
+    };
   }
 
   @override
-  Future<Map<String, dynamic>> updateWishlistItem(String blendId, int itemId, {String? notes, bool? isFavorite, String? purchaseLink}) async {
+  Future<Map<String, dynamic>> updateWishlistItem(
+    String blendId,
+    int itemId, {
+    String? notes,
+    bool? isFavorite,
+    String? purchaseLink,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
     return {'status': 'updated', 'id': itemId};
   }
@@ -1080,13 +1253,35 @@ class MockApiService implements ApiServiceBase {
   Future<List<dynamic>> getMoodboard(String blendId, {String? itemType}) async {
     await _delay(const Duration(milliseconds: 300));
     return [
-      {'id': 1, 'itemType': 'product', 'imageUrl': null, 'caption': 'Love this vibe', 'addedByUid': 'user1', 'addedByName': 'Alice'},
-      {'id': 2, 'itemType': 'color_palette', 'content': {'colors': ['#000', '#FFF', '#888']}, 'caption': 'Minimal palette', 'addedByUid': 'user2', 'addedByName': 'Bob'},
+      {
+        'id': 1,
+        'itemType': 'product',
+        'imageUrl': null,
+        'caption': 'Love this vibe',
+        'addedByUid': 'user1',
+        'addedByName': 'Alice',
+      },
+      {
+        'id': 2,
+        'itemType': 'color_palette',
+        'content': {
+          'colors': ['#000', '#FFF', '#888'],
+        },
+        'caption': 'Minimal palette',
+        'addedByUid': 'user2',
+        'addedByName': 'Bob',
+      },
     ];
   }
 
   @override
-  Future<Map<String, dynamic>> addToMoodboard(String blendId, {required String itemType, Map<String, dynamic>? content, String? imageUrl, String? caption}) async {
+  Future<Map<String, dynamic>> addToMoodboard(
+    String blendId, {
+    required String itemType,
+    Map<String, dynamic>? content,
+    String? imageUrl,
+    String? caption,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
     return {'id': 99, 'status': 'added'};
   }
@@ -1097,11 +1292,28 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<List<dynamic>> getBlendInsights(String blendId, {bool refresh = false}) async {
+  Future<List<dynamic>> getBlendInsights(
+    String blendId, {
+    bool refresh = false,
+  }) async {
     await _delay(const Duration(milliseconds: 300));
     return [
-      {'id': 1, 'insightType': 'color_preference', 'title': 'You both prefer neutral colors', 'description': 'Most of your liked products use neutral tones.', 'confidence': 0.82, 'category': 'colors'},
-      {'id': 2, 'insightType': 'brand_affinity', 'title': 'Nike is a group favorite', 'description': '40% of liked items are from Nike.', 'confidence': 0.75, 'category': 'brands'},
+      {
+        'id': 1,
+        'insightType': 'color_preference',
+        'title': 'You both prefer neutral colors',
+        'description': 'Most of your liked products use neutral tones.',
+        'confidence': 0.82,
+        'category': 'colors',
+      },
+      {
+        'id': 2,
+        'insightType': 'brand_affinity',
+        'title': 'Nike is a group favorite',
+        'description': '40% of liked items are from Nike.',
+        'confidence': 0.75,
+        'category': 'brands',
+      },
     ];
   }
 
@@ -1112,26 +1324,53 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<void> updateBlendSettings(String blendId, {String? name, String? description, String? coverImage, bool? isPrivate}) async {
+  Future<void> updateBlendSettings(
+    String blendId, {
+    String? name,
+    String? description,
+    String? coverImage,
+    bool? isPrivate,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
   }
 
   @override
   Future<Map<String, dynamic>> getBlendSettings(String blendId) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'id': blendId, 'name': 'Mock Blend', 'description': 'A mock blend', 'isPrivate': false};
+    return {
+      'id': blendId,
+      'name': 'Mock Blend',
+      'description': 'A mock blend',
+      'isPrivate': false,
+    };
   }
 
   @override
-  Future<Map<String, dynamic>> getBlendActivity(String blendId, {int limit = 50, int offset = 0}) async {
+  Future<Map<String, dynamic>> getBlendActivity(
+    String blendId, {
+    int limit = 50,
+    int offset = 0,
+  }) async {
     await _delay(const Duration(milliseconds: 300));
     return {
       'total': 2,
       'offset': offset,
       'limit': limit,
       'events': [
-        {'id': 1, 'kind': 'swipe', 'description': 'Alice liked Classic Sneakers', 'userId': 'user1', 'createdAt': DateTime.now().toIso8601String()},
-        {'id': 2, 'kind': 'member_joined', 'description': 'Bob joined the blend', 'userId': 'user2', 'createdAt': DateTime.now().toIso8601String()},
+        {
+          'id': 1,
+          'kind': 'swipe',
+          'description': 'Alice liked Classic Sneakers',
+          'userId': 'user1',
+          'createdAt': DateTime.now().toIso8601String(),
+        },
+        {
+          'id': 2,
+          'kind': 'member_joined',
+          'description': 'Bob joined the blend',
+          'userId': 'user2',
+          'createdAt': DateTime.now().toIso8601String(),
+        },
       ],
     };
   }

@@ -71,7 +71,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_rounded, color: context.trenzyColors.primary),
+            icon: Icon(
+              Icons.settings_rounded,
+              color: context.trenzyColors.primary,
+            ),
             onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
@@ -89,7 +92,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: context.trenzyColors.primary.withValues(alpha: 0.3),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.3,
+                        ),
                         width: 2,
                       ),
                     ),
@@ -97,7 +102,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       margin: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
                       ),
                       child: Icon(
                         Icons.person_outline_rounded,
@@ -109,7 +116,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   SizedBox(height: 20),
                   Text(
                     'Sign in to view your profile',
-                    style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 16),
+                    style: TextStyle(
+                      color: context.trenzyColors.mutedFg,
+                      fontSize: 16,
+                    ),
                   ),
                   SizedBox(height: GlassSpacing.md),
                   GlowButton(
@@ -124,15 +134,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           }
           return _buildProfileContent(user);
         },
-        loading: () => Center(
-          child: LoadingSkeletonShimmer(height: 400, radius: 20),
-        ),
+        loading: () =>
+            Center(child: LoadingSkeletonShimmer(height: 400, radius: 20)),
         error: (e, _) => Padding(
           padding: const EdgeInsets.all(GlassSpacing.lg),
           child: Center(
             child: Text(
               'Could not load profile.',
-              style: TextStyle(color: context.trenzyColors.crimson, fontSize: 16),
+              style: TextStyle(
+                color: context.trenzyColors.crimson,
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -161,7 +173,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           SizedBox(height: GlassSpacing.lg),
           _buildProfileHeader(user),
           SizedBox(height: GlassSpacing.xl),
-          _buildStatsRow(postsCount, followersCount, followingCount, wardrobeCount, outfitsCount),
+          _buildStatsRow(
+            postsCount,
+            followersCount,
+            followingCount,
+            wardrobeCount,
+            outfitsCount,
+          ),
           SizedBox(height: GlassSpacing.xl),
           _buildActionButtons(user),
           SizedBox(height: GlassSpacing.xl),
@@ -238,10 +256,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           SizedBox(height: 4),
           Text(
             _handleFromName(user.name),
-            style: TextStyle(
-              color: context.trenzyColors.mutedFg,
-              fontSize: 15,
-            ),
+            style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 15),
           ),
           SizedBox(height: GlassSpacing.sm),
           if (personaName != null)
@@ -268,7 +283,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildStatsRow(int postsCount, int followersCount, int followingCount, int wardrobeCount, int outfitsCount) {
+  Widget _buildStatsRow(
+    int postsCount,
+    int followersCount,
+    int followingCount,
+    int wardrobeCount,
+    int outfitsCount,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: GlassSpacing.lg),
       child: Container(
@@ -276,9 +297,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         decoration: BoxDecoration(
           color: context.trenzyColors.graphite,
           borderRadius: BorderRadius.circular(GlassRadius.panel),
-          border: Border.all(
-            color: context.trenzyColors.glassBorder,
-          ),
+          border: Border.all(color: context.trenzyColors.glassBorder),
         ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -287,11 +306,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               _buildStatItem(Icons.article_outlined, 'Posts', '$postsCount'),
               _buildVerticalDivider(),
-              _buildStatItem(Icons.people_outline_rounded, 'Followers', '$followersCount'),
+              _buildStatItem(
+                Icons.people_outline_rounded,
+                'Followers',
+                '$followersCount',
+              ),
               _buildVerticalDivider(),
-              _buildStatItem(Icons.person_add_outlined, 'Following', '$followingCount'),
+              _buildStatItem(
+                Icons.person_add_outlined,
+                'Following',
+                '$followingCount',
+              ),
               _buildVerticalDivider(),
-              _buildStatItem(Icons.checkroom_outlined, 'Wardrobe', '$wardrobeCount'),
+              _buildStatItem(
+                Icons.checkroom_outlined,
+                'Wardrobe',
+                '$wardrobeCount',
+              ),
               _buildVerticalDivider(),
               _buildStatItem(Icons.style_outlined, 'Outfits', '$outfitsCount'),
             ],
@@ -330,10 +361,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              color: context.trenzyColors.mutedFg,
-              fontSize: 10,
-            ),
+            style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 10),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
           ),
@@ -387,7 +415,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               borderRadius: BorderRadius.circular(GlassRadius.button),
             ),
             child: IconButton(
-              icon: Icon(Icons.share_rounded, color: context.trenzyColors.primary),
+              icon: Icon(
+                Icons.share_rounded,
+                color: context.trenzyColors.primary,
+              ),
               onPressed: () => _shareProfile(context, user),
             ),
           ),
@@ -400,7 +431,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     try {
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Check out ${user.name} (${_handleFromName(user.name)}) on Trenzy — '
+          text:
+              'Check out ${user.name} (${_handleFromName(user.name)}) on Trenzy — '
               'the app where friends blend their style to decide what to buy together.',
           subject: '${user.name} on Trenzy',
         ),
@@ -416,7 +448,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildStylePersonaCard(StylePersona? persona) {
     final name = persona?.name ?? 'Urban Minimalist';
-    final description = persona?.description ?? 'Discover your unique style profile';
+    final description =
+        persona?.description ?? 'Discover your unique style profile';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: GlassSpacing.lg),
@@ -449,7 +482,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: context.trenzyColors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -488,7 +524,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             GestureDetector(
               onTap: () => context.push(AppRoutes.persona),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: context.trenzyColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -499,7 +538,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.auto_awesome, color: context.trenzyColors.primary, size: 16),
+                    Icon(
+                      Icons.auto_awesome,
+                      color: context.trenzyColors.primary,
+                      size: 16,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'View Style DNA',
@@ -531,9 +574,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(GlassRadius.panel),
-        border: Border.all(
-          color: context.trenzyColors.glassBorder,
-        ),
+        border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       child: TabBar(
         controller: _tabController,
@@ -552,10 +593,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: context.trenzyColors.primary,
         unselectedLabelColor: context.trenzyColors.mutedFg,
-        labelStyle: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 14,
-        ),
+        labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
         unselectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w400,
           fontSize: 14,
@@ -589,8 +627,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildPostsGrid(AsyncValue<List<Post>> postsAsync) {
     return postsAsync.when(
-      loading: () => Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
-      error: (e, _) => Center(child: Text('Could not load posts', style: TextStyle(color: context.trenzyColors.mutedFg))),
+      loading: () =>
+          Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
+      error: (e, _) => Center(
+        child: Text(
+          'Could not load posts',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
+      ),
       data: (posts) {
         if (posts.isEmpty) {
           return Center(
@@ -629,9 +673,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 borderRadius: BorderRadius.circular(GlassRadius.card),
                 border: Border.all(color: context.trenzyColors.glassBorder),
                 image: DecorationImage(
-                        image: CachedNetworkImageProvider(post.attachment),
-                        fit: BoxFit.cover,
-                      ),
+                  image: CachedNetworkImageProvider(post.attachment),
+                  fit: BoxFit.cover,
+                ),
               ),
               child: null,
             );
@@ -643,15 +687,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildWardrobeGrid(AsyncValue<List<WardrobeItem>> wardrobeAsync) {
     return wardrobeAsync.when(
-      loading: () => Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
-      error: (e, _) => Center(child: Text('Could not load wardrobe', style: TextStyle(color: context.trenzyColors.mutedFg))),
+      loading: () =>
+          Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
+      error: (e, _) => Center(
+        child: Text(
+          'Could not load wardrobe',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
+      ),
       data: (items) {
         if (items.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.checkroom_outlined, size: 40, color: context.trenzyColors.mutedFg.withValues(alpha: 0.4)),
+                Icon(
+                  Icons.checkroom_outlined,
+                  size: 40,
+                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
+                ),
                 SizedBox(height: 12),
                 Text(
                   'Wardrobe is empty',
@@ -678,9 +732,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               decoration: BoxDecoration(
                 color: context.trenzyColors.graphite,
                 borderRadius: BorderRadius.circular(GlassRadius.card),
-                border: Border.all(
-                  color: context.trenzyColors.glassBorder,
-                ),
+                border: Border.all(color: context.trenzyColors.glassBorder),
               ),
               child: Column(
                 children: [
@@ -694,14 +746,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                       ),
                       child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(GlassRadius.card)),
-                              child: CachedNetworkImage(
-                                imageUrl: item.imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (_, _) => Container(color: context.trenzyColors.graphite),
-                                errorWidget: (_, _, _) => Icon(Icons.checkroom_outlined, color: context.trenzyColors.mutedFg),
-                              ),
-                            ),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(GlassRadius.card),
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: item.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) =>
+                              Container(color: context.trenzyColors.graphite),
+                          errorWidget: (_, _, _) => Icon(
+                            Icons.checkroom_outlined,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   Padding(
@@ -731,15 +789,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildOutfitsGrid(AsyncValue<List<Outfit>> outfitsAsync) {
     return outfitsAsync.when(
-      loading: () => Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
-      error: (e, _) => Center(child: Text('Could not load outfits', style: TextStyle(color: context.trenzyColors.mutedFg))),
+      loading: () =>
+          Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
+      error: (e, _) => Center(
+        child: Text(
+          'Could not load outfits',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
+      ),
       data: (items) {
         if (items.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.style_outlined, size: 40, color: context.trenzyColors.mutedFg.withValues(alpha: 0.4)),
+                Icon(
+                  Icons.style_outlined,
+                  size: 40,
+                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
+                ),
                 SizedBox(height: 12),
                 Text(
                   'No outfits yet',

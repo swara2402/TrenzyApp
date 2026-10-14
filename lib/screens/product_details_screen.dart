@@ -106,7 +106,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                             fit: StackFit.expand,
                             children: [
                               CachedNetworkImage(
-                                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                                imageUrl:
+                                    ApiService.resolveImageUrl(
+                                      product.imageUrl,
+                                    ) ??
+                                    product.imageUrl,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 800,
                                 placeholder: (_, _) => ColoredBox(
@@ -350,8 +354,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       await api.addWardrobeItem(
         name: product.name,
         imageUrl: product.imageUrl,
-        category: product.category.isEmpty ? product.outfitRole : product.category,
-        color: product.displayColor.isEmpty ? product.color : product.displayColor,
+        category: product.category.isEmpty
+            ? product.outfitRole
+            : product.category,
+        color: product.displayColor.isEmpty
+            ? product.color
+            : product.displayColor,
         season: product.season,
         brand: product.effectiveBrand,
       );
@@ -423,23 +431,21 @@ class _ProductInfoSection extends StatelessWidget {
                   ),
                 ),
                 ...[
-                SizedBox(width: 8),
-                Text(
-                  '\u00B7',
-                  style: GlassTypography.meta(
-                    color: context.trenzyColors.fg30,
+                  SizedBox(width: 8),
+                  Text(
+                    '\u00B7',
+                    style: GlassTypography.meta(
+                      color: context.trenzyColors.fg30,
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-              ],
+                  SizedBox(width: 8),
+                ],
               ],
               GestureDetector(
                 onTap: () => onSearchCategory?.call(product.category),
                 child: Text(
                   product.category.toUpperCase(),
-                  style: GlassTypography.meta(
-                    color: context.trenzyColors.fg50,
-                  ),
+                  style: GlassTypography.meta(color: context.trenzyColors.fg50),
                 ),
               ),
             ],
@@ -469,20 +475,20 @@ class _ProductInfoSection extends StatelessWidget {
               ),
               SizedBox(width: 16),
               ...[
-              Icon(
-                Icons.star_rounded,
-                size: 18,
-                color: context.trenzyColors.primary,
-              ),
-              SizedBox(width: 4),
-              Text(
-                product.rating.toStringAsFixed(1),
-                style: GlassTypography.body(
-                  fontSize: 14,
-                  weight: FontWeight.w700,
+                Icon(
+                  Icons.star_rounded,
+                  size: 18,
+                  color: context.trenzyColors.primary,
                 ),
-              ),
-            ],
+                SizedBox(width: 4),
+                Text(
+                  product.rating.toStringAsFixed(1),
+                  style: GlassTypography.body(
+                    fontSize: 14,
+                    weight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ],
           ),
 
@@ -546,10 +552,7 @@ class _ProductInfoSection extends StatelessWidget {
                     : Icons.people_outline_rounded,
                 label: product.gender,
               ),
-              _MetaChip(
-                icon: Icons.wb_sunny_outlined,
-                label: product.season,
-              ),
+              _MetaChip(icon: Icons.wb_sunny_outlined, label: product.season),
               _MetaChip(icon: Icons.palette_outlined, label: product.color),
             ],
           ),
@@ -595,8 +598,9 @@ class _WhyRecommendedSection extends StatelessWidget {
     // to a style-based explanation.
     final reason = product.reason;
     final styleLabel = product.style.isEmpty ? product.usage : product.style;
-    final displayText =
-        reason.isEmpty ? 'Picked for your $styleLabel style' : reason;
+    final displayText = reason.isEmpty
+        ? 'Picked for your $styleLabel style'
+        : reason;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -46,11 +46,17 @@ class AllLookbooksScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.style_outlined, color: context.trenzyColors.mutedFg, size: 48),
+              Icon(
+                Icons.style_outlined,
+                color: context.trenzyColors.mutedFg,
+                size: 48,
+              ),
               SizedBox(height: 16),
               Text(
                 'Could not load lookbooks',
-                style: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
               SizedBox(height: 12),
               GlowButton(
@@ -73,16 +79,29 @@ class AllLookbooksScreen extends ConsumerWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.1,
+                      ),
                     ),
-                    child: Icon(Icons.style_outlined, size: 36, color: context.trenzyColors.primary),
+                    child: Icon(
+                      Icons.style_outlined,
+                      size: 36,
+                      color: context.trenzyColors.primary,
+                    ),
                   ),
                   SizedBox(height: 20),
-                  DisplayText('No lookbooks yet', fontSize: 18, weight: FontWeight.w600),
+                  DisplayText(
+                    'No lookbooks yet',
+                    fontSize: 18,
+                    weight: FontWeight.w600,
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Create outfits in your wardrobe to build lookbooks.',
-                    style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 14),
+                    style: GlassTypography.body(
+                      color: context.trenzyColors.mutedFg,
+                      fontSize: 14,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 20),
@@ -181,9 +200,14 @@ class _LookbookCard extends StatelessWidget {
                   Spacer(),
                   if (outfit.occasion.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: context.trenzyColors.primary.withValues(alpha: 0.12),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.12,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -226,16 +250,28 @@ class _LookbookCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: context.trenzyColors.background,
-                    child: Icon(Icons.checkroom_rounded, color: context.trenzyColors.mutedFg, size: 16),
+                    child: Icon(
+                      Icons.checkroom_rounded,
+                      color: context.trenzyColors.mutedFg,
+                      size: 16,
+                    ),
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: GlassColors.background,
-                    child: Icon(Icons.broken_image, color: GlassColors.mutedFg, size: 16),
+                    child: Icon(
+                      Icons.broken_image,
+                      color: GlassColors.mutedFg,
+                      size: 16,
+                    ),
                   ),
                 )
               : Container(
                   color: GlassColors.background,
-                  child: Icon(Icons.checkroom_rounded, color: GlassColors.mutedFg, size: 16),
+                  child: Icon(
+                    Icons.checkroom_rounded,
+                    color: GlassColors.mutedFg,
+                    size: 16,
+                  ),
                 );
         }).toList(),
       ),
@@ -252,16 +288,28 @@ class _LookbookCard extends StatelessWidget {
               width: double.infinity,
               placeholder: (context, url) => Container(
                 color: GlassColors.background,
-                child: Icon(Icons.checkroom_rounded, color: GlassColors.mutedFg, size: 24),
+                child: Icon(
+                  Icons.checkroom_rounded,
+                  color: GlassColors.mutedFg,
+                  size: 24,
+                ),
               ),
               errorWidget: (context, url, error) => Container(
                 color: GlassColors.background,
-                child: Icon(Icons.broken_image, color: GlassColors.mutedFg, size: 24),
+                child: Icon(
+                  Icons.broken_image,
+                  color: GlassColors.mutedFg,
+                  size: 24,
+                ),
               ),
             )
           : Container(
               color: GlassColors.background,
-              child: Icon(Icons.checkroom_rounded, color: GlassColors.mutedFg, size: 24),
+              child: Icon(
+                Icons.checkroom_rounded,
+                color: GlassColors.mutedFg,
+                size: 24,
+              ),
             ),
     );
   }

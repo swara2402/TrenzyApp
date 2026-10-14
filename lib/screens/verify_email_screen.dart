@@ -96,9 +96,9 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
 
     try {
       final api = ref.read(apiServiceProvider);
-      final prefs = await api
-          .getPreferences()
-          .timeout(const Duration(seconds: 12));
+      final prefs = await api.getPreferences().timeout(
+        const Duration(seconds: 12),
+      );
 
       if (!mounted) return;
       context.go(

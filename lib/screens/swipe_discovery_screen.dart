@@ -19,7 +19,8 @@ class SwipeDiscoveryScreen extends ConsumerStatefulWidget {
   const SwipeDiscoveryScreen({super.key});
 
   @override
-  ConsumerState<SwipeDiscoveryScreen> createState() => _SwipeDiscoveryScreenState();
+  ConsumerState<SwipeDiscoveryScreen> createState() =>
+      _SwipeDiscoveryScreenState();
 }
 
 class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
@@ -81,21 +82,28 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
 
   void _recordSwipeToServer(String productId, String swipeType) {
     final api = ref.read(apiServiceProvider);
-    api.recordDiscoverySwipe(productId: productId, swipeType: swipeType).catchError((e) {
-      debugPrint('[SwipeDiscovery] Failed to record swipe: $e');
-    });
+    api
+        .recordDiscoverySwipe(productId: productId, swipeType: swipeType)
+        .catchError((e) {
+          debugPrint('[SwipeDiscovery] Failed to record swipe: $e');
+        });
   }
 
   void _showFeedbackAfterSwipe() {
     _totalSwipes++;
-    if (_totalSwipes > 0 && _totalSwipes % 5 == 0 && _likedProducts.isNotEmpty) {
-      final liked = _likedProducts.map((id) {
-        try {
-          return _products.firstWhere((p) => p.id == id);
-        } catch (_) {
-          return null;
-        }
-      }).whereType<ProductModel>().toList();
+    if (_totalSwipes > 0 &&
+        _totalSwipes % 5 == 0 &&
+        _likedProducts.isNotEmpty) {
+      final liked = _likedProducts
+          .map((id) {
+            try {
+              return _products.firstWhere((p) => p.id == id);
+            } catch (_) {
+              return null;
+            }
+          })
+          .whereType<ProductModel>()
+          .toList();
       final disliked = <ProductModel>[];
       _learningInsights = generateSessionSummary(liked, disliked);
       setState(() => _showLearningFeedback = true);
@@ -204,9 +212,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
     Widget card = Opacity(
       opacity: isTop ? 1.0 : opacity,
       child: Transform.translate(
-        offset: isTop
-            ? Offset(_dragX, _dragY)
-            : Offset(0, translateY),
+        offset: isTop ? Offset(_dragX, _dragY) : Offset(0, translateY),
         child: Transform.scale(
           scale: isTop ? 1.0 : scale,
           child: isTop
@@ -235,7 +241,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
         fit: StackFit.expand,
         children: [
           CachedNetworkImage(
-            imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
+            imageUrl:
+                ApiService.resolveImageUrl(product.imageUrl) ??
+                'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
             fit: BoxFit.cover,
             placeholder: (_, _) => _cardPlaceholder(),
             errorWidget: (_, _, _) => _cardPlaceholder(),
@@ -250,10 +258,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    Colors.black87,
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black87, Colors.transparent],
                 ),
               ),
             ),
@@ -290,7 +295,10 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(GlassRadius.card),
-            border: Border.all(color: context.trenzyColors.glassBorder, width: 1.5),
+            border: Border.all(
+              color: context.trenzyColors.glassBorder,
+              width: 1.5,
+            ),
             boxShadow: [
               GlassShadows.card,
               BoxShadow(
@@ -306,7 +314,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
-                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? 'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
+                imageUrl:
+                    ApiService.resolveImageUrl(product.imageUrl) ??
+                    'https://placehold.co/400x600/1a1a2e/666.png?text=No+Image',
                 fit: BoxFit.cover,
                 placeholder: (_, _) => _cardPlaceholder(),
                 errorWidget: (_, _, _) => _cardPlaceholder(),
@@ -332,7 +342,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: context.trenzyColors.emerald.withValues(alpha: 0.4),
+                            color: context.trenzyColors.emerald.withValues(
+                              alpha: 0.4,
+                            ),
                             blurRadius: 12,
                           ),
                         ],
@@ -370,7 +382,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: context.trenzyColors.crimson.withValues(alpha: 0.4),
+                            color: context.trenzyColors.crimson.withValues(
+                              alpha: 0.4,
+                            ),
                             blurRadius: 12,
                           ),
                         ],
@@ -448,7 +462,8 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: context.trenzyColors.primary.withValues(alpha: 0.3),
+                                  color: context.trenzyColors.primary
+                                      .withValues(alpha: 0.3),
                                   blurRadius: 8,
                                 ),
                               ],
@@ -504,9 +519,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.trenzyColors.glassBorder,
-        ),
+        border: Border.all(color: context.trenzyColors.glassBorder),
       ),
       child: Text(
         label,
@@ -534,10 +547,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
             SizedBox(height: 8),
             Text(
               'Loading...',
-              style: TextStyle(
-                color: context.trenzyColors.fg20,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: context.trenzyColors.fg20, fontSize: 12),
             ),
           ],
         ),
@@ -559,9 +569,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
                 children: [
-                  GlassBackButton(
-                    onTap: () => context.pop(),
-                  ),
+                  GlassBackButton(onTap: () => context.pop()),
                   SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -600,7 +608,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                       decoration: BoxDecoration(
                         color: context.trenzyColors.glass,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: context.trenzyColors.glassBorder),
+                        border: Border.all(
+                          color: context.trenzyColors.glassBorder,
+                        ),
                       ),
                       child: Text(
                         '${_currentIndex + 1}/${_products.length}',
@@ -632,7 +642,8 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                   if (_products.isEmpty && products.isNotEmpty) {
                     _products.addAll(products);
                   }
-                  final allSwiped = _products.isNotEmpty && _currentIndex >= _products.length;
+                  final allSwiped =
+                      _products.isNotEmpty && _currentIndex >= _products.length;
                   if (_products.isEmpty || allSwiped) {
                     return _PersonalizedCompleteView(
                       likedCount: _likedProducts.length,
@@ -672,12 +683,20 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                                     child: Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: context.trenzyColors.surfaceContainer.withValues(alpha: 0.95),
+                                        color: context
+                                            .trenzyColors
+                                            .surfaceContainer
+                                            .withValues(alpha: 0.95),
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.3)),
+                                        border: Border.all(
+                                          color: context.trenzyColors.primary
+                                              .withValues(alpha: 0.3),
+                                        ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.3),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.3,
+                                            ),
                                             blurRadius: 20,
                                             offset: Offset(0, 8),
                                           ),
@@ -686,15 +705,20 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.auto_awesome_rounded,
-                                              size: 20, color: context.trenzyColors.primary),
+                                          Icon(
+                                            Icons.auto_awesome_rounded,
+                                            size: 20,
+                                            color: context.trenzyColors.primary,
+                                          ),
                                           SizedBox(height: 8),
                                           Text(
                                             'Learning your preferences...',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w700,
-                                              color: context.trenzyColors.foreground,
+                                              color: context
+                                                  .trenzyColors
+                                                  .foreground,
                                             ),
                                           ),
                                           SizedBox(height: 6),
@@ -703,7 +727,8 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: context.trenzyColors.mutedFg,
+                                              color:
+                                                  context.trenzyColors.mutedFg,
                                             ),
                                           ),
                                           SizedBox(height: 8),
@@ -711,7 +736,10 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                                             'Recommendations will adapt',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: context.trenzyColors.mutedFg.withValues(alpha: 0.6),
+                                              color: context
+                                                  .trenzyColors
+                                                  .mutedFg
+                                                  .withValues(alpha: 0.6),
                                             ),
                                           ),
                                         ],
@@ -803,10 +831,7 @@ class _ActionBtn extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: color.withValues(alpha: 0.4),
-                width: 2,
-              ),
+              border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
               boxShadow: [
                 BoxShadow(
                   color: color.withValues(alpha: 0.15),
@@ -851,7 +876,9 @@ class _ErrorView extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: context.trenzyColors.crimson.withValues(alpha: 0.1),
-                border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: context.trenzyColors.crimson.withValues(alpha: 0.2),
+                ),
               ),
               child: Icon(
                 Icons.error_outline_rounded,
@@ -860,7 +887,11 @@ class _ErrorView extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            DisplayText('Something went wrong', fontSize: 18, weight: FontWeight.w700),
+            DisplayText(
+              'Something went wrong',
+              fontSize: 18,
+              weight: FontWeight.w700,
+            ),
             SizedBox(height: 8),
             Text(
               'Could not load products to discover.',
@@ -871,12 +902,7 @@ class _ErrorView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
-            GlowButton(
-              label: 'Retry',
-              width: 140,
-              height: 44,
-              onTap: onRetry,
-            ),
+            GlowButton(label: 'Retry', width: 140, height: 44, onTap: onRetry),
           ],
         ),
       ),
@@ -926,7 +952,11 @@ class _PersonalizedCompleteView extends StatelessWidget {
               ),
             ),
             SizedBox(height: 24),
-            DisplayText('Your style is taking shape!', fontSize: 22, weight: FontWeight.w700),
+            DisplayText(
+              'Your style is taking shape!',
+              fontSize: 22,
+              weight: FontWeight.w700,
+            ),
             SizedBox(height: 12),
             Text(
               'Based on your swipes, we\'re tailoring recommendations just for you.',
@@ -992,7 +1022,11 @@ class _PersonalizedCompleteView extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.refresh_rounded, size: 18, color: context.trenzyColors.mutedFg),
+                    Icon(
+                      Icons.refresh_rounded,
+                      size: 18,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Swipe More Products',

@@ -13,7 +13,8 @@ class SharedWishlistScreen extends ConsumerStatefulWidget {
   final String groupId;
 
   @override
-  ConsumerState<SharedWishlistScreen> createState() => _SharedWishlistScreenState();
+  ConsumerState<SharedWishlistScreen> createState() =>
+      _SharedWishlistScreenState();
 }
 
 class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
@@ -51,12 +52,14 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
       backgroundColor: context.trenzyColors.background,
       appBar: _buildAppBar(context),
       body: wishlistAsync.when(
-        loading: () => Center(child: LoadingSkeletonShimmer(height: 400, radius: 20)),
+        loading: () =>
+            Center(child: LoadingSkeletonShimmer(height: 400, radius: 20)),
         error: (err, _) => Center(
           child: AsyncRetryErrorState(
             title: 'Could not load wishlist',
             message: err.toString(),
-            onRetry: () => ref.invalidate(sharedWishlistProvider(widget.groupId)),
+            onRetry: () =>
+                ref.invalidate(sharedWishlistProvider(widget.groupId)),
           ),
         ),
         data: (items) => _buildBody(context, items),
@@ -75,18 +78,74 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
       backgroundColor: context.trenzyColors.background,
       elevation: 0,
       leading: GlassBackButton(),
-      title: Text('Shared Wishlist', style: TextStyle(color: context.trenzyColors.foreground, fontWeight: FontWeight.bold)),
+      title: Text(
+        'Shared Wishlist',
+        style: TextStyle(
+          color: context.trenzyColors.foreground,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       actions: [
         PopupMenuButton<String>(
           color: context.trenzyColors.graphite,
           icon: Icon(Icons.sort_rounded, color: context.trenzyColors.mutedFg),
           onSelected: (value) => setState(() => _sortBy = value),
           itemBuilder: (context) => [
-            PopupMenuItem(value: 'newest', child: Text('Newest', style: TextStyle(color: _sortBy == 'newest' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'oldest', child: Text('Oldest', style: TextStyle(color: _sortBy == 'oldest' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'name', child: Text('Name', style: TextStyle(color: _sortBy == 'name' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'price_high', child: Text('Price: High to Low', style: TextStyle(color: _sortBy == 'price_high' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
-            PopupMenuItem(value: 'price_low', child: Text('Price: Low to High', style: TextStyle(color: _sortBy == 'price_low' ? context.trenzyColors.primary : context.trenzyColors.foreground))),
+            PopupMenuItem(
+              value: 'newest',
+              child: Text(
+                'Newest',
+                style: TextStyle(
+                  color: _sortBy == 'newest'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'oldest',
+              child: Text(
+                'Oldest',
+                style: TextStyle(
+                  color: _sortBy == 'oldest'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'name',
+              child: Text(
+                'Name',
+                style: TextStyle(
+                  color: _sortBy == 'name'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'price_high',
+              child: Text(
+                'Price: High to Low',
+                style: TextStyle(
+                  color: _sortBy == 'price_high'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'price_low',
+              child: Text(
+                'Price: Low to High',
+                style: TextStyle(
+                  color: _sortBy == 'price_low'
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.foreground,
+                ),
+              ),
+            ),
           ],
         ),
       ],
@@ -99,7 +158,11 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     return Column(
       children: [
         _buildSearchBar(context),
-        Expanded(child: filtered.isEmpty ? _buildEmptyState(context) : _buildWishlistGrid(context, filtered)),
+        Expanded(
+          child: filtered.isEmpty
+              ? _buildEmptyState(context)
+              : _buildWishlistGrid(context, filtered),
+        ),
       ],
     );
   }
@@ -117,14 +180,21 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
                   _searchController.clear();
                   setState(() => _searchQuery = '');
                 },
-                child: Icon(Icons.close_rounded, size: 18, color: context.trenzyColors.mutedFg),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: context.trenzyColors.mutedFg,
+                ),
               )
             : null,
       ),
     );
   }
 
-  Widget _buildWishlistGrid(BuildContext context, List<SharedWishlistItem> items) {
+  Widget _buildWishlistGrid(
+    BuildContext context,
+    List<SharedWishlistItem> items,
+  ) {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
       itemCount: items.length,
@@ -157,15 +227,20 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     var result = items.toList();
 
     if (_searchQuery.isNotEmpty) {
-      result = result.where((e) =>
-        e.productName.toLowerCase().contains(_searchQuery) ||
-        e.productBrand.toLowerCase().contains(_searchQuery) ||
-        e.productCategory.toLowerCase().contains(_searchQuery)
-      ).toList();
+      result = result
+          .where(
+            (e) =>
+                e.productName.toLowerCase().contains(_searchQuery) ||
+                e.productBrand.toLowerCase().contains(_searchQuery) ||
+                e.productCategory.toLowerCase().contains(_searchQuery),
+          )
+          .toList();
     }
 
     if (_categoryFilter != null && _categoryFilter!.isNotEmpty) {
-      result = result.where((e) => e.productCategory == _categoryFilter).toList();
+      result = result
+          .where((e) => e.productCategory == _categoryFilter)
+          .toList();
     }
 
     switch (_sortBy) {
@@ -198,11 +273,13 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
 
   void _toggleFavorite(SharedWishlistItem item) {
     final parsedId = int.tryParse(item.id ?? '') ?? 0;
-    ref.read(blendWishlistNotifierProvider.notifier).updateItem(
-      blendId: widget.groupId,
-      itemId: parsedId,
-      isFavorite: !(item.isFavorite ?? false),
-    );
+    ref
+        .read(blendWishlistNotifierProvider.notifier)
+        .updateItem(
+          blendId: widget.groupId,
+          itemId: parsedId,
+          isFavorite: !(item.isFavorite ?? false),
+        );
   }
 
   void _removeItem(SharedWishlistItem item) {
@@ -210,24 +287,35 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.trenzyColors.graphite,
-        title: Text('Remove item?', style: TextStyle(color: context.trenzyColors.foreground)),
-        content: Text('Remove "${item.productName}" from shared wishlist?', style: TextStyle(color: context.trenzyColors.mutedFg)),
+        title: Text(
+          'Remove item?',
+          style: TextStyle(color: context.trenzyColors.foreground),
+        ),
+        content: Text(
+          'Remove "${item.productName}" from shared wishlist?',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: TextStyle(color: context.trenzyColors.mutedFg)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.trenzyColors.mutedFg),
+            ),
           ),
           TextButton(
             onPressed: () {
               final parsedId = int.tryParse(item.id ?? '') ?? 0;
-              ref.read(blendWishlistNotifierProvider.notifier).removeItem(
-                blendId: widget.groupId,
-                itemId: parsedId,
-              );
+              ref
+                  .read(blendWishlistNotifierProvider.notifier)
+                  .removeItem(blendId: widget.groupId, itemId: parsedId);
               Navigator.of(ctx).pop();
               ref.invalidate(sharedWishlistProvider(widget.groupId));
             },
-            child: Text('Remove', style: TextStyle(color: context.trenzyColors.crimson)),
+            child: Text(
+              'Remove',
+              style: TextStyle(color: context.trenzyColors.crimson),
+            ),
           ),
         ],
       ),
@@ -263,7 +351,8 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => Padding(        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -278,14 +367,32 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Add to Wishlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground)),
-                    GestureDetector(onTap: () => Navigator.of(ctx).pop(), child: Icon(Icons.close_rounded, color: context.trenzyColors.mutedFg)),
+                    Text(
+                      'Add to Wishlist',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: context.trenzyColors.foreground,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: context.trenzyColors.mutedFg,
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 20),
                 _buildTextField(context, 'Product Name', nameCtrl),
                 SizedBox(height: 12),
-                _buildTextField(context, 'Price (optional)', priceCtrl, keyboardType: TextInputType.number),
+                _buildTextField(
+                  context,
+                  'Price (optional)',
+                  priceCtrl,
+                  keyboardType: TextInputType.number,
+                ),
                 SizedBox(height: 12),
                 _buildTextField(context, 'Brand (optional)', brandCtrl),
                 SizedBox(height: 12),
@@ -295,7 +402,12 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
                 SizedBox(height: 12),
                 _buildTextField(context, 'Product URL (optional)', urlCtrl),
                 SizedBox(height: 12),
-                _buildTextField(context, 'Notes (optional)', notesCtrl, maxLines: 3),
+                _buildTextField(
+                  context,
+                  'Notes (optional)',
+                  notesCtrl,
+                  maxLines: 3,
+                ),
                 SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -304,17 +416,30 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
                     onTap: () async {
                       final name = nameCtrl.text.trim();
                       if (name.isEmpty) return;
-                      final success = await ref.read(blendWishlistNotifierProvider.notifier).addItem(
-                        blendId: widget.groupId,
-                        productId: DateTime.now().millisecondsSinceEpoch.toString(),
-                        productName: name,
-                        productPrice: double.tryParse(priceCtrl.text),
-                        productImage: imageCtrl.text.trim().isEmpty ? null : imageCtrl.text.trim(),
-                        productBrand: brandCtrl.text.trim().isEmpty ? null : brandCtrl.text.trim(),
-                        productCategory: categoryCtrl.text.trim().isEmpty ? null : categoryCtrl.text.trim(),
-                        productUrl: urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
-                        notes: notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
-                      );
+                      final success = await ref
+                          .read(blendWishlistNotifierProvider.notifier)
+                          .addItem(
+                            blendId: widget.groupId,
+                            productId: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            productName: name,
+                            productPrice: double.tryParse(priceCtrl.text),
+                            productImage: imageCtrl.text.trim().isEmpty
+                                ? null
+                                : imageCtrl.text.trim(),
+                            productBrand: brandCtrl.text.trim().isEmpty
+                                ? null
+                                : brandCtrl.text.trim(),
+                            productCategory: categoryCtrl.text.trim().isEmpty
+                                ? null
+                                : categoryCtrl.text.trim(),
+                            productUrl: urlCtrl.text.trim().isEmpty
+                                ? null
+                                : urlCtrl.text.trim(),
+                            notes: notesCtrl.text.trim().isEmpty
+                                ? null
+                                : notesCtrl.text.trim(),
+                          );
                       if (success && ctx.mounted) {
                         Navigator.of(ctx).pop();
                         ref.invalidate(sharedWishlistProvider(widget.groupId));
@@ -339,7 +464,13 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     });
   }
 
-  Widget _buildTextField(BuildContext context, String label, TextEditingController ctrl, {TextInputType? keyboardType, int maxLines = 1}) {
+  Widget _buildTextField(
+    BuildContext context,
+    String label,
+    TextEditingController ctrl, {
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
     return TextField(
       controller: ctrl,
       keyboardType: keyboardType,
@@ -362,7 +493,10 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: context.trenzyColors.primary),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -399,9 +533,17 @@ class _WishlistItemCard extends StatelessWidget {
               flex: 3,
               child: Stack(
                 children: [
-                  CachedNetworkImage(imageUrl: item.productImage, fit: BoxFit.cover, width: double.infinity, placeholder: (_, _) => Container(color: context.trenzyColors.glass), errorWidget: (_, _, _) => _PlaceholderIcon()),
+                  CachedNetworkImage(
+                    imageUrl: item.productImage,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholder: (_, _) =>
+                        Container(color: context.trenzyColors.glass),
+                    errorWidget: (_, _, _) => _PlaceholderIcon(),
+                  ),
                   Positioned(
-                    top: 6, right: 6,
+                    top: 6,
+                    right: 6,
                     child: GestureDetector(
                       onTap: onToggleFavorite,
                       child: Container(
@@ -411,8 +553,12 @@ class _WishlistItemCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          item.isFavorite == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          color: item.isFavorite == true ? context.trenzyColors.crimson : context.trenzyColors.mutedFg,
+                          item.isFavorite == true
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: item.isFavorite == true
+                              ? context.trenzyColors.crimson
+                              : context.trenzyColors.mutedFg,
                           size: 18,
                         ),
                       ),
@@ -428,20 +574,52 @@ class _WishlistItemCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.productName, style: TextStyle(fontWeight: FontWeight.w600, color: context.trenzyColors.foreground, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
-                    Text(item.productBrand, style: TextStyle(fontSize: 10, color: context.trenzyColors.mutedFg)),
+                    Text(
+                      item.productName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: context.trenzyColors.foreground,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      item.productBrand,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: context.trenzyColors.mutedFg,
+                      ),
+                    ),
                     ...[
-                    SizedBox(height: 2),
-                    Text('₹${item.productPrice.toStringAsFixed(0)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
-                  ],
+                      SizedBox(height: 2),
+                      Text(
+                        '₹${item.productPrice.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: context.trenzyColors.primary,
+                        ),
+                      ),
+                    ],
                     Spacer(),
                     Row(
                       children: [
-                        Text(item.addedByName, style: TextStyle(fontSize: 9, color: context.trenzyColors.mutedFg)),
+                        Text(
+                          item.addedByName,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
                         Spacer(),
                         GestureDetector(
                           onTap: onRemove,
-                          child: Icon(Icons.delete_outline, size: 14, color: context.trenzyColors.mutedFg),
+                          child: Icon(
+                            Icons.delete_outline,
+                            size: 14,
+                            color: context.trenzyColors.mutedFg,
+                          ),
                         ),
                       ],
                     ),
@@ -461,7 +639,13 @@ class _PlaceholderIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: context.trenzyColors.glass,
-      child: Center(child: Icon(Icons.shopping_bag_outlined, color: context.trenzyColors.mutedFg, size: 28)),
+      child: Center(
+        child: Icon(
+          Icons.shopping_bag_outlined,
+          color: context.trenzyColors.mutedFg,
+          size: 28,
+        ),
+      ),
     );
   }
 }
@@ -494,34 +678,80 @@ class _ItemDetailsSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(item.productName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: context.trenzyColors.foreground)),
+                  child: Text(
+                    item.productName,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: context.trenzyColors.foreground,
+                    ),
+                  ),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
-                  child: Icon(Icons.close_rounded, color: context.trenzyColors.mutedFg),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 16),
             ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: CachedNetworkImage(imageUrl: item.productImage, height: 200, width: double.infinity, fit: BoxFit.cover),
-            ),
-            SizedBox(height: 16),
-          ],
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedNetworkImage(
+                  imageUrl: item.productImage,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(height: 16),
+            ],
             ...[
-            Text('Brand:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
-            Text(item.productBrand, style: TextStyle(fontSize: 16, color: context.trenzyColors.foreground)),
-            SizedBox(height: 8),
-          ],
+              Text(
+                'Brand:',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
+              Text(
+                item.productBrand,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: context.trenzyColors.foreground,
+                ),
+              ),
+              SizedBox(height: 8),
+            ],
             ...[
-            Text('Price:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
-            Text('₹${item.productPrice.toStringAsFixed(0)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.trenzyColors.primary)),
-            SizedBox(height: 8),
-          ],
+              Text(
+                'Price:',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
+              Text(
+                '₹${item.productPrice.toStringAsFixed(0)}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: context.trenzyColors.primary,
+                ),
+              ),
+              SizedBox(height: 8),
+            ],
             if (item.notes != null && item.notes!.isNotEmpty) ...[
-              Text('Notes:', style: TextStyle(fontSize: 12, color: context.trenzyColors.mutedFg)),
+              Text(
+                'Notes:',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -530,18 +760,31 @@ class _ItemDetailsSheet extends StatelessWidget {
                   color: context.trenzyColors.glass,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(item.notes!, style: TextStyle(color: context.trenzyColors.foreground)),
+                child: Text(
+                  item.notes!,
+                  style: TextStyle(color: context.trenzyColors.foreground),
+                ),
               ),
               SizedBox(height: 8),
             ],
-            Text('Added by ${item.addedByName}', style: TextStyle(fontSize: 11, color: context.trenzyColors.mutedFg)),
+            Text(
+              'Added by ${item.addedByName}',
+              style: TextStyle(
+                fontSize: 11,
+                color: context.trenzyColors.mutedFg,
+              ),
+            ),
             SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: GlowButton(
-                    label: item.isFavorite == true ? 'Favorited' : 'Mark Favorite',
-                    icon: item.isFavorite == true ? Icons.favorite : Icons.favorite_border,
+                    label: item.isFavorite == true
+                        ? 'Favorited'
+                        : 'Mark Favorite',
+                    icon: item.isFavorite == true
+                        ? Icons.favorite
+                        : Icons.favorite_border,
                     onTap: () {
                       onToggleFavorite();
                       Navigator.of(context).pop();
@@ -557,9 +800,15 @@ class _ItemDetailsSheet extends StatelessWidget {
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: context.trenzyColors.crimson,
-                      side: BorderSide(color: context.trenzyColors.crimson.withValues(alpha: 0.5)),
+                      side: BorderSide(
+                        color: context.trenzyColors.crimson.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: Text('Remove'),
                   ),
@@ -576,9 +825,15 @@ class _ItemDetailsSheet extends StatelessWidget {
                   label: Text('View Product'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: context.trenzyColors.primary,
-                    side: BorderSide(color: context.trenzyColors.primary.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.3,
+                      ),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),

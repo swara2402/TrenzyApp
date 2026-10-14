@@ -107,8 +107,9 @@ class _DiscoverPreferencesScreenState
                     selectedColor: context.trenzyColors.primary,
                     backgroundColor: Colors.grey[900],
                     labelStyle: TextStyle(
-                      color:
-                          isSelected ? context.trenzyColors.primaryFg : context.trenzyColors.mutedFg,
+                      color: isSelected
+                          ? context.trenzyColors.primaryFg
+                          : context.trenzyColors.mutedFg,
                     ),
                     side: BorderSide(
                       color: isSelected

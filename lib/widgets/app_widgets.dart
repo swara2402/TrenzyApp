@@ -16,7 +16,9 @@ BoxDecoration panelDecoration(
   final isDark = context.isDark;
 
   // Tonal layering + subtle 1px stroke.
-  final stroke = context.trenzyColors.glassBorder.withValues(alpha: isDark ? 0.2 : 0.35);
+  final stroke = context.trenzyColors.glassBorder.withValues(
+    alpha: isDark ? 0.2 : 0.35,
+  );
 
   final bg = gradient == null
       ? LinearGradient(
@@ -71,65 +73,66 @@ class AppTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.isDark;
     final result = Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.containerMargin,
-          16,
-          AppSpacing.containerMargin,
-          8,
-        ),
-        child: Row(
-          children: [
-            if (leading != null)
-              _TopBarButton(
-                icon: leading,
-                onPressed:
-                    onLeadingPressed ?? () => context.push(AppRoutes.home),
-              )
-            else
-              _TopBarButton(
-                icon: Icons.menu_rounded,
-                onPressed: onLeadingPressed ?? () {},
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.containerMargin,
+        16,
+        AppSpacing.containerMargin,
+        8,
+      ),
+      child: Row(
+        children: [
+          if (leading != null)
+            _TopBarButton(
+              icon: leading,
+              onPressed: onLeadingPressed ?? () => context.push(AppRoutes.home),
+            )
+          else
+            _TopBarButton(
+              icon: Icons.menu_rounded,
+              onPressed: onLeadingPressed ?? () {},
+            ),
+          Expanded(
+            child: Text(
+              title ?? 'TRENZY',
+              textAlign: TextAlign.center,
+              style: GlassTypography.body(
+                fontSize: 20,
+                color: context.trenzyColors.primary,
+                weight: FontWeight.w800,
+                letterSpacing: 0.15,
               ),
-            Expanded(
-              child: Text(
-                title ?? 'TRENZY',
-                textAlign: TextAlign.center,
-                style: GlassTypography.body(
-                  fontSize: 20,
-                  color: context.trenzyColors.primary,
-                  weight: FontWeight.w800,
-                  letterSpacing: 0.15,
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (trailing != null)
+                _TopBarButton(
+                  icon: trailing,
+                  onPressed:
+                      onTrailingPressed ??
+                      () => context.push(AppRoutes.profile),
+                )
+              else
+                _TopBarButton(
+                  icon: Icons.notifications_outlined,
+                  onPressed:
+                      onTrailingPressed ??
+                      () => context.push(AppRoutes.notifications),
                 ),
-              ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (trailing != null)
-                  _TopBarButton(
-                    icon: trailing,
-                    onPressed:
-                        onTrailingPressed ??
-                        () => context.push(AppRoutes.profile),
-                  )
-                else
-                  _TopBarButton(
-                    icon: Icons.notifications_outlined,
-                    onPressed: onTrailingPressed ?? () => context.push(AppRoutes.notifications),
-                  ),
-                if (showThemeToggle) ...[
-                  SizedBox(width: 8),
-                  _TopBarButton(
-                    icon: isDark
-                        ? Icons.light_mode_rounded
-                        : Icons.dark_mode_rounded,
-                    onPressed: onToggleTheme,
-                  ),
-                ],
+              if (showThemeToggle) ...[
+                SizedBox(width: 8),
+                _TopBarButton(
+                  icon: isDark
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
+                  onPressed: onToggleTheme,
+                ),
               ],
-            ),
             ],
           ),
+        ],
+      ),
     );
     if (sliver) {
       return SliverToBoxAdapter(child: result);
@@ -154,7 +157,9 @@ class _TopBarButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite.withValues(alpha: 0.45),
         shape: BoxShape.circle,
-        border: Border.all(color: context.trenzyColors.glassBorder.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: context.trenzyColors.glassBorder.withValues(alpha: 0.2),
+        ),
       ),
       child: IconButton(
         onPressed: onPressed,
@@ -192,11 +197,17 @@ class SearchField extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(GlassRadius.input),
-        border: Border.all(color: context.trenzyColors.glassBorder.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: context.trenzyColors.glassBorder.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded, size: 20, color: context.trenzyColors.mutedFg),
+          Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: context.trenzyColors.mutedFg,
+          ),
           SizedBox(width: 12),
           Expanded(
             child: TextField(
@@ -210,7 +221,9 @@ class SearchField extends StatelessWidget {
                 hintText: hintText ?? 'Search products, brands, vibes...',
                 border: InputBorder.none,
                 filled: false,
-                hintStyle: GlassTypography.body(color: context.trenzyColors.fg50),
+                hintStyle: GlassTypography.body(
+                  color: context.trenzyColors.fg50,
+                ),
               ),
             ),
           ),
@@ -239,10 +252,7 @@ class SectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: GlassTypography.body(
-              fontSize: 20,
-              weight: FontWeight.w700,
-            ),
+            style: GlassTypography.body(fontSize: 20, weight: FontWeight.w700),
           ),
         ),
         if (action != null)
@@ -400,16 +410,8 @@ class _AnimatedShimmerState extends State<_AnimatedShimmer>
               begin: Alignment(start, -0.4),
               end: Alignment(end, 0.4),
               colors: isDark
-                  ? [
-                      Color(0xFF1B1F2B),
-                      Color(0xFF2C3141),
-                      Color(0xFF1B1F2B),
-                    ]
-                  : [
-                      Color(0xFFF1E8F3),
-                      Color(0xFFFFFFFF),
-                      Color(0xFFF1E8F3),
-                    ],
+                  ? [Color(0xFF1B1F2B), Color(0xFF2C3141), Color(0xFF1B1F2B)]
+                  : [Color(0xFFF1E8F3), Color(0xFFFFFFFF), Color(0xFFF1E8F3)],
             ).createShader(bounds);
           },
           blendMode: BlendMode.srcATop,
@@ -571,19 +573,19 @@ class LoadingSkeletonShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return SizedBox(
-        width: width,
-        height: height,
-        child: _AnimatedShimmer(
-          child: Container(
-            width: width ?? double.infinity,
-            decoration: BoxDecoration(
-              color: context.trenzyColors.glass,
-              borderRadius: BorderRadius.circular(radius),
-            ),
+    return SizedBox(
+      width: width,
+      height: height,
+      child: _AnimatedShimmer(
+        child: Container(
+          width: width ?? double.infinity,
+          decoration: BoxDecoration(
+            color: context.trenzyColors.glass,
+            borderRadius: BorderRadius.circular(radius),
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -1022,19 +1024,13 @@ class TrendCard extends StatelessWidget {
                   ),
                   child: Text(
                     badge.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800),
                   ),
                 ),
                 SizedBox(height: GlassSpacing.xs),
                 Text(
                   title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 17,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
                 ),
                 SizedBox(height: GlassSpacing.xxs),
                 Text(
@@ -1204,7 +1200,11 @@ class ProductHeroCard extends StatelessWidget {
               SizedBox(height: GlassSpacing.xs),
               Row(
                 children: [
-                  Icon(Icons.check_circle_rounded, size: 16, color: context.trenzyColors.primary),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 16,
+                    color: context.trenzyColors.primary,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Selected for comparison',
@@ -1395,10 +1395,19 @@ class VoteCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   votes,
-                  style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ),
-              Text(compatibility, style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg)),
+              Text(
+                compatibility,
+                style: GlassTypography.body(
+                  fontSize: 12,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
             ],
           ),
           SizedBox(height: GlassSpacing.sm),
@@ -1622,7 +1631,9 @@ class PricePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayPrice = price == null ? 'Price unavailable' : '₹${price!.toStringAsFixed(0)}';
+    final displayPrice = price == null
+        ? 'Price unavailable'
+        : '₹${price!.toStringAsFixed(0)}';
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: panelDecoration(context, radius: 28),
@@ -1631,7 +1642,10 @@ class PricePanel extends StatelessWidget {
         children: [
           Text(
             displayPrice,
-            style: GlassTypography.display(fontSize: 24, weight: FontWeight.w800),
+            style: GlassTypography.display(
+              fontSize: 24,
+              weight: FontWeight.w800,
+            ),
           ),
           SizedBox(height: GlassSpacing.sm),
           SizedBox(
@@ -1687,8 +1701,7 @@ class GridMiniCards extends StatelessWidget {
                     color: context.trenzyColors.graphite,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child:
-                      product.imageUrl.isNotEmpty
+                  child: product.imageUrl.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(18),
                           child: CachedNetworkImage(
@@ -1710,10 +1723,7 @@ class GridMiniCards extends StatelessWidget {
               SizedBox(height: GlassSpacing.xs),
               Text(
                 product.name,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1789,17 +1799,12 @@ class StyleShufflerCard extends StatelessWidget {
         children: [
           Icon(
             Icons.auto_awesome_rounded,
-            color: isDark
-                ? context.trenzyColors.primary
-                : Color(0xFFC78BF8),
+            color: isDark ? context.trenzyColors.primary : Color(0xFFC78BF8),
           ),
           SizedBox(height: GlassSpacing.xs),
           Text(
             'Style Shuffle',
-            style: GlassTypography.body(
-              fontSize: 16,
-              weight: FontWeight.w800,
-            ),
+            style: GlassTypography.body(fontSize: 16, weight: FontWeight.w800),
           ),
           SizedBox(height: GlassSpacing.xxs),
           Text(
@@ -1808,10 +1813,7 @@ class StyleShufflerCard extends StatelessWidget {
             style: GlassTypography.body(fontSize: 14),
           ),
           SizedBox(height: GlassSpacing.sm),
-          FilledButton(
-            onPressed: onGenerate ?? () {},
-            child: Text('Generate'),
-          ),
+          FilledButton(onPressed: onGenerate ?? () {}, child: Text('Generate')),
         ],
       ),
     );
@@ -1875,9 +1877,7 @@ class VaultBanner extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: isDark
-            ? LinearGradient(
-                colors: [Color(0xFF171722), Color(0xFF4B2336)],
-              )
+            ? LinearGradient(colors: [Color(0xFF171722), Color(0xFF4B2336)])
             : LinearGradient(
                 colors: [
                   context.trenzyColors.background.withValues(alpha: 0.8),
@@ -1910,9 +1910,7 @@ class VaultBanner extends StatelessWidget {
             displayName,
             style: GlassTypography.display(
               fontSize: 24,
-              color: isDark
-                  ? Colors.white
-                  : context.trenzyColors.foreground,
+              color: isDark ? Colors.white : context.trenzyColors.foreground,
               weight: FontWeight.w800,
             ),
           ),
@@ -1943,8 +1941,11 @@ class SlimArchiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayTitle = title ?? product?.name ?? 'Item';
-    final displaySubtitle = subtitle ??
-        (product?.effectivePrice != null ? '\$${product!.effectivePrice.toStringAsFixed(2)}' : '');
+    final displaySubtitle =
+        subtitle ??
+        (product?.effectivePrice != null
+            ? '\$${product!.effectivePrice.toStringAsFixed(2)}'
+            : '');
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1964,8 +1965,7 @@ class SlimArchiveCard extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: product!.imageUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) =>
-                          Icon(Icons.shopping_bag_rounded),
+                      placeholder: (_, _) => Icon(Icons.shopping_bag_rounded),
                       errorWidget: (_, _, _) =>
                           Icon(Icons.shopping_bag_rounded),
                     ),
@@ -1984,7 +1984,10 @@ class SlimArchiveCard extends StatelessWidget {
                 SizedBox(height: GlassSpacing.xxs),
                 Text(
                   displaySubtitle,
-                  style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ],
             ),
@@ -2089,23 +2092,22 @@ class SettingsTile extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: panelDecoration(context, radius: 20),
-          child: Material(
-            color: Colors.transparent,
-            child: ListTile(
-              onTap: onTap,
-              leading: CircleAvatar(
-                backgroundColor: context.trenzyColors.primary.withValues(alpha: 0.12),
-                child: Icon(icon, color: context.trenzyColors.primary),
+        child: Material(
+          color: Colors.transparent,
+          child: ListTile(
+            onTap: onTap,
+            leading: CircleAvatar(
+              backgroundColor: context.trenzyColors.primary.withValues(
+                alpha: 0.12,
               ),
-              title: Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              trailing: Icon(Icons.chevron_right_rounded),
+              child: Icon(icon, color: context.trenzyColors.primary),
             ),
+            title: Text(title, style: TextStyle(fontWeight: FontWeight.w700)),
+            trailing: Icon(Icons.chevron_right_rounded),
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -2190,7 +2192,11 @@ class ProductCardSkeleton extends StatelessWidget {
             radius: GlassRadius.chip,
           ),
           SizedBox(height: 4),
-          LoadingSkeletonShimmer(height: 10, width: 70, radius: GlassRadius.chip),
+          LoadingSkeletonShimmer(
+            height: 10,
+            width: 70,
+            radius: GlassRadius.chip,
+          ),
           SizedBox(height: GlassSpacing.sm),
           Row(
             children: [
@@ -2285,7 +2291,9 @@ class InlineLoading extends StatelessWidget {
               height: 28,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation(context.trenzyColors.primary),
+                valueColor: AlwaysStoppedAnimation(
+                  context.trenzyColors.primary,
+                ),
               ),
             ),
             if (label != null) ...[
@@ -2354,7 +2362,9 @@ class DecisionHistoryCard extends StatelessWidget {
                     '${group.memberCount} members · ${group.options.length} options',
                     style: GlassTypography.body(
                       fontSize: 12,
-                      color: context.trenzyColors.foreground.withValues(alpha: 0.6),
+                      color: context.trenzyColors.foreground.withValues(
+                        alpha: 0.6,
+                      ),
                     ),
                   ),
                 ],

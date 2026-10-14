@@ -11,9 +11,10 @@ class UserApi {
   }
 
   Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth) async {
-    final data = await _client.post('/users/me/age-verification', body: {
-      'date_of_birth': dateOfBirth.toIso8601String().substring(0, 10),
-    });
+    final data = await _client.post(
+      '/users/me/age-verification',
+      body: {'date_of_birth': dateOfBirth.toIso8601String().substring(0, 10)},
+    );
     _client.invalidateCache('currentUser');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
@@ -32,10 +33,10 @@ class UserApi {
     required String category,
     required String description,
   }) async {
-    await _client.post('/users/report', body: {
-      'category': category,
-      'description': description,
-    });
+    await _client.post(
+      '/users/report',
+      body: {'category': category, 'description': description},
+    );
   }
 
   // ---------- Style Persona ----------
@@ -72,17 +73,29 @@ class UserApi {
     int? onboardingStep,
   }) async {
     final body = <String, dynamic>{};
-    if (preferredCategories != null) body['preferred_categories'] = preferredCategories;
+    if (preferredCategories != null) {
+      body['preferred_categories'] = preferredCategories;
+    }
     if (preferredBrands != null) body['preferred_brands'] = preferredBrands;
     if (preferredColors != null) body['preferred_colors'] = preferredColors;
     if (preferredSeasons != null) body['preferred_seasons'] = preferredSeasons;
     if (preferredStyles != null) body['preferred_styles'] = preferredStyles;
-    if (preferredAesthetics != null) body['preferred_aesthetics'] = preferredAesthetics;
-    if (preferredOccasions != null) body['preferred_occasions'] = preferredOccasions;
+    if (preferredAesthetics != null) {
+      body['preferred_aesthetics'] = preferredAesthetics;
+    }
+    if (preferredOccasions != null) {
+      body['preferred_occasions'] = preferredOccasions;
+    }
     if (budgetMax != null) body['budget_max'] = budgetMax;
-    if (discoverPreferences != null) body['discover_preferences'] = discoverPreferences;
-    if (productInterests != null) body['product_interests'] = productInterests;
-    if (shoppingPriorities != null) body['shopping_priorities'] = shoppingPriorities;
+    if (discoverPreferences != null) {
+      body['discover_preferences'] = discoverPreferences;
+    }
+    if (productInterests != null) {
+      body['product_interests'] = productInterests;
+    }
+    if (shoppingPriorities != null) {
+      body['shopping_priorities'] = shoppingPriorities;
+    }
     if (onboardingStep != null) body['onboarding_step'] = onboardingStep;
 
     await _client.post('/persona/preferences', body: body);
@@ -113,7 +126,9 @@ class UserApi {
       return data.whereType<Map<String, dynamic>>().toList();
     }
     if (data is Map<String, dynamic> && data['colors'] is List) {
-      return (data['colors'] as List).whereType<Map<String, dynamic>>().toList();
+      return (data['colors'] as List)
+          .whereType<Map<String, dynamic>>()
+          .toList();
     }
     return [];
   }

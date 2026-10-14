@@ -67,11 +67,15 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
         friends: friends,
         incoming: incomingRaw
             .whereType<Map>()
-            .map((e) => FriendRequestItem.fromJson(Map<String, dynamic>.from(e)))
+            .map(
+              (e) => FriendRequestItem.fromJson(Map<String, dynamic>.from(e)),
+            )
             .toList(),
         outgoing: outgoingRaw
             .whereType<Map>()
-            .map((e) => FriendRequestItem.fromJson(Map<String, dynamic>.from(e)))
+            .map(
+              (e) => FriendRequestItem.fromJson(Map<String, dynamic>.from(e)),
+            )
             .toList(),
         suggestions: suggestions,
         isLoaded: true,
@@ -117,7 +121,9 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        incoming: current.incoming.where((r) => r.id != requestId.toString()).toList(),
+        incoming: current.incoming
+            .where((r) => r.id != requestId.toString())
+            .toList(),
       ),
     );
     try {
@@ -135,7 +141,9 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        incoming: current.incoming.where((r) => r.id != requestId.toString()).toList(),
+        incoming: current.incoming
+            .where((r) => r.id != requestId.toString())
+            .toList(),
       ),
     );
     try {
@@ -153,7 +161,9 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
     final current = state.valueOrNull ?? const FriendsState(isLoaded: true);
     state = AsyncData(
       current.copyWith(
-        friends: current.friends.where((f) => f.id != friendId.toString()).toList(),
+        friends: current.friends
+            .where((f) => f.id != friendId.toString())
+            .toList(),
       ),
     );
     try {
@@ -170,8 +180,8 @@ class FriendsNotifier extends AutoDisposeAsyncNotifier<FriendsState> {
 
 final friendsProvider =
     AsyncNotifierProvider.autoDispose<FriendsNotifier, FriendsState>(
-  FriendsNotifier.new,
-);
+      FriendsNotifier.new,
+    );
 
 /// Back-compat alias used on logout invalidation.
 final friendProvider = friendsProvider;

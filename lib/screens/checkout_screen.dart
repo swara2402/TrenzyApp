@@ -32,8 +32,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final api = ref.read(apiServiceProvider);
       final amountPaise = (total * 100).round();
       final order = await api.createPaymentOrder(amountPaise: amountPaise);
-      final orderId =
-          (order['razorpay_order_id'] ?? order['id'] ?? '').toString();
+      final orderId = (order['razorpay_order_id'] ?? order['id'] ?? '')
+          .toString();
       if (orderId.isEmpty) {
         throw StateError('Could not create payment order');
       }
@@ -48,7 +48,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         final status = verified['status']?.toString() ?? 'completed';
         if (status != 'completed') {
           throw StateError(
-              verified['message']?.toString() ?? 'Payment not completed');
+            verified['message']?.toString() ?? 'Payment not completed',
+          );
         }
         final finalOrderId = verified['order_id']?.toString() ?? '';
         if (mounted) {
@@ -80,7 +81,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (mounted) {
         setState(() => _phase = _CheckoutPhase.review);
         GlassToast.error(
-            context, 'Could not complete checkout. Please try again.');
+          context,
+          'Could not complete checkout. Please try again.',
+        );
       }
     }
   }
@@ -131,8 +134,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     await _pollPaymentStatus(_orderId);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final items = ref.watch(cartItemsProvider);
@@ -153,13 +154,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.fromLTRB(GlassSpacing.lg, 8, GlassSpacing.lg, 0),
+              padding: const EdgeInsets.fromLTRB(
+                GlassSpacing.lg,
+                8,
+                GlassSpacing.lg,
+                0,
+              ),
               child: Row(
                 children: [
                   GlassBackButton(onTap: () => context.pop()),
                   const SizedBox(width: 8),
-                  DisplayText('Checkout', fontSize: 20, weight: FontWeight.w600),
+                  DisplayText(
+                    'Checkout',
+                    fontSize: 20,
+                    weight: FontWeight.w600,
+                  ),
                 ],
               ),
             ),
@@ -168,8 +177,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 child: Center(
                   child: Text(
                     'Your decision list is empty',
-                    style:
-                        GlassTypography.body(color: context.trenzyColors.mutedFg),
+                    style: GlassTypography.body(
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ),
               )
@@ -187,8 +197,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       decoration: BoxDecoration(
                         color: context.trenzyColors.glass,
                         borderRadius: BorderRadius.circular(14),
-                        border:
-                            Border.all(color: context.trenzyColors.glassBorder),
+                        border: Border.all(
+                          color: context.trenzyColors.glassBorder,
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -198,9 +209,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               width: 52,
                               height: 64,
                               child: CachedNetworkImage(
-                                      imageUrl: product.imageUrl,
-                                      fit: BoxFit.cover,
-                                    ),
+                                imageUrl: product.imageUrl,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -221,15 +232,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GlassTypography.body(
-                                      fontSize: 13,
-                                      weight: FontWeight.w600),
+                                    fontSize: 13,
+                                    weight: FontWeight.w600,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Qty ${item.quantity}',
                                   style: GlassTypography.body(
-                                      fontSize: 11,
-                                      color: context.trenzyColors.mutedFg),
+                                    fontSize: 11,
+                                    color: context.trenzyColors.mutedFg,
+                                  ),
                                 ),
                               ],
                             ),
@@ -237,7 +250,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           Text(
                             '₹${item.totalPrice.toStringAsFixed(0)}',
                             style: GlassTypography.body(
-                                fontSize: 13, weight: FontWeight.w700),
+                              fontSize: 13,
+                              weight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
@@ -253,8 +268,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Price (${items.length} items)',
-                            style: GlassTypography.body(fontSize: 13)),
+                        Text(
+                          'Price (${items.length} items)',
+                          style: GlassTypography.body(fontSize: 13),
+                        ),
                         Text(
                           '₹${total.toStringAsFixed(0)}',
                           style: GlassTypography.body(fontSize: 13),
@@ -265,10 +282,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Delivery',
-                            style: GlassTypography.body(
-                                fontSize: 13,
-                                color: context.trenzyColors.mutedFg)),
+                        Text(
+                          'Delivery',
+                          style: GlassTypography.body(
+                            fontSize: 13,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
                         Text(
                           'Partner store',
                           style: GlassTypography.body(
@@ -283,7 +303,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        DisplayText('Total', fontSize: 16, weight: FontWeight.w800),
+                        DisplayText(
+                          'Total',
+                          fontSize: 16,
+                          weight: FontWeight.w800,
+                        ),
                         Text(
                           '₹${total.toStringAsFixed(0)}',
                           style: GlassTypography.display(
@@ -316,36 +340,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget _buildPaymentPending(List<CartItem> items) {
     // Add in-app WebView for real payment checkout to improve user experience
     if (_orderId.isNotEmpty && !_finalized && _paymentCheckoutUrl.isNotEmpty) {
-       final controller = WebViewController()
-         ..setJavaScriptMode(JavaScriptMode.unrestricted)
-         ..setNavigationDelegate(
-           NavigationDelegate(
-             onPageFinished: (String url) {
-               // Check if we've reached the success/failure page
-               if (url.contains('/payment/success') || url.contains('/payment/failure')) {
-                 _pollPaymentStatus(_orderId);
-               }
-             },
-             onWebResourceError: (WebResourceError error) {
-               if (mounted) {
-                 GlassToast.error(context, 'Payment page failed to load. Please try again.');
-               }
-             },
-           ),
-         )
-         ..loadRequest(Uri.parse(_paymentCheckoutUrl));
-       
-       return Scaffold(
-         backgroundColor: context.trenzyColors.background,
-         appBar: AppBar(
-           title: const Text('Complete Payment'),
-           backgroundColor: context.trenzyColors.background,
-           automaticallyImplyLeading: false,
-         ),
-         body: WebViewWidget(controller: controller),
-       );
-     }
-    
+      final controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageFinished: (String url) {
+              // Check if we've reached the success/failure page
+              if (url.contains('/payment/success') ||
+                  url.contains('/payment/failure')) {
+                _pollPaymentStatus(_orderId);
+              }
+            },
+            onWebResourceError: (WebResourceError error) {
+              if (mounted) {
+                GlassToast.error(
+                  context,
+                  'Payment page failed to load. Please try again.',
+                );
+              }
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(_paymentCheckoutUrl));
+
+      return Scaffold(
+        backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          title: const Text('Complete Payment'),
+          backgroundColor: context.trenzyColors.background,
+          automaticallyImplyLeading: false,
+        ),
+        body: WebViewWidget(controller: controller),
+      );
+    }
+
     // Fallback to original payment pending UI if no WebView is needed
     final amount = items.fold<double>(0, (s, it) => s + it.totalPrice);
     return Scaffold(
@@ -361,7 +389,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 children: [
                   GlassBackButton(onTap: () => context.pop()),
                   const SizedBox(width: 8),
-                  DisplayText('Checkout', fontSize: 20, weight: FontWeight.w600),
+                  DisplayText(
+                    'Checkout',
+                    fontSize: 20,
+                    weight: FontWeight.w600,
+                  ),
                 ],
               ),
               const Spacer(),
@@ -383,7 +415,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 'Amount ₹${amount.toStringAsFixed(0)} for order $_orderId.',
                 textAlign: TextAlign.center,
                 style: GlassTypography.body(
-                    color: context.trenzyColors.mutedFg, fontSize: 13),
+                  color: context.trenzyColors.mutedFg,
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 28),
               GlowButton(
@@ -422,8 +456,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_rounded,
-                    size: 72, color: context.trenzyColors.emerald),
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 72,
+                  color: context.trenzyColors.emerald,
+                ),
                 const SizedBox(height: 18),
                 DisplayText(
                   _finalized ? 'Order placed' : 'Payment received',
@@ -435,10 +472,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   _finalized
                       ? 'Order $_orderId has been placed successfully.'
                       : 'Your payment details are being confirmed. '
-                          'Check your orders shortly.',
+                            'Check your orders shortly.',
                   textAlign: TextAlign.center,
                   style: GlassTypography.body(
-                      color: context.trenzyColors.mutedFg, fontSize: 13),
+                    color: context.trenzyColors.mutedFg,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 GlowButton(

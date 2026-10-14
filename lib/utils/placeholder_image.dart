@@ -31,7 +31,9 @@ Widget offlinePlaceholderBackground({
       child: Text(
         text,
         style: TextStyle(
-          color: (foreground ?? const Color(0xFF999999)).withValues(alpha: 0.35),
+          color: (foreground ?? const Color(0xFF999999)).withValues(
+            alpha: 0.35,
+          ),
           fontSize: 96,
           fontWeight: FontWeight.w800,
           letterSpacing: 12,

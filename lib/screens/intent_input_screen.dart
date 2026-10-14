@@ -84,10 +84,7 @@ class _IntentInputScreenState extends State<IntentInputScreen> {
               const SizedBox(height: 8),
               Text(
                 'Describe the vibe, occasion or item.',
-                style: GlassTypography.body(
-                  fontSize: 14,
-                  color: c.mutedFg,
-                ),
+                style: GlassTypography.body(fontSize: 14, color: c.mutedFg),
               ),
               const SizedBox(height: 28),
 
@@ -118,10 +115,7 @@ class _IntentInputScreenState extends State<IntentInputScreen> {
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.all(16),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        Icons.send_rounded,
-                        color: c.primary,
-                      ),
+                      icon: Icon(Icons.send_rounded, color: c.primary),
                       onPressed: _submit,
                     ),
                   ),
@@ -174,10 +168,7 @@ class _IntentInputScreenState extends State<IntentInputScreen> {
 
               SizedBox(
                 width: double.infinity,
-                child: GlowButton(
-                  label: 'Search',
-                  onTap: _submit,
-                ),
+                child: GlowButton(label: 'Search', onTap: _submit),
               ),
             ],
           ),

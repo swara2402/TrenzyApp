@@ -10,7 +10,9 @@ import 'auth_provider.dart' as auth_p;
 /// Fetches trending products from the backend trend engine.
 final trendingProductsProvider = FutureProvider.autoDispose
     .family<List<TrendModel>, TrendingParams>((ref, params) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <TrendModel>[];
 
       final api = ref.watch(apiServiceProvider);
@@ -28,7 +30,9 @@ final trendingProductsProvider = FutureProvider.autoDispose
 /// Prediction provider for AI-driven trend predictions.
 final trendPredictionsProvider = FutureProvider.autoDispose
     .family<List<PredictionModel>, PredictionParams>((ref, params) async {
-      final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
+      final uid = ref.watch(
+        auth_p.authProvider.select((a) => a.valueOrNull?.id),
+      );
       if (uid == null) return const <PredictionModel>[];
 
       final api = ref.watch(apiServiceProvider);
@@ -38,7 +42,8 @@ final trendPredictionsProvider = FutureProvider.autoDispose
       );
       return predictions
           .map(
-            (e) => PredictionModel.fromJson(Map<String, dynamic>.from(e as Map)),
+            (e) =>
+                PredictionModel.fromJson(Map<String, dynamic>.from(e as Map)),
           )
           .toList();
     });
@@ -68,7 +73,11 @@ class TrendingParams {
           limit == other.limit;
 
   @override
-  int get hashCode => category.hashCode ^ categories.hashCode ^ timeframe.hashCode ^ limit.hashCode;
+  int get hashCode =>
+      category.hashCode ^
+      categories.hashCode ^
+      timeframe.hashCode ^
+      limit.hashCode;
 }
 
 class PredictionParams {

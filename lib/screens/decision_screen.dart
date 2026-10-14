@@ -9,11 +9,7 @@ import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 
 class DecisionScreen extends ConsumerStatefulWidget {
-  const DecisionScreen({
-    super.key,
-    this.query,
-    this.selectedOptions,
-  });
+  const DecisionScreen({super.key, this.query, this.selectedOptions});
 
   final String? query;
   final List<ProductModel>? selectedOptions;
@@ -41,9 +37,7 @@ class _DecisionScreenState extends ConsumerState<DecisionScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
                 children: [
-                  GlassBackButton(
-                    onTap: () => context.go(AppRoutes.home),
-                  ),
+                  GlassBackButton(onTap: () => context.go(AppRoutes.home)),
                   SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -174,7 +168,9 @@ class _DecisionScreenState extends ConsumerState<DecisionScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _reasoning = 'This option matches your style preferences.');
+        setState(
+          () => _reasoning = 'This option matches your style preferences.',
+        );
       }
     } finally {
       if (mounted) setState(() => _isGeneratingReasoning = false);
@@ -279,7 +275,9 @@ class _DecisionScreenState extends ConsumerState<DecisionScreen> {
       await api.saveDecision(
         query: widget.query ?? '',
         selectedOptions: options
-            .map((p) => {'id': p.id, 'title': p.name, 'price': p.effectivePrice})
+            .map(
+              (p) => {'id': p.id, 'title': p.name, 'price': p.effectivePrice},
+            )
             .toList(),
         recommendedOptionId: selectedProduct.id,
         socialApproval: 0,
@@ -287,16 +285,16 @@ class _DecisionScreenState extends ConsumerState<DecisionScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Decision saved')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Decision saved')));
         context.go(AppRoutes.home);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -336,7 +334,9 @@ class _DecisionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                   child: product.imageUrl.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? '',
+                          imageUrl:
+                              ApiService.resolveImageUrl(product.imageUrl) ??
+                              '',
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -344,20 +344,32 @@ class _DecisionCard extends StatelessWidget {
                             width: 80,
                             height: 80,
                             color: context.trenzyColors.graphite,
-                            child: Icon(Icons.image_outlined, color: context.trenzyColors.fg20, size: 24),
+                            child: Icon(
+                              Icons.image_outlined,
+                              color: context.trenzyColors.fg20,
+                              size: 24,
+                            ),
                           ),
                           errorWidget: (_, _, _) => Container(
                             width: 80,
                             height: 80,
                             color: context.trenzyColors.graphite,
-                            child: Icon(Icons.broken_image, color: context.trenzyColors.fg20, size: 24),
+                            child: Icon(
+                              Icons.broken_image,
+                              color: context.trenzyColors.fg20,
+                              size: 24,
+                            ),
                           ),
                         )
                       : Container(
                           width: 80,
                           height: 80,
                           color: context.trenzyColors.graphite,
-                          child: Icon(Icons.shopping_bag_outlined, color: context.trenzyColors.fg20, size: 24),
+                          child: Icon(
+                            Icons.shopping_bag_outlined,
+                            color: context.trenzyColors.fg20,
+                            size: 24,
+                          ),
                         ),
                 ),
                 Positioned(
@@ -367,13 +379,24 @@ class _DecisionCard extends StatelessWidget {
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: isSelected ? context.trenzyColors.primary : context.trenzyColors.glass,
+                      color: isSelected
+                          ? context.trenzyColors.primary
+                          : context.trenzyColors.glass,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? context.trenzyColors.primary : context.trenzyColors.glassBorder,
+                        color: isSelected
+                            ? context.trenzyColors.primary
+                            : context.trenzyColors.glassBorder,
                       ),
                       boxShadow: isSelected
-                          ? [BoxShadow(color: context.trenzyColors.primary.withValues(alpha: 0.3), blurRadius: 8)]
+                          ? [
+                              BoxShadow(
+                                color: context.trenzyColors.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 8,
+                              ),
+                            ]
                           : null,
                     ),
                     child: Center(
@@ -382,7 +405,9 @@ class _DecisionCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: isSelected ? context.trenzyColors.primaryFg : context.trenzyColors.mutedFg,
+                          color: isSelected
+                              ? context.trenzyColors.primaryFg
+                              : context.trenzyColors.mutedFg,
                         ),
                       ),
                     ),
@@ -418,35 +443,48 @@ class _DecisionCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           gradient: isSelected ? GlassGradients.primary : null,
                           color: isSelected ? null : context.trenzyColors.glass,
                           borderRadius: BorderRadius.circular(8),
-                          border: isSelected ? null : Border.all(color: context.trenzyColors.glassBorder),
+                          border: isSelected
+                              ? null
+                              : Border.all(
+                                  color: context.trenzyColors.glassBorder,
+                                ),
                         ),
                         child: Text(
                           product.effectivePrice.toString(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: isSelected ? context.trenzyColors.primaryFg : context.trenzyColors.primary,
+                            color: isSelected
+                                ? context.trenzyColors.primaryFg
+                                : context.trenzyColors.primary,
                           ),
                         ),
                       ),
                       ...[
-                      SizedBox(width: 8),
-                      Icon(Icons.star_rounded, size: 14, color: context.trenzyColors.primary),
-                      SizedBox(width: 2),
-                      Text(
-                        product.rating.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: context.trenzyColors.mutedFg,
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 14,
+                          color: context.trenzyColors.primary,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 2),
+                        Text(
+                          product.rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -467,8 +505,12 @@ class _DecisionCard extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-                color: isSelected ? context.trenzyColors.primary : context.trenzyColors.fg40,
+                isSelected
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked,
+                color: isSelected
+                    ? context.trenzyColors.primary
+                    : context.trenzyColors.fg40,
                 size: 20,
               ),
             ),

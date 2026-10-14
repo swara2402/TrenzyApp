@@ -88,10 +88,7 @@ class SuggestionOption {
   final ProductModel product;
   final double matchScore;
 
-  SuggestionOption({
-    required this.product,
-    this.matchScore = 0.0,
-  });
+  SuggestionOption({required this.product, this.matchScore = 0.0});
 }
 
 class DecisionRouteExtra {

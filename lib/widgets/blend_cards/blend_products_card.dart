@@ -6,10 +6,7 @@ import '../../theme/glass_theme.dart';
 import 'blend_card_decoration.dart';
 
 class BlendProductsCard extends StatelessWidget {
-  const BlendProductsCard({
-    super.key,
-    required this.results,
-  });
+  const BlendProductsCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -39,14 +36,20 @@ class BlendProductsCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Recommended For You',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Top picks based on your shared taste',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -75,11 +78,7 @@ class BlendProductsCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.recommend_rounded,
-            size: 40,
-            color: GlassColors.fg20,
-          ),
+          Icon(Icons.recommend_rounded, size: 40, color: GlassColors.fg20),
           const SizedBox(height: 12),
           Text(
             'No recommendations yet',
@@ -88,7 +87,10 @@ class BlendProductsCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Swipe on products together to get personalized recommendations',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -137,9 +139,8 @@ class _ProductRow extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: p!.imageUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, a) => Container(
-                        color: context.trenzyColors.fg10,
-                      ),
+                      placeholder: (_, a) =>
+                          Container(color: context.trenzyColors.fg10),
                       errorWidget: (_, a, b) => Container(
                         color: context.trenzyColors.fg10,
                         child: Icon(
@@ -166,14 +167,20 @@ class _ProductRow extends StatelessWidget {
               children: [
                 Text(
                   p?.name ?? '',
-                  style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700),
+                  style: GlassTypography.body(
+                    fontSize: 14,
+                    weight: FontWeight.w700,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   metaText,
-                  style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -190,8 +197,12 @@ class _ProductRow extends StatelessWidget {
             ),
             child: Text(
               '$matchScore%',
-              style: GlassTypography.meta(fontSize: 12, color: matchScore >= 70 ? Colors.green : context.trenzyColors.primary)
-                  .copyWith(fontWeight: FontWeight.w900),
+              style: GlassTypography.meta(
+                fontSize: 12,
+                color: matchScore >= 70
+                    ? Colors.green
+                    : context.trenzyColors.primary,
+              ).copyWith(fontWeight: FontWeight.w900),
             ),
           ),
         ],

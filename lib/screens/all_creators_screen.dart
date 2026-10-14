@@ -46,11 +46,17 @@ class AllCreatorsScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.people_outline, color: context.trenzyColors.mutedFg, size: 48),
+              Icon(
+                Icons.people_outline,
+                color: context.trenzyColors.mutedFg,
+                size: 48,
+              ),
               SizedBox(height: 16),
               Text(
                 'Could not load creators',
-                style: GlassTypography.body(color: context.trenzyColors.mutedFg),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                ),
               ),
               SizedBox(height: 12),
               GlowButton(
@@ -73,16 +79,29 @@ class AllCreatorsScreen extends ConsumerWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.1,
+                      ),
                     ),
-                    child: Icon(Icons.people_outline, size: 36, color: context.trenzyColors.primary),
+                    child: Icon(
+                      Icons.people_outline,
+                      size: 36,
+                      color: context.trenzyColors.primary,
+                    ),
                   ),
                   SizedBox(height: 20),
-                  DisplayText('No creators yet', fontSize: 18, weight: FontWeight.w600),
+                  DisplayText(
+                    'No creators yet',
+                    fontSize: 18,
+                    weight: FontWeight.w600,
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Style creators will appear here as the community grows.',
-                    style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 14),
+                    style: GlassTypography.body(
+                      color: context.trenzyColors.mutedFg,
+                      fontSize: 14,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -91,7 +110,8 @@ class AllCreatorsScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(discoverTrendingCreatorsProvider),
+            onRefresh: () async =>
+                ref.invalidate(discoverTrendingCreatorsProvider),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: creators.length,
@@ -127,10 +147,7 @@ class _CreatorTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => context.push(
-            AppRoutes.userProfile,
-            extra: creator.id,
-          ),
+          onTap: () => context.push(AppRoutes.userProfile, extra: creator.id),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -143,7 +160,10 @@ class _CreatorTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [context.trenzyColors.primary, context.trenzyColors.emerald],
+                      colors: [
+                        context.trenzyColors.primary,
+                        context.trenzyColors.emerald,
+                      ],
                     ),
                   ),
                   child: CircleAvatar(
@@ -184,12 +204,17 @@ class _CreatorTile extends StatelessWidget {
                 ),
                 // Follow button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: context.trenzyColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: context.trenzyColors.primary.withValues(alpha: 0.3),
+                      color: context.trenzyColors.primary.withValues(
+                        alpha: 0.3,
+                      ),
                     ),
                   ),
                   child: Text(

@@ -30,17 +30,17 @@ class PostModel {
     bool? isLiked,
     this.createdAt,
     bool? isLoaded,
-  })  : id = id ?? '',
-        content = content ?? '',
-        title = title ?? '',
-        description = description ?? '',
-        attachment = attachment ?? '',
-        imageUrls = imageUrls ?? const [],
-        products = products ?? const [],
-        likes = likes ?? 0,
-        comments = comments ?? 0,
-        isLiked = isLiked ?? false,
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       content = content ?? '',
+       title = title ?? '',
+       description = description ?? '',
+       attachment = attachment ?? '',
+       imageUrls = imageUrls ?? const [],
+       products = products ?? const [],
+       likes = likes ?? 0,
+       comments = comments ?? 0,
+       isLiked = isLiked ?? false,
+       isLoaded = isLoaded ?? false;
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final images = (json['imageUrls'] as List<dynamic>?)?.cast<String>();
@@ -52,7 +52,9 @@ class PostModel {
       content: json['content'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
-      attachment: json['attachment'] as String? ?? (images?.isNotEmpty == true ? images!.first : null),
+      attachment:
+          json['attachment'] as String? ??
+          (images?.isNotEmpty == true ? images!.first : null),
       imageUrls: images,
       products: (json['products'] as List<dynamic>?)
           ?.map((item) => ProductModel.fromJson(item as Map<String, dynamic>))

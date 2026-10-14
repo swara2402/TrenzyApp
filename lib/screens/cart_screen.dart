@@ -24,7 +24,12 @@ class CartScreen extends ConsumerWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(GlassSpacing.lg, 8, GlassSpacing.lg, 0),
+              padding: const EdgeInsets.fromLTRB(
+                GlassSpacing.lg,
+                8,
+                GlassSpacing.lg,
+                0,
+              ),
               child: Row(
                 children: [
                   GlassBackButton(onTap: () => context.pop()),
@@ -39,11 +44,20 @@ class CartScreen extends ConsumerWidget {
                     GestureDetector(
                       onTap: () => ref.read(cartProvider.notifier).clearCart(),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: context.trenzyColors.crimson.withValues(alpha: 0.1),
+                          color: context.trenzyColors.crimson.withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: context.trenzyColors.crimson.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
                         ),
                         child: Text(
                           'REMOVE ALL',
@@ -62,15 +76,24 @@ class CartScreen extends ConsumerWidget {
             if (cartItems.isNotEmpty)
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: context.trenzyColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.15)),
+                  border: Border.all(
+                    color: context.trenzyColors.primary.withValues(alpha: 0.15),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline_rounded, size: 16, color: context.trenzyColors.primary),
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      size: 16,
+                      color: context.trenzyColors.primary,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Saved picks stay in the app for inspiration only',
@@ -105,7 +128,8 @@ class CartScreen extends ConsumerWidget {
                                 margin: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: context.trenzyColors.primary.withValues(alpha: 0.1),
+                                  color: context.trenzyColors.primary
+                                      .withValues(alpha: 0.1),
                                 ),
                                 child: Icon(
                                   Icons.bookmark_outline_rounded,
@@ -115,12 +139,18 @@ class CartScreen extends ConsumerWidget {
                               ),
                             ),
                             SizedBox(height: 24),
-                            DisplayText('Nothing saved yet', fontSize: 20, weight: FontWeight.w700),
+                            DisplayText(
+                              'Nothing saved yet',
+                              fontSize: 20,
+                              weight: FontWeight.w700,
+                            ),
                             SizedBox(height: 8),
                             Text(
                               'Tap Save on any product to keep it here for later inspiration.',
                               style: GlassTypography.body(
-                                color: context.trenzyColors.mutedFg.withValues(alpha: 0.7),
+                                color: context.trenzyColors.mutedFg.withValues(
+                                  alpha: 0.7,
+                                ),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -142,33 +172,55 @@ class CartScreen extends ConsumerWidget {
                         return Dismissible(
                           key: ValueKey(cartItem.product.id),
                           direction: DismissDirection.endToStart,
-                          onDismissed: (_) => ref.read(cartProvider.notifier).removeFromCart(cartItem.product),
+                          onDismissed: (_) => ref
+                              .read(cartProvider.notifier)
+                              .removeFromCart(cartItem.product),
                           background: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
-                              color: context.trenzyColors.crimson.withValues(alpha: 0.15),
+                              color: context.trenzyColors.crimson.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                color: context.trenzyColors.crimson.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
                             ),
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.only(right: 24),
-                            child: Icon(Icons.delete_outline_rounded, color: context.trenzyColors.crimson, size: 26),
+                            child: Icon(
+                              Icons.delete_outline_rounded,
+                              color: context.trenzyColors.crimson,
+                              size: 26,
+                            ),
                           ),
                           child: _CartItem(
                             cartItem: cartItem,
-                            onRemove: () => ref.read(cartProvider.notifier).removeFromCart(cartItem.product),
-                            onIncrement: () => ref.read(cartProvider.notifier).incrementQuantity(cartItem.product.id),
-                            onDecrement: () => ref.read(cartProvider.notifier).decrementQuantity(cartItem.product.id),
+                            onRemove: () => ref
+                                .read(cartProvider.notifier)
+                                .removeFromCart(cartItem.product),
+                            onIncrement: () => ref
+                                .read(cartProvider.notifier)
+                                .incrementQuantity(cartItem.product.id),
+                            onDecrement: () => ref
+                                .read(cartProvider.notifier)
+                                .decrementQuantity(cartItem.product.id),
                           ),
                         );
                       },
                     ),
             ),
-            if (cartItems.isNotEmpty) _CartSummary(
-              subtotal: subtotal,
-              itemCount: totalItems,
-              items: cartItems,
-            ),
+            if (cartItems.isNotEmpty)
+              _CartSummary(
+                subtotal: subtotal,
+                itemCount: totalItems,
+                items: cartItems,
+              ),
           ],
         ),
       ),
@@ -204,7 +256,9 @@ class _CartItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
-                imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+                imageUrl:
+                    ApiService.resolveImageUrl(product.imageUrl) ??
+                    product.imageUrl,
                 width: 90,
                 height: 110,
                 fit: BoxFit.cover,
@@ -212,13 +266,21 @@ class _CartItem extends StatelessWidget {
                   width: 90,
                   height: 110,
                   color: Colors.grey[900],
-                  child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg, size: 24),
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: context.trenzyColors.mutedFg,
+                    size: 24,
+                  ),
                 ),
                 errorWidget: (_, _, _) => Container(
                   width: 90,
                   height: 110,
                   color: Colors.grey[900],
-                  child: Icon(Icons.broken_image, color: context.trenzyColors.mutedFg, size: 24),
+                  child: Icon(
+                    Icons.broken_image,
+                    color: context.trenzyColors.mutedFg,
+                    size: 24,
+                  ),
                 ),
               ),
             ),
@@ -275,10 +337,20 @@ class _CartItem extends StatelessWidget {
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: context.trenzyColors.crimson.withValues(alpha: 0.1),
-                            border: Border.all(color: context.trenzyColors.crimson.withValues(alpha: 0.2)),
+                            color: context.trenzyColors.crimson.withValues(
+                              alpha: 0.1,
+                            ),
+                            border: Border.all(
+                              color: context.trenzyColors.crimson.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
                           ),
-                          child: Icon(Icons.delete_outline_rounded, size: 16, color: context.trenzyColors.crimson),
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            size: 16,
+                            color: context.trenzyColors.crimson,
+                          ),
                         ),
                       ),
                     ],
@@ -310,7 +382,9 @@ class _MiniQuantitySelector extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: context.trenzyColors.glassBorder.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: context.trenzyColors.glassBorder.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -321,7 +395,13 @@ class _MiniQuantitySelector extends StatelessWidget {
               width: 30,
               height: 30,
               alignment: Alignment.center,
-              child: Icon(Icons.remove_rounded, size: 16, color: onDecrement == null ? context.trenzyColors.mutedFg.withValues(alpha: 0.3) : context.trenzyColors.foreground),
+              child: Icon(
+                Icons.remove_rounded,
+                size: 16,
+                color: onDecrement == null
+                    ? context.trenzyColors.mutedFg.withValues(alpha: 0.3)
+                    : context.trenzyColors.foreground,
+              ),
             ),
           ),
           Container(
@@ -330,12 +410,19 @@ class _MiniQuantitySelector extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               border: Border.symmetric(
-                horizontal: BorderSide(color: context.trenzyColors.glassBorder.withValues(alpha: 0.2)),
+                horizontal: BorderSide(
+                  color: context.trenzyColors.glassBorder.withValues(
+                    alpha: 0.2,
+                  ),
+                ),
               ),
             ),
             child: Text(
               '$quantity',
-              style: GlassTypography.body(fontSize: 13, weight: FontWeight.w700),
+              style: GlassTypography.body(
+                fontSize: 13,
+                weight: FontWeight.w700,
+              ),
             ),
           ),
           GestureDetector(
@@ -344,7 +431,11 @@ class _MiniQuantitySelector extends StatelessWidget {
               width: 30,
               height: 30,
               alignment: Alignment.center,
-              child: Icon(Icons.add_rounded, size: 16, color: context.trenzyColors.foreground),
+              child: Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: context.trenzyColors.foreground,
+              ),
             ),
           ),
         ],
@@ -377,10 +468,7 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
       return;
     }
     final options = widget.items.map((item) {
-      return df.SuggestionOption(
-        product: item.product,
-        matchScore: 0,
-      );
+      return df.SuggestionOption(product: item.product, matchScore: 0);
     }).toList();
     if (mounted) {
       context.push(
@@ -422,15 +510,26 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.confirmation_number_rounded, size: 18, color: context.trenzyColors.primary),
+                  Icon(
+                    Icons.confirmation_number_rounded,
+                    size: 18,
+                    color: context.trenzyColors.primary,
+                  ),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Apply Coupon',
-                      style: GlassTypography.body(fontSize: 13, weight: FontWeight.w600),
+                      style: GlassTypography.body(
+                        fontSize: 13,
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded, size: 18, color: context.trenzyColors.mutedFg),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ],
               ),
             ),
@@ -439,7 +538,10 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Price (${widget.itemCount} items)', style: GlassTypography.body(fontSize: 13)),
+                Text(
+                  'Price (${widget.itemCount} items)',
+                  style: GlassTypography.body(fontSize: 13),
+                ),
                 Text(
                   '\u20B9${widget.subtotal.toStringAsFixed(0)}',
                   style: GlassTypography.body(fontSize: 13),
@@ -450,10 +552,19 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Discount', style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg)),
+                Text(
+                  'Discount',
+                  style: GlassTypography.body(
+                    fontSize: 13,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
                 Text(
                   '-\u20B9${discount.toStringAsFixed(0)}',
-                  style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.emerald),
+                  style: GlassTypography.body(
+                    fontSize: 13,
+                    color: context.trenzyColors.emerald,
+                  ),
                 ),
               ],
             ),
@@ -461,7 +572,13 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Saved picks', style: GlassTypography.body(fontSize: 13, color: context.trenzyColors.mutedFg)),
+                Text(
+                  'Saved picks',
+                  style: GlassTypography.body(
+                    fontSize: 13,
+                    color: context.trenzyColors.mutedFg,
+                  ),
+                ),
                 Text(
                   '${widget.itemCount} items',
                   style: GlassTypography.body(
@@ -492,7 +609,11 @@ class _CartSummaryState extends ConsumerState<_CartSummary> {
                 DisplayText('Total', fontSize: 16, weight: FontWeight.w800),
                 Text(
                   '\u20B9${total.toStringAsFixed(0)}',
-                  style: GlassTypography.display(fontSize: 16, weight: FontWeight.w800, color: context.trenzyColors.primary),
+                  style: GlassTypography.display(
+                    fontSize: 16,
+                    weight: FontWeight.w800,
+                    color: context.trenzyColors.primary,
+                  ),
                 ),
               ],
             ),

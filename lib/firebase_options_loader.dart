@@ -7,7 +7,11 @@ class FirebaseOptionsLoader {
   static const String assetPath = 'assets/firebase_options.json';
 
   /// Fields that must NOT contain placeholder values.
-  static const _placeholders = {'REPLACE_ME', 'com.yourcompany.trenzy', 'CHANGE_ME'};
+  static const _placeholders = {
+    'REPLACE_ME',
+    'com.yourcompany.trenzy',
+    'CHANGE_ME',
+  };
 
   /// Loads FirebaseOptions for the current platform from a bundled JSON asset.
   ///
@@ -82,7 +86,12 @@ class FirebaseOptionsLoader {
     String platform,
     Map<String, dynamic> config,
   ) {
-    final requiredFields = ['apiKey', 'appId', 'messagingSenderId', 'projectId'];
+    final requiredFields = [
+      'apiKey',
+      'appId',
+      'messagingSenderId',
+      'projectId',
+    ];
     if (platform == 'ios' || platform == 'macos') {
       requiredFields.addAll(['iosClientId', 'iosBundleId']);
     }

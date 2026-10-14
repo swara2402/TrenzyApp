@@ -18,7 +18,11 @@ class AuthApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
-  Future<Map<String, dynamic>> signup(String name, String email, String password) async {
+  Future<Map<String, dynamic>> signup(
+    String name,
+    String email,
+    String password,
+  ) async {
     final response = await http.post(
       Uri.parse('${EnvConfig.apiBaseUrl}/api/auth/signup'),
       headers: {'Content-Type': 'application/json'},
@@ -56,7 +60,6 @@ class AuthApi {
     }
     return null;
   }
-
 
   Future<void> resetPassword(String email) async {
     await _client.post('/auth/reset-password', body: {'email': email});

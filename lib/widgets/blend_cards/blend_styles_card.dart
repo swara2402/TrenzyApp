@@ -5,10 +5,7 @@ import '../../theme/glass_theme.dart';
 import 'blend_card_decoration.dart';
 
 class BlendStylesCard extends StatelessWidget {
-  const BlendStylesCard({
-    super.key,
-    required this.results,
-  });
+  const BlendStylesCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -38,14 +35,20 @@ class BlendStylesCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Shared Styles',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Your fashion DNA overlaps here',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -72,11 +75,7 @@ class BlendStylesCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.style_rounded,
-            size: 40,
-            color: GlassColors.fg20,
-          ),
+          Icon(Icons.style_rounded, size: 40, color: GlassColors.fg20),
           const SizedBox(height: 12),
           Text(
             'No shared styles yet',
@@ -85,7 +84,10 @@ class BlendStylesCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Style preferences will appear as you swipe more',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -118,7 +120,11 @@ class _StyleChip extends StatelessWidget {
       ),
       child: Text(
         style,
-        style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700, color: context.trenzyColors.emerald),
+        style: GlassTypography.body(
+          fontSize: 14,
+          weight: FontWeight.w700,
+          color: context.trenzyColors.emerald,
+        ),
       ),
     );
   }

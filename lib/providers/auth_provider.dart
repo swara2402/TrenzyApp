@@ -19,8 +19,6 @@ final firebaseAuthProvider = Provider.autoDispose<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
 
-
-
 final authProvider =
     AsyncNotifierProvider.autoDispose<AuthNotifier, UserModel?>(
       () => AuthNotifier(),
@@ -44,12 +42,14 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     final subscription = _auth.authStateChanges().listen((user) async {
       if (user == null) {
         if (FeatureFlags.devAuthBypass) {
-          state = AsyncValue.data(UserModel(
-            id: DevAuth.currentDevUid(),
-            name: 'Dev User',
-            email: 'dev@trenzy.local',
-            emailVerified: true,
-          ));
+          state = AsyncValue.data(
+            UserModel(
+              id: DevAuth.currentDevUid(),
+              name: 'Dev User',
+              email: 'dev@trenzy.local',
+              emailVerified: true,
+            ),
+          );
           return;
         }
         // Only update auth state here.
@@ -178,13 +178,13 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     // Best-effort fallback is only for session restoration, not for a fresh
     // signup/login where the backend profile must be ready before proceeding.
     final previous = state.valueOrNull;
-    final keepVerified = previous != null &&
+    final keepVerified =
+        previous != null &&
         previous.firebaseUid == user.uid &&
         previous.ageVerified;
-    return _toUserModel(user).copyWith(
-      emailVerified: _isVerified(user),
-      ageVerified: keepVerified,
-    );
+    return _toUserModel(
+      user,
+    ).copyWith(emailVerified: _isVerified(user), ageVerified: keepVerified);
   }
 
   // NOTE: provider invalidation must not happen here.
@@ -201,7 +201,8 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     state = const AsyncValue.loading();
 
     try {
-      final user = _auth.currentUser ?? await GoogleSignInService.instance.signIn();
+      final user =
+          _auth.currentUser ?? await GoogleSignInService.instance.signIn();
 
       // Never reuse profile data from the previous account.
       ApiService.clearCache();
@@ -242,10 +243,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       ApiService.clearCache();
       debugPrint('[Auth] email/password Firebase sign-in started');
       final userCredential = await _auth
-          .signInWithEmailAndPassword(
-            email: trimmedEmail,
-            password: password,
-          )
+          .signInWithEmailAndPassword(email: trimmedEmail, password: password)
           .timeout(
             const Duration(seconds: 20),
             onTimeout: () => throw const ApiException(
@@ -265,10 +263,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       }
 
       debugPrint('[Auth] backend profile sync started');
-      final synced = await _syncBackendUser(
-        user,
-        requireBackendSync: true,
-      ).timeout(
+      final synced = await _syncBackendUser(user, requireBackendSync: true).timeout(
         const Duration(seconds: 25),
         onTimeout: () => throw const ApiException(
           'You are signed in, but Trenzy is taking too long to load your profile. Please retry.',
@@ -290,10 +285,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       }
       final msg = friendlyFirebaseError(e);
       // Preserve status/details so the login UI can offer the right retry path.
-      state = AsyncValue.error(
-        e is ApiException ? e : ApiException(msg),
-        st,
-      );
+      state = AsyncValue.error(e is ApiException ? e : ApiException(msg), st);
       debugPrint('[Auth] email/password login failed: $e');
       rethrow;
     }
@@ -337,19 +329,18 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
           'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=$apiKey',
         ),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'requestType': 'VERIFY_EMAIL',
-          'idToken': idToken,
-        }),
+        body: jsonEncode({'requestType': 'VERIFY_EMAIL', 'idToken': idToken}),
       );
       if (response.statusCode != 200) {
         String message;
         try {
           final body = jsonDecode(response.body);
-          message = body['error']?['message']?.toString() ??
+          message =
+              body['error']?['message']?.toString() ??
               'Failed to send verification email (HTTP ${response.statusCode})';
         } catch (_) {
-          message = 'Failed to send verification email (HTTP ${response.statusCode})';
+          message =
+              'Failed to send verification email (HTTP ${response.statusCode})';
         }
         throw ApiException(message);
       }
@@ -413,10 +404,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       }
     } catch (e, st) {
       final msg = friendlyFirebaseError(e);
-      state = AsyncValue.error(
-        e is ApiException ? e : ApiException(msg),
-        st,
-      );
+      state = AsyncValue.error(e is ApiException ? e : ApiException(msg), st);
       rethrow;
     }
   }
@@ -492,7 +480,9 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       state = AsyncValue.data(
         synced.copyWith(
           id: current.id,
-          email: (synced.email.isNotEmpty == true) ? synced.email : current.email,
+          email: (synced.email.isNotEmpty == true)
+              ? synced.email
+              : current.email,
         ),
       );
     } catch (e) {
@@ -537,12 +527,14 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
   Future<bool> checkEmailVerification() async {
     if (FeatureFlags.devAuthBypass) {
       if (state.value == null) {
-        state = AsyncValue.data(UserModel(
-          id: DevAuth.currentDevUid(),
-          name: 'Dev User',
-          email: 'dev@trenzy.local',
-          emailVerified: true,
-        ));
+        state = AsyncValue.data(
+          UserModel(
+            id: DevAuth.currentDevUid(),
+            name: 'Dev User',
+            email: 'dev@trenzy.local',
+            emailVerified: true,
+          ),
+        );
       }
       return true;
     }
@@ -561,7 +553,9 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
         // to avoid token refresh errors that could block verification
         final currentState = state.value;
         if (currentState != null) {
-          state = AsyncValue.data(currentState.copyWith(emailVerified: updated.emailVerified));
+          state = AsyncValue.data(
+            currentState.copyWith(emailVerified: updated.emailVerified),
+          );
         }
       }
       return updated.emailVerified;

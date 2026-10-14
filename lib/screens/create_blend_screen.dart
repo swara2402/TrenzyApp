@@ -29,13 +29,19 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
   String _formatCreateError(dynamic error) {
     final text = error.toString().toLowerCase();
     if (text.contains('name')) return 'Please enter a blend name.';
-    if (text.contains('auth') || text.contains('logged in') || text.contains('login')) {
+    if (text.contains('auth') ||
+        text.contains('logged in') ||
+        text.contains('login')) {
       return 'You need to be signed in to create a blend.';
     }
-    if (text.contains('rate') || text.contains('limit') || text.contains('429')) {
+    if (text.contains('rate') ||
+        text.contains('limit') ||
+        text.contains('429')) {
       return 'Too many blends created just now. Please wait a moment and try again.';
     }
-    if (text.contains('timeout') || text.contains('timed out') || text.contains('connection')) {
+    if (text.contains('timeout') ||
+        text.contains('timed out') ||
+        text.contains('connection')) {
       return 'Couldn\u2019t reach the server. Check your connection and try again.';
     }
     return 'Could not create your blend. Please try again.';
@@ -73,8 +79,10 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
 
         final friendIds = selectedFriends.map((friend) => friend.id).toList();
         await Future.wait(
-          friendIds.map((friendId) =>
-            ref.read(apiServiceProvider).inviteToBlend(
+          friendIds.map(
+            (friendId) => ref
+                .read(apiServiceProvider)
+                .inviteToBlend(
                   blendId: newBlend['id'],
                   inviterId: inviterId,
                   inviteeId: friendId.toString(),
@@ -97,9 +105,9 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
     ref.listen<AsyncValue<void>>(blendNotifierProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_formatCreateError(error))),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(_formatCreateError(error))));
         },
       );
     });
@@ -118,7 +126,10 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
                 elevation: 0,
                 centerTitle: true,
                 leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: context.trenzyColors.primary),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: context.trenzyColors.primary,
+                  ),
                   onPressed: () => context.go(AppRoutes.blendHub),
                 ),
                 title: Text(
@@ -150,10 +161,7 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
               ),
             ],
           ),
-          BottomBar(
-            onCreate: _createBlend,
-            isLoading: blendState.isLoading,
-          ),
+          BottomBar(onCreate: _createBlend, isLoading: blendState.isLoading),
         ],
       ),
     );
@@ -172,7 +180,8 @@ class CoverImage extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           image: const DecorationImage(
             image: NetworkImage(
-                'https://placehold.co/600x400/1a1a2e/666.png?text=Blend+Cover'),
+              'https://placehold.co/600x400/1a1a2e/666.png?text=Blend+Cover',
+            ),
             fit: BoxFit.cover,
           ),
         ),
@@ -183,7 +192,7 @@ class CoverImage extends StatelessWidget {
               colors: [
                 Colors.black.withValues(alpha: 0.2),
                 Colors.transparent,
-                Colors.black.withValues(alpha: 0.6)
+                Colors.black.withValues(alpha: 0.6),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -198,10 +207,15 @@ class CoverImage extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.black.withValues(alpha: 0.4),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
                   ),
-                  child: Icon(Icons.photo_camera,
-                      color: context.trenzyColors.primary, size: 28),
+                  child: Icon(
+                    Icons.photo_camera,
+                    color: context.trenzyColors.primary,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -242,7 +256,10 @@ class BlendNameInput extends StatelessWidget {
         const SizedBox(height: 12),
         TextField(
           controller: controller,
-          style: TextStyle(color: context.trenzyColors.foreground, fontSize: 18),
+          style: TextStyle(
+            color: context.trenzyColors.foreground,
+            fontSize: 18,
+          ),
           decoration: InputDecoration(
             hintText: 'e.g., Winter Curation',
             hintStyle: TextStyle(color: context.trenzyColors.fg50),
@@ -279,7 +296,10 @@ class BlendDescriptionInput extends StatelessWidget {
         const SizedBox(height: 12),
         TextField(
           controller: controller,
-          style: TextStyle(color: context.trenzyColors.foreground, fontSize: 16),
+          style: TextStyle(
+            color: context.trenzyColors.foreground,
+            fontSize: 16,
+          ),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'A brief description of your blend...',
@@ -317,7 +337,10 @@ class BlendThemeInput extends StatelessWidget {
         const SizedBox(height: 12),
         TextField(
           controller: controller,
-          style: TextStyle(color: context.trenzyColors.foreground, fontSize: 16),
+          style: TextStyle(
+            color: context.trenzyColors.foreground,
+            fontSize: 16,
+          ),
           decoration: InputDecoration(
             hintText: 'e.g., Goa Trip, Wedding, College Fest',
             hintStyle: TextStyle(color: context.trenzyColors.fg50),
@@ -383,7 +406,10 @@ class FriendSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
               'Could not load friends right now.',
-              style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 14),
+              style: TextStyle(
+                color: context.trenzyColors.mutedFg,
+                fontSize: 14,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -396,10 +422,7 @@ class FriendSelector extends ConsumerWidget {
 class FriendCard extends ConsumerWidget {
   final Friend friend;
 
-  const FriendCard({
-    super.key,
-    required this.friend,
-  });
+  const FriendCard({super.key, required this.friend});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -446,17 +469,19 @@ class FriendCard extends ConsumerWidget {
               IconButton(
                 icon: Icon(
                   isSelected ? Icons.check : Icons.add,
-                  color: isSelected ? context.trenzyColors.primary : context.trenzyColors.mutedFg,
+                  color: isSelected
+                      ? context.trenzyColors.primary
+                      : context.trenzyColors.mutedFg,
                 ),
                 onPressed: () {
                   if (isSelected) {
                     ref.read(selectedFriendsProvider.notifier).state = [
-                      ...selectedFriends..remove(friend)
+                      ...selectedFriends..remove(friend),
                     ];
                   } else {
                     ref.read(selectedFriendsProvider.notifier).state = [
                       ...selectedFriends,
-                      friend
+                      friend,
                     ];
                   }
                 },
@@ -513,7 +538,10 @@ class BottomBar extends StatelessWidget {
                             strokeWidth: 3,
                           ),
                         )
-                      : const Icon(Icons.auto_awesome, color: Color(0xFF120F0E)),
+                      : const Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF120F0E),
+                        ),
                   label: Text(
                     isLoading ? 'Creating...' : 'Create Blend',
                     style: const TextStyle(
@@ -565,21 +593,23 @@ class SelectedFriends extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: selectedFriends
-                  .map((friend) => Padding(
-                        padding: const EdgeInsets.only(right: 10.0),
-                        child: FriendChip(
-                          name: friend.name ?? '',
-                          imageUrl: friend.avatarUrl != null
-                              ? ApiService.resolveImageUrl(friend.avatarUrl) ??
+                  .map(
+                    (friend) => Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: FriendChip(
+                        name: friend.name ?? '',
+                        imageUrl: friend.avatarUrl != null
+                            ? ApiService.resolveImageUrl(friend.avatarUrl) ??
                                   friend.avatarUrl!
-                              : 'https://placehold.co/100x100/1a1a2e/666.png?text=?',
-                          onDeleted: () {
-                            ref.read(selectedFriendsProvider.notifier).state = [
-                              ...selectedFriends..remove(friend)
-                            ];
-                          },
-                        ),
-                      ))
+                            : 'https://placehold.co/100x100/1a1a2e/666.png?text=?',
+                        onDeleted: () {
+                          ref.read(selectedFriendsProvider.notifier).state = [
+                            ...selectedFriends..remove(friend),
+                          ];
+                        },
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -594,24 +624,26 @@ class FriendChip extends StatelessWidget {
   final String imageUrl;
   final VoidCallback onDeleted;
 
-  const FriendChip(
-      {super.key,
-      required this.name,
-      required this.imageUrl,
-      required this.onDeleted});
+  const FriendChip({
+    super.key,
+    required this.name,
+    required this.imageUrl,
+    required this.onDeleted,
+  });
 
   @override
   Widget build(BuildContext context) {
     final resolvedImageUrl = ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
     return Chip(
-      avatar: CircleAvatar(
-        backgroundImage: NetworkImage(resolvedImageUrl),
-      ),
+      avatar: CircleAvatar(backgroundImage: NetworkImage(resolvedImageUrl)),
       label: Text(name),
       onDeleted: onDeleted,
       backgroundColor: context.trenzyColors.graphite,
-      labelStyle: TextStyle(color: context.trenzyColors.foreground, fontSize: 12),
+      labelStyle: TextStyle(
+        color: context.trenzyColors.foreground,
+        fontSize: 12,
+      ),
       deleteIconColor: context.trenzyColors.mutedFg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(99),

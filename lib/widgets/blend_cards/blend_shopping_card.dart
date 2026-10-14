@@ -4,10 +4,7 @@ import '../../models/blend_model.dart';
 import '../../theme/glass_theme.dart';
 
 class BlendShoppingCard extends StatelessWidget {
-  const BlendShoppingCard({
-    super.key,
-    required this.results,
-  });
+  const BlendShoppingCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -46,14 +43,20 @@ class BlendShoppingCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Shopping Personality',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Your shared fashion identity',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 24),
           Center(
@@ -68,14 +71,22 @@ class BlendShoppingCard extends StatelessWidget {
               ),
               child: Text(
                 personality.label,
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900, color: context.trenzyColors.primary),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                  color: context.trenzyColors.primary,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             personality.description,
-            style: GlassTypography.body(fontSize: 14, color: context.trenzyColors.fg70, height: 1.5),
+            style: GlassTypography.body(
+              fontSize: 14,
+              color: context.trenzyColors.fg70,
+              height: 1.5,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -84,7 +95,9 @@ class BlendShoppingCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               alignment: WrapAlignment.center,
-              children: personality.traits.map((t) => _TraitChip(trait: t)).toList(),
+              children: personality.traits
+                  .map((t) => _TraitChip(trait: t))
+                  .toList(),
             ),
           ),
         ],
@@ -180,8 +193,10 @@ class _TraitChip extends StatelessWidget {
       ),
       child: Text(
         trait,
-        style: GlassTypography.meta(fontSize: 12, color: context.trenzyColors.emerald)
-            .copyWith(fontWeight: FontWeight.w700),
+        style: GlassTypography.meta(
+          fontSize: 12,
+          color: context.trenzyColors.emerald,
+        ).copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }

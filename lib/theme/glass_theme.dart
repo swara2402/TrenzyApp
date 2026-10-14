@@ -73,20 +73,13 @@ class GlassGradients {
   static const LinearGradient imageOverlay = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xD9000000),
-      Color(0x1A000000),
-      Color(0x66000000),
-    ],
+    colors: [Color(0xD9000000), Color(0x1A000000), Color(0x66000000)],
   );
 
   static const LinearGradient glassSurface = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0x14FAF6F0),
-      Color(0x06FAF6F0),
-    ],
+    colors: [Color(0x14FAF6F0), Color(0x06FAF6F0)],
   );
 
   static const RadialGradient auraGold = RadialGradient(
@@ -125,10 +118,7 @@ class GlassTypography {
     );
   }
 
-  static TextStyle meta({
-    Color? color,
-    double fontSize = 10,
-  }) {
+  static TextStyle meta({Color? color, double fontSize = 10}) {
     return TextStyle(
       fontFamily: bodyFont,
       fontSize: fontSize,
@@ -169,9 +159,7 @@ class GlassTypography {
     );
   }
 
-  static TextStyle caption({
-    Color? color,
-  }) {
+  static TextStyle caption({Color? color}) {
     return TextStyle(
       fontFamily: bodyFont,
       fontSize: 14,
@@ -190,10 +178,7 @@ BoxDecoration glassDecoration({
   return BoxDecoration(
     color: color ?? GlassColors.glass,
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(
-      color: borderColor ?? GlassColors.glassBorder,
-      width: 1,
-    ),
+    border: Border.all(color: borderColor ?? GlassColors.glassBorder, width: 1),
     gradient: const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

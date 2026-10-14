@@ -16,7 +16,8 @@ class OutfitBuilderScreen extends ConsumerStatefulWidget {
   const OutfitBuilderScreen({super.key, this.initialOutfit});
 
   @override
-  ConsumerState<OutfitBuilderScreen> createState() => _OutfitBuilderScreenState();
+  ConsumerState<OutfitBuilderScreen> createState() =>
+      _OutfitBuilderScreenState();
 }
 
 class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
@@ -33,12 +34,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
         for (final item in widget.initialOutfit!.items) {
           final itemId = int.tryParse(item.id) ?? 0;
           if (itemId > 0) {
-            _canvasItems.add(_ItemData(
-              itemId,
-              item.brand.isEmpty ? 'Unknown' : item.brand,
-              item.name,
-              item.imageUrl,
-            ));
+            _canvasItems.add(
+              _ItemData(
+                itemId,
+                item.brand.isEmpty ? 'Unknown' : item.brand,
+                item.name,
+                item.imageUrl,
+              ),
+            );
           }
         }
       }
@@ -79,7 +82,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       return;
     }
 
-    final ids = _canvasItems.map((item) => item.id).where((id) => id > 0).toSet().toList();
+    final ids = _canvasItems
+        .map((item) => item.id)
+        .where((id) => id > 0)
+        .toSet()
+        .toList();
     if (ids.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selected items do not have valid IDs')),
@@ -91,19 +98,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
 
     try {
       final api = ref.read(apiServiceProvider);
-      final outfitId = widget.initialOutfit != null ? int.tryParse(widget.initialOutfit!.id) : null;
+      final outfitId = widget.initialOutfit != null
+          ? int.tryParse(widget.initialOutfit!.id)
+          : null;
 
       if (outfitId != null && outfitId > 0) {
-        await api.updateOutfit(
-          outfitId,
-          name: name,
-          wardrobeItemIds: ids,
-        );
+        await api.updateOutfit(outfitId, name: name, wardrobeItemIds: ids);
       } else {
-        await api.createOutfit(
-          name: name,
-          wardrobeItemIds: ids,
-        );
+        await api.createOutfit(name: name, wardrobeItemIds: ids);
       }
 
       ref.invalidate(outfitsProvider);
@@ -118,9 +120,9 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save look: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save look: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -201,12 +203,19 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                       borderRadius: BorderRadius.circular(99),
                       side: BorderSide(color: colors.fg15),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ],
@@ -242,18 +251,24 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                       width: 224,
                       height: 288,
                       decoration: BoxDecoration(
-                        color: context.trenzyColors.surfaceContainer.withAlpha(51),
+                        color: context.trenzyColors.surfaceContainer.withAlpha(
+                          51,
+                        ),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                            color: context.trenzyColors.mutedFg.withAlpha(76),
-                            style: BorderStyle.solid,
-                            width: 1),
+                          color: context.trenzyColors.mutedFg.withAlpha(76),
+                          style: BorderStyle.solid,
+                          width: 1,
+                        ),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_circle_outline,
-                              color: context.trenzyColors.primary, size: 50),
+                          Icon(
+                            Icons.add_circle_outline,
+                            color: context.trenzyColors.primary,
+                            size: 50,
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             'DROP ITEMS HERE',
@@ -268,7 +283,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                       ),
                     ),
                   )
-                  else
+                else
                   ..._canvasItems.asMap().entries.map((entry) {
                     final index = entry.key;
                     final item = entry.value;
@@ -288,12 +303,18 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                                       fit: BoxFit.contain,
                                       errorWidget: (_, _, _) => Container(
                                         color: colors.surfaceContainer,
-                                        child: Icon(Icons.checkroom, color: colors.primary),
+                                        child: Icon(
+                                          Icons.checkroom,
+                                          color: colors.primary,
+                                        ),
                                       ),
                                     )
                                   : Container(
                                       color: colors.surfaceContainer,
-                                      child: Icon(Icons.checkroom, color: colors.primary),
+                                      child: Icon(
+                                        Icons.checkroom,
+                                        color: colors.primary,
+                                      ),
                                     ),
                             ),
                             Positioned(
@@ -307,7 +328,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                                     color: Colors.black54,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
                                 ),
                               ),
                             ),
@@ -332,12 +357,12 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                     ),
                   ),
                 ),
-                ],
-              ),
+              ],
             ),
-          );
-        },
-      );
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildLookIdentityCard() {
@@ -425,7 +450,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   }
 
   Widget _buildCategoryChips() {
-    final categories = ['All Items', 'Tops', 'Bottoms', 'Outerwear', 'Footwear', 'Accessories'];
+    final categories = [
+      'All Items',
+      'Tops',
+      'Bottoms',
+      'Outerwear',
+      'Footwear',
+      'Accessories',
+    ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -436,14 +468,27 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                foregroundColor: isActive ? context.trenzyColors.primaryFg : context.trenzyColors.foreground,
-                backgroundColor: isActive ? context.trenzyColors.primary : context.trenzyColors.graphite,
+                foregroundColor: isActive
+                    ? context.trenzyColors.primaryFg
+                    : context.trenzyColors.foreground,
+                backgroundColor: isActive
+                    ? context.trenzyColors.primary
+                    : context.trenzyColors.graphite,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(99),
-                  side: isActive ? BorderSide.none : BorderSide(color: context.trenzyColors.fg15),
+                  side: isActive
+                      ? BorderSide.none
+                      : BorderSide(color: context.trenzyColors.fg15),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
-                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 10,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
               ),
               child: Text(category.toUpperCase()),
             ),
@@ -465,12 +510,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
         final itemDataList = items
             .map((w) {
               final parsedId = int.tryParse(w.id) ?? 0;
-              return _ItemData(
-                parsedId,
-                w.brand,
-                w.name,
-                w.imageUrl,
-              );
+              return _ItemData(parsedId, w.brand, w.name, w.imageUrl);
             })
             .where((item) => item.id > 0)
             .toList();
@@ -496,8 +536,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 width: 100,
                 height: 100,
                 child: item.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.contain)
-                    : Icon(Icons.checkroom, color: context.trenzyColors.primary),
+                    ? CachedNetworkImage(
+                        imageUrl: item.imageUrl,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(
+                        Icons.checkroom,
+                        color: context.trenzyColors.primary,
+                      ),
               ),
               childWhenDragging: Opacity(
                 opacity: 0.5,
@@ -506,10 +552,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                   onAdd: () => _addItemToCanvas(item),
                 ),
               ),
-              child: _ItemCard(
-                item: item,
-                onAdd: () => _addItemToCanvas(item),
-              ),
+              child: _ItemCard(item: item, onAdd: () => _addItemToCanvas(item)),
             );
           },
         );
@@ -552,7 +595,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
         decoration: BoxDecoration(
           color: colors.surfaceContainer,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: colors.fg15.withAlpha(128), style: BorderStyle.solid, width: 1),
+          border: Border.all(
+            color: colors.fg15.withAlpha(128),
+            style: BorderStyle.solid,
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -583,7 +630,6 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   }
 }
 
-
 class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const _CustomAppBar();
 
@@ -607,13 +653,17 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: colors.graphite,
-                  backgroundImage: (user?.avatarUrl != null && user!.avatarUrl.isNotEmpty)
+                  backgroundImage:
+                      (user?.avatarUrl != null && user!.avatarUrl.isNotEmpty)
                       ? NetworkImage(user.avatarUrl)
                       : null,
                   child: (user?.avatarUrl == null || user!.avatarUrl.isEmpty)
                       ? Text(
                           (user?.name ?? 'U').substring(0, 1).toUpperCase(),
-                          style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: colors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         )
                       : null,
                 ),
@@ -669,11 +719,41 @@ class _BottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, Icons.home, 'Home', AppRoutes.home, isActive: currentRoute == AppRoutes.home),
-              _buildNavItem(context, Icons.search, 'Explore', AppRoutes.search, isActive: currentRoute == AppRoutes.search),
-              _buildNavItem(context, Icons.style, 'Inspo', AppRoutes.inspo, isActive: currentRoute == AppRoutes.inspo),
-              _buildNavItem(context, Icons.shopping_bag, 'Closet', AppRoutes.wardrobe, isActive: currentRoute == AppRoutes.wardrobe),
-              _buildNavItem(context, Icons.person, 'Profile', AppRoutes.profile, isActive: currentRoute == AppRoutes.profile),
+              _buildNavItem(
+                context,
+                Icons.home,
+                'Home',
+                AppRoutes.home,
+                isActive: currentRoute == AppRoutes.home,
+              ),
+              _buildNavItem(
+                context,
+                Icons.search,
+                'Explore',
+                AppRoutes.search,
+                isActive: currentRoute == AppRoutes.search,
+              ),
+              _buildNavItem(
+                context,
+                Icons.style,
+                'Inspo',
+                AppRoutes.inspo,
+                isActive: currentRoute == AppRoutes.inspo,
+              ),
+              _buildNavItem(
+                context,
+                Icons.shopping_bag,
+                'Closet',
+                AppRoutes.wardrobe,
+                isActive: currentRoute == AppRoutes.wardrobe,
+              ),
+              _buildNavItem(
+                context,
+                Icons.person,
+                'Profile',
+                AppRoutes.profile,
+                isActive: currentRoute == AppRoutes.profile,
+              ),
             ],
           ),
         ),
@@ -681,7 +761,13 @@ class _BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, String route, {bool isActive = false}) {
+  Widget _buildNavItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String route, {
+    bool isActive = false,
+  }) {
     final colors = context.trenzyColors;
     return GestureDetector(
       onTap: () => GoRouter.of(context).go(route),
@@ -697,7 +783,9 @@ class _BottomNavBar extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: isActive ? colors.primary : colors.foreground.withAlpha(102),
+              color: isActive
+                  ? colors.primary
+                  : colors.foreground.withAlpha(102),
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
@@ -736,10 +824,7 @@ class _ItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.white.withAlpha(13)),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(51),
-                  blurRadius: 10,
-                ),
+                BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10),
               ],
             ),
             child: ClipRRect(
@@ -753,12 +838,20 @@ class _ItemCard extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorWidget: (_, _, _) => Container(
                               color: context.trenzyColors.surfaceContainer,
-                              child: Icon(Icons.checkroom, color: context.trenzyColors.primary, size: 40),
+                              child: Icon(
+                                Icons.checkroom,
+                                color: context.trenzyColors.primary,
+                                size: 40,
+                              ),
                             ),
                           )
                         : Container(
                             color: context.trenzyColors.surfaceContainer,
-                            child: Icon(Icons.checkroom, color: context.trenzyColors.primary, size: 40),
+                            child: Icon(
+                              Icons.checkroom,
+                              color: context.trenzyColors.primary,
+                              size: 40,
+                            ),
                           ),
                   ),
                   Positioned(
@@ -771,7 +864,10 @@ class _ItemCard extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
-                          colors: [Colors.black.withAlpha(180), Colors.transparent],
+                          colors: [
+                            Colors.black.withAlpha(180),
+                            Colors.transparent,
+                          ],
                         ),
                       ),
                       child: GestureDetector(
@@ -840,10 +936,7 @@ class GridPattern extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _GridPainter(),
-      child: Container(),
-    );
+    return CustomPaint(painter: _GridPainter(), child: Container());
   }
 }
 
@@ -851,7 +944,8 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFD79D8A).withAlpha(13)  // rose-gold grid lines
+      ..color = const Color(0xFFD79D8A)
+          .withAlpha(13) // rose-gold grid lines
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 32) {

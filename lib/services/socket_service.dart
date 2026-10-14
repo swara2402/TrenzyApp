@@ -132,7 +132,9 @@ class SocketService {
     _reconnectAttempts++;
     if (_reconnectAttempts > _maxReconnectAttempts) {
       if (!_errorController.isClosed) {
-        _errorController.add('Connection lost. Please check your network and try again.');
+        _errorController.add(
+          'Connection lost. Please check your network and try again.',
+        );
       }
       return;
     }
@@ -192,14 +194,8 @@ class SocketService {
     }
   }
 
-  void sendVote({
-    required String roomId,
-    required String optionId,
-  }) {
-    _socket?.emit('send_vote', {
-      'roomId': roomId,
-      'optionId': optionId,
-    });
+  void sendVote({required String roomId, required String optionId}) {
+    _socket?.emit('send_vote', {'roomId': roomId, 'optionId': optionId});
   }
 
   void _teardownCurrentSocket() {

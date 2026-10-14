@@ -46,18 +46,18 @@ class WardrobeItem {
     String? season,
     String? occasion,
     bool? isLoaded,
-  })  : id = id ?? '',
-        userId = userId ?? '',
-        name = name ?? '',
-        imageUrl = imageUrl ?? '',
-        isFavorite = isFavorite ?? false,
-        tags = tags ?? const [],
-        category = category ?? '',
-        brand = brand ?? '',
-        color = color ?? '',
-        season = season ?? '',
-        occasion = occasion ?? '',
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       userId = userId ?? '',
+       name = name ?? '',
+       imageUrl = imageUrl ?? '',
+       isFavorite = isFavorite ?? false,
+       tags = tags ?? const [],
+       category = category ?? '',
+       brand = brand ?? '',
+       color = color ?? '',
+       season = season ?? '',
+       occasion = occasion ?? '',
+       isLoaded = isLoaded ?? false;
 
   factory WardrobeItem.fromJson(Map<String, dynamic> json) {
     return WardrobeItem(
@@ -127,21 +127,22 @@ class Outfit {
     bool? isFavorite,
     this.createdAt,
     bool? isLoaded,
-  })  : id = id ?? '',
-        userId = userId ?? '',
-        name = name ?? '',
-        description = description ?? '',
-        imageUrl = imageUrl ?? '',
-        occasion = occasion ?? '',
-        season = season ?? '',
-        items = items ?? const [],
-        wardrobeItemIds = wardrobeItemIds ?? const [],
-        isFavorite = isFavorite ?? false,
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       userId = userId ?? '',
+       name = name ?? '',
+       description = description ?? '',
+       imageUrl = imageUrl ?? '',
+       occasion = occasion ?? '',
+       season = season ?? '',
+       items = items ?? const [],
+       wardrobeItemIds = wardrobeItemIds ?? const [],
+       isFavorite = isFavorite ?? false,
+       isLoaded = isLoaded ?? false;
 
   factory Outfit.fromJson(Map<String, dynamic> json) {
-    final rawItemIds = (json['wardrobeItemIds'] ?? json['wardrobe_item_ids'])
-        as List<dynamic>?;
+    final rawItemIds =
+        (json['wardrobeItemIds'] ?? json['wardrobe_item_ids'])
+            as List<dynamic>?;
     return Outfit(
       id: _idToString(json['id']),
       userId: _idToString(json['userId'] ?? json['user_id']),
@@ -221,7 +222,9 @@ class OutfitIdea {
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
-      'recommendedItems': recommendedItems?.map((item) => item.toJson()).toList(),
+      'recommendedItems': recommendedItems
+          ?.map((item) => item.toJson())
+          .toList(),
       'matchScore': matchScore,
       'isLoaded': isLoaded,
     };
@@ -280,11 +283,7 @@ class StyleDnaItem {
   final double confidence;
   final String? hex;
 
-  StyleDnaItem({
-    required this.name,
-    required this.confidence,
-    this.hex,
-  });
+  StyleDnaItem({required this.name, required this.confidence, this.hex});
 
   factory StyleDnaItem.fromJson(Map<String, dynamic> json) {
     return StyleDnaItem(
@@ -295,10 +294,10 @@ class StyleDnaItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'confidence': confidence,
-        'hex': hex,
-      };
+    'name': name,
+    'confidence': confidence,
+    'hex': hex,
+  };
 }
 
 /// Style DNA describing a user's fashion profile
@@ -335,12 +334,12 @@ class StyleDna {
   }
 
   Map<String, dynamic> toJson() => {
-        'colors': colors.map((e) => e.toJson()).toList(),
-        'brands': brands.map((e) => e.toJson()).toList(),
-        'categories': categories.map((e) => e.toJson()).toList(),
-        'aesthetics': aesthetics.map((e) => e.toJson()).toList(),
-        'occasions': occasions.map((e) => e.toJson()).toList(),
-      };
+    'colors': colors.map((e) => e.toJson()).toList(),
+    'brands': brands.map((e) => e.toJson()).toList(),
+    'categories': categories.map((e) => e.toJson()).toList(),
+    'aesthetics': aesthetics.map((e) => e.toJson()).toList(),
+    'occasions': occasions.map((e) => e.toJson()).toList(),
+  };
 }
 
 /// Represents the user's AI-generated style persona
@@ -367,7 +366,8 @@ class StylePersona {
       name: (json['name'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       keywords: (json['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
-      colorPalette: (json['colorPalette'] as List<dynamic>?)?.cast<String>() ?? [],
+      colorPalette:
+          (json['colorPalette'] as List<dynamic>?)?.cast<String>() ?? [],
       dna: json['dna'] != null
           ? StyleDna.fromJson(json['dna'] as Map<String, dynamic>)
           : null,
@@ -375,13 +375,13 @@ class StylePersona {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'keywords': keywords,
-        'colorPalette': colorPalette,
-        'dna': dna?.toJson(),
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'keywords': keywords,
+    'colorPalette': colorPalette,
+    'dna': dna?.toJson(),
+  };
 }
 
 /// Response from wardrobe recommendations API
@@ -396,11 +396,13 @@ class WardrobeRecommendationsResponse {
 
   factory WardrobeRecommendationsResponse.fromJson(Map<String, dynamic> json) {
     return WardrobeRecommendationsResponse(
-      items: (json['items'] as List<dynamic>?)
+      items:
+          (json['items'] as List<dynamic>?)
               ?.map((e) => WardrobeItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      outfitIdeas: (json['outfitIdeas'] as List<dynamic>?)
+      outfitIdeas:
+          (json['outfitIdeas'] as List<dynamic>?)
               ?.map((e) => OutfitIdea.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -408,7 +410,7 @@ class WardrobeRecommendationsResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'items': items.map((e) => e.toJson()).toList(),
-        'outfitIdeas': outfitIdeas.map((e) => e.toJson()).toList(),
-      };
+    'items': items.map((e) => e.toJson()).toList(),
+    'outfitIdeas': outfitIdeas.map((e) => e.toJson()).toList(),
+  };
 }

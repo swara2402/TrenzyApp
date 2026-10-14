@@ -18,25 +18,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPageData(
       icon: Icons.auto_awesome_rounded,
       title: 'Discover Your Style',
-      description: 'Trenzy uses AI to understand your unique fashion taste and recommend products you\'ll love.',
+      description:
+          'Trenzy uses AI to understand your unique fashion taste and recommend products you\'ll love.',
       gradient: [Color(0xFFF2CA50), Color(0xFFE0B840)],
     ),
     _OnboardingPageData(
       icon: Icons.groups_rounded,
       title: 'Shop Together',
-      description: 'Create Blends with friends. Swipe, vote, and find the perfect picks as a group.',
+      description:
+          'Create Blends with friends. Swipe, vote, and find the perfect picks as a group.',
       gradient: [Color(0xFF2ECC71), Color(0xFF27AE60)],
     ),
     _OnboardingPageData(
       icon: Icons.psychology_rounded,
       title: 'Your AI Persona',
-      description: 'Get a personalized style persona that evolves with your choices and preferences.',
+      description:
+          'Get a personalized style persona that evolves with your choices and preferences.',
       gradient: [Color(0xFF9B59B6), Color(0xFF8E44AD)],
     ),
     _OnboardingPageData(
       icon: Icons.checkroom_rounded,
       title: 'Virtual Wardrobe',
-      description: 'Organize your closet, build outfits, and never wonder what to wear again.',
+      description:
+          'Organize your closet, build outfits, and never wonder what to wear again.',
       gradient: [Color(0xFFE74C3C), Color(0xFFC0392B)],
     ),
   ];
@@ -72,7 +76,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8, right: 16),
                 child: TextButton(
-                  onPressed: () => context.go('${AppRoutes.favoriteCategories}?source=onboarding'),
+                  onPressed: () => context.go(
+                    '${AppRoutes.favoriteCategories}?source=onboarding',
+                  ),
                   child: Text(
                     'Skip',
                     style: GlassTypography.body(
@@ -102,9 +108,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           height: 120,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: page.gradient,
-                            ),
+                            gradient: LinearGradient(colors: page.gradient),
                             boxShadow: [
                               BoxShadow(
                                 color: page.gradient[0].withValues(alpha: 0.3),
@@ -113,11 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             ],
                           ),
-                          child: Icon(
-                            page.icon,
-                            color: Colors.white,
-                            size: 52,
-                          ),
+                          child: Icon(page.icon, color: Colors.white, size: 52),
                         ),
                         SizedBox(height: 40),
                         DisplayText(

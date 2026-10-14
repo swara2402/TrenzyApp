@@ -17,24 +17,25 @@ class BlendApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
-
   Future<void> inviteToBlend({
     required String blendId,
     required String inviterId,
     required String inviteeId,
   }) async {
-    await _client.post('/blends/$blendId/invitations', body: {
-      'invitee_id': inviteeId,
-    });
+    await _client.post(
+      '/blends/$blendId/invitations',
+      body: {'invitee_id': inviteeId},
+    );
   }
 
   Future<void> respondToBlendInvitation({
     required String invitationId,
     required String status,
   }) async {
-    await _client.put('/blends/invitations/$invitationId', body: {
-      'status': status,
-    });
+    await _client.put(
+      '/blends/invitations/$invitationId',
+      body: {'status': status},
+    );
   }
 
   Future<Map<String, dynamic>> joinBlend({required String groupId}) async {
@@ -61,11 +62,14 @@ class BlendApi {
     required String productId,
     required String swipeType,
   }) async {
-    await _client.post('/blends/swipe', body: {
-      'groupId': groupId,
-      'productId': productId,
-      'swipeType': swipeType,
-    });
+    await _client.post(
+      '/blends/swipe',
+      body: {
+        'groupId': groupId,
+        'productId': productId,
+        'swipeType': swipeType,
+      },
+    );
   }
 
   Future<void> undoBlendSwipe({
@@ -92,14 +96,18 @@ class BlendApi {
     required String groupId,
     int expiresInSeconds = 60 * 60 * 24 * 7,
   }) async {
-    final data = await _client.post('/blends/$groupId/invitations', body: {
-      'expiresInSeconds': expiresInSeconds,
-    });
+    final data = await _client.post(
+      '/blends/$groupId/invitations',
+      body: {'expiresInSeconds': expiresInSeconds},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> acceptInvitation({required String token}) async {
-    final data = await _client.post('/blends/invitations/accept', body: {'token': token});
+    final data = await _client.post(
+      '/blends/invitations/accept',
+      body: {'token': token},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -152,10 +160,7 @@ class BlendApi {
     if (productUrl != null) body['productUrl'] = productUrl;
     if (notes != null) body['notes'] = notes;
 
-    final data = await _client.post(
-      '/blends/$blendId/wishlist',
-      body: body,
-    );
+    final data = await _client.post('/blends/$blendId/wishlist', body: body);
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -207,10 +212,7 @@ class BlendApi {
     if (imageUrl != null) body['imageUrl'] = imageUrl;
     if (caption != null) body['caption'] = caption;
 
-    final data = await _client.post(
-      '/blends/$blendId/moodboard',
-      body: body,
-    );
+    final data = await _client.post('/blends/$blendId/moodboard', body: body);
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -218,7 +220,10 @@ class BlendApi {
     await _client.delete('/blends/$blendId/moodboard/$itemId');
   }
 
-  Future<List<dynamic>> getBlendInsights(String blendId, {bool refresh = false}) async {
+  Future<List<dynamic>> getBlendInsights(
+    String blendId, {
+    bool refresh = false,
+  }) async {
     final data = await _client.get(
       '/blends/$blendId/insights',
       queryParams: refresh ? {'refresh': 'true'} : null,
@@ -263,10 +268,7 @@ class BlendApi {
   }) async {
     final data = await _client.get(
       '/blends/$blendId/activity',
-      queryParams: {
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
+      queryParams: {'limit': limit.toString(), 'offset': offset.toString()},
     );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }

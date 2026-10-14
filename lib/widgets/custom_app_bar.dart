@@ -35,10 +35,13 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       title: Text(title),
-      leading: leading ?? IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        onPressed: onLeadingPressed ?? () => Scaffold.of(context).openDrawer(),
-      ),
+      leading:
+          leading ??
+          IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed:
+                onLeadingPressed ?? () => Scaffold.of(context).openDrawer(),
+          ),
       actions: [
         if (showCart)
           Stack(

@@ -27,10 +27,31 @@ class GlassNavItem {
 
 final List<GlassNavItem> appNavItems = [
   GlassNavItem(Icons.home_outlined, Icons.home_rounded, 'Feed', AppRoutes.home),
-  GlassNavItem(Icons.explore_outlined, Icons.explore_rounded, 'Explore', AppRoutes.discover),
-  GlassNavItem(Icons.currency_exchange_outlined, Icons.currency_exchange_rounded, null, AppRoutes.blendHub, isCenter: true),
-  GlassNavItem(Icons.favorite_outline_rounded, Icons.favorite_rounded, 'Wishlist', AppRoutes.wishlist),
-  GlassNavItem(Icons.person_outline_rounded, Icons.person_rounded, 'Profile', AppRoutes.profile),
+  GlassNavItem(
+    Icons.explore_outlined,
+    Icons.explore_rounded,
+    'Explore',
+    AppRoutes.discover,
+  ),
+  GlassNavItem(
+    Icons.currency_exchange_outlined,
+    Icons.currency_exchange_rounded,
+    null,
+    AppRoutes.blendHub,
+    isCenter: true,
+  ),
+  GlassNavItem(
+    Icons.favorite_outline_rounded,
+    Icons.favorite_rounded,
+    'Wishlist',
+    AppRoutes.wishlist,
+  ),
+  GlassNavItem(
+    Icons.person_outline_rounded,
+    Icons.person_rounded,
+    'Profile',
+    AppRoutes.profile,
+  ),
 ];
 
 class _GlassOfflineBannerState extends ConsumerState<_GlassOfflineBanner> {
@@ -82,12 +103,12 @@ class _GlassOfflineBanner extends ConsumerStatefulWidget {
   const _GlassOfflineBanner();
 
   @override
-  ConsumerState<_GlassOfflineBanner> createState() => _GlassOfflineBannerState();
+  ConsumerState<_GlassOfflineBanner> createState() =>
+      _GlassOfflineBannerState();
 }
 
 class _GlassBottomNavBarState extends ConsumerState<GlassBottomNavBar>
     with TickerProviderStateMixin {
-
   @override
   Widget build(BuildContext context) {
     return ClipRect(
@@ -97,7 +118,10 @@ class _GlassBottomNavBarState extends ConsumerState<GlassBottomNavBar>
           decoration: BoxDecoration(
             color: context.trenzyColors.glassDock,
             border: Border(
-              top: BorderSide(color: context.trenzyColors.glassBorder, width: 1),
+              top: BorderSide(
+                color: context.trenzyColors.glassBorder,
+                width: 1,
+              ),
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -118,7 +142,9 @@ class _GlassBottomNavBarState extends ConsumerState<GlassBottomNavBar>
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: context.trenzyColors.primary.withValues(alpha: 0.4),
+                          color: context.trenzyColors.primary.withValues(
+                            alpha: 0.4,
+                          ),
                           blurRadius: 12,
                           offset: Offset(0, 4),
                         ),
@@ -139,7 +165,9 @@ class _GlassBottomNavBarState extends ConsumerState<GlassBottomNavBar>
                   tooltip: item.label ?? 'Tab',
                   icon: Icon(
                     isSelected ? item.activeIcon : item.icon,
-                    color: isSelected ? context.trenzyColors.primary : context.trenzyColors.mutedFg,
+                    color: isSelected
+                        ? context.trenzyColors.primary
+                        : context.trenzyColors.mutedFg,
                     size: 28,
                   ),
                   onPressed: () => widget.onTap(index),
@@ -212,7 +240,9 @@ class GlassAppShell extends ConsumerWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: context.trenzyColors.primary.withValues(alpha: 0.4),
+                          color: context.trenzyColors.primary.withValues(
+                            alpha: 0.4,
+                          ),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -221,7 +251,11 @@ class GlassAppShell extends ConsumerWidget {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Icon(Icons.bookmark_rounded, color: context.trenzyColors.primaryFg, size: 24),
+                        Icon(
+                          Icons.bookmark_rounded,
+                          color: context.trenzyColors.primaryFg,
+                          size: 24,
+                        ),
                         Positioned(
                           top: 6,
                           right: 6,
@@ -230,7 +264,10 @@ class GlassAppShell extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: context.trenzyColors.crimson,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                             child: Text(
                               savedCount > 9 ? '9+' : '$savedCount',

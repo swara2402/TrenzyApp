@@ -120,10 +120,7 @@ class _SuggestionTile extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: GlassTypography.body(
-                  fontSize: 15,
-                  color: c.foreground,
-                ),
+                style: GlassTypography.body(fontSize: 15, color: c.foreground),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

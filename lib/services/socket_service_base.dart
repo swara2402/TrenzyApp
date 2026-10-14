@@ -1,8 +1,8 @@
 /// Base class for Socket.IO services
-/// 
+///
 /// This class consolidates common Socket.IO functionality used by both
 /// SocketService (social rooms) and BlendSocketService (blend voting).
-/// 
+///
 /// Provides:
 /// - Connection/reconnection management with exponential backoff
 /// - Firebase token-based authentication
@@ -40,7 +40,7 @@ class SocketConfig {
 /// Base Socket.IO service with common connection/reconnection logic
 abstract class BaseSocketService {
   BaseSocketService({SocketConfig? config})
-      : _config = config ?? SocketConfig();
+    : _config = config ?? SocketConfig();
 
   final SocketConfig _config;
   final _errorController = StreamController<String>.broadcast();
@@ -57,8 +57,6 @@ abstract class BaseSocketService {
   Stream<String> get errorStream => _errorController.stream;
   Stream<bool> get connectionStateStream => _connectionController.stream;
   bool get isConnected => _socket?.connected ?? false;
-
-
 
   /// Override to handle incoming socket events
   void setupEventListeners(io.Socket socket) {
@@ -159,9 +157,7 @@ abstract class BaseSocketService {
 
       final freshToken = await _getIdToken();
       if (freshToken == null) {
-        _emitError(
-          'Couldn\'t refresh your session. Please sign in again.',
-        );
+        _emitError('Couldn\'t refresh your session. Please sign in again.');
         return;
       }
 

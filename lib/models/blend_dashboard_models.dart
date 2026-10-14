@@ -58,25 +58,32 @@ class BlendDashboard {
       name: json['name'] as String?,
       description: json['description'] as String?,
       memberCount: (json['memberCount'] as num?)?.toInt() ?? 0,
-      members: (json['members'] as List<dynamic>?)
+      members:
+          (json['members'] as List<dynamic>?)
               ?.map((e) => BlendMember.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      wishlistItems: (json['wishlistItems'] as List<dynamic>?)
-              ?.map((e) => SharedWishlistItem.fromJson(e as Map<String, dynamic>))
+      wishlistItems:
+          (json['wishlistItems'] as List<dynamic>?)
+              ?.map(
+                (e) => SharedWishlistItem.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       totalWishlistItems: (json['totalWishlistItems'] as num?)?.toInt() ?? 0,
-      moodboardItems: (json['moodboardItems'] as List<dynamic>?)
+      moodboardItems:
+          (json['moodboardItems'] as List<dynamic>?)
               ?.map((e) => MoodboardItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       totalMoodboardItems: (json['totalMoodboardItems'] as num?)?.toInt() ?? 0,
-      insights: (json['insights'] as List<dynamic>?)
+      insights:
+          (json['insights'] as List<dynamic>?)
               ?.map((e) => BlendInsight.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      recentActivity: (json['recentActivity'] as List<dynamic>?)
+      recentActivity:
+          (json['recentActivity'] as List<dynamic>?)
               ?.map((e) => ActivityEvent.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -87,7 +94,9 @@ class BlendDashboard {
       compatibilityLevel: (json['compatibilityLevel'] as String?) ?? '',
       totalSwipes: (json['totalSwipes'] as num?)?.toInt() ?? 0,
       sharedWishlist: (json['sharedWishlist'] as List<dynamic>?)
-          ?.map((item) => SharedWishlistItem.fromJson(item as Map<String, dynamic>))
+          ?.map(
+            (item) => SharedWishlistItem.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       moodboard: (json['moodboard'] as List<dynamic>?)
           ?.map((item) => MoodboardItem.fromJson(item as Map<String, dynamic>))
@@ -103,28 +112,28 @@ class BlendDashboard {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'blendId': blendId,
-        'name': name,
-        'description': description,
-        'memberCount': memberCount,
-        'members': members.map((e) => e.toJson()).toList(),
-        'wishlistItems': wishlistItems.map((e) => e.toJson()).toList(),
-        'totalWishlistItems': totalWishlistItems,
-        'moodboardItems': moodboardItems.map((e) => e.toJson()).toList(),
-        'totalMoodboardItems': totalMoodboardItems,
-        'insights': insights.map((e) => e.toJson()).toList(),
-        'recentActivity': recentActivity.map((e) => e.toJson()).toList(),
-        'styleDNA': styleDNA?.toJson(),
-        'fashionScore': fashionScore,
-        'compatibilityLevel': compatibilityLevel,
-        'totalSwipes': totalSwipes,
-        'sharedWishlist': sharedWishlist?.map((item) => item.toJson()).toList(),
-        'moodboard': moodboard?.map((item) => item.toJson()).toList(),
-        'activities': activities?.map((item) => item.toJson()).toList(),
-        'lastUpdated': lastUpdated?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'blendId': blendId,
+    'name': name,
+    'description': description,
+    'memberCount': memberCount,
+    'members': members.map((e) => e.toJson()).toList(),
+    'wishlistItems': wishlistItems.map((e) => e.toJson()).toList(),
+    'totalWishlistItems': totalWishlistItems,
+    'moodboardItems': moodboardItems.map((e) => e.toJson()).toList(),
+    'totalMoodboardItems': totalMoodboardItems,
+    'insights': insights.map((e) => e.toJson()).toList(),
+    'recentActivity': recentActivity.map((e) => e.toJson()).toList(),
+    'styleDNA': styleDNA?.toJson(),
+    'fashionScore': fashionScore,
+    'compatibilityLevel': compatibilityLevel,
+    'totalSwipes': totalSwipes,
+    'sharedWishlist': sharedWishlist?.map((item) => item.toJson()).toList(),
+    'moodboard': moodboard?.map((item) => item.toJson()).toList(),
+    'activities': activities?.map((item) => item.toJson()).toList(),
+    'lastUpdated': lastUpdated?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }
 
 class SharedWishlistItem {
@@ -142,7 +151,8 @@ class SharedWishlistItem {
   String get productBrand => product?.brand ?? '';
   String get productCategory => product?.category ?? '';
   double get productPrice => product?.price ?? product?.effectivePrice ?? 0.0;
-  String get addedByName => addedBy?.name ?? addedBy?.displayName ?? 'Anonymous';
+  String get addedByName =>
+      addedBy?.name ?? addedBy?.displayName ?? 'Anonymous';
   DateTime? get createdAt => addedAt;
 
   SharedWishlistItem({
@@ -176,15 +186,15 @@ class SharedWishlistItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'product': product?.toJson(),
-        'addedBy': addedBy?.toJson(),
-        'addedAt': addedAt?.toIso8601String(),
-        'isFavorite': isFavorite,
-        'notes': notes,
-        'productUrl': productUrl,
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'product': product?.toJson(),
+    'addedBy': addedBy?.toJson(),
+    'addedAt': addedAt?.toIso8601String(),
+    'isFavorite': isFavorite,
+    'notes': notes,
+    'productUrl': productUrl,
+    'isLoaded': isLoaded,
+  };
 }
 
 class MoodboardItem {
@@ -199,7 +209,8 @@ class MoodboardItem {
   final DateTime? createdAt;
   final bool isLoaded;
 
-  String get addedByName => addedBy?.name ?? createdBy?.name ?? createdBy?.displayName ?? 'Anonymous';
+  String get addedByName =>
+      addedBy?.name ?? createdBy?.name ?? createdBy?.displayName ?? 'Anonymous';
 
   MoodboardItem({
     String? id,
@@ -212,13 +223,13 @@ class MoodboardItem {
     List<String>? tags,
     this.createdAt,
     bool? isLoaded,
-  })  : id = id ?? '',
-        imageUrl = imageUrl ?? '',
-        caption = caption ?? '',
-        content = content ?? '',
-        itemType = itemType ?? '',
-        tags = tags ?? const [],
-        isLoaded = isLoaded ?? false;
+  }) : id = id ?? '',
+       imageUrl = imageUrl ?? '',
+       caption = caption ?? '',
+       content = content ?? '',
+       itemType = itemType ?? '',
+       tags = tags ?? const [],
+       isLoaded = isLoaded ?? false;
 
   factory MoodboardItem.fromJson(Map<String, dynamic> json) {
     return MoodboardItem(
@@ -242,17 +253,17 @@ class MoodboardItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'imageUrl': imageUrl,
-        'caption': caption,
-        'content': content,
-        'itemType': itemType,
-        'createdBy': createdBy?.toJson(),
-        'addedBy': addedBy?.toJson(),
-        'tags': tags,
-        'createdAt': createdAt?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'imageUrl': imageUrl,
+    'caption': caption,
+    'content': content,
+    'itemType': itemType,
+    'createdBy': createdBy?.toJson(),
+    'addedBy': addedBy?.toJson(),
+    'tags': tags,
+    'createdAt': createdAt?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }
 
 class BlendInsight {
@@ -285,7 +296,9 @@ class BlendInsight {
       description: json['description'] as String?,
       type: json['type'] as String?,
       matchScore: (json['matchScore'] as num?)?.toDouble(),
-      confidence: (json['confidence'] as num?)?.toDouble() ?? (json['matchScore'] as num?)?.toDouble(),
+      confidence:
+          (json['confidence'] as num?)?.toDouble() ??
+          (json['matchScore'] as num?)?.toDouble(),
       recommendedProducts: (json['recommendedProducts'] as List<dynamic>?)
           ?.map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -297,16 +310,17 @@ class BlendInsight {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'type': type,
-        'matchScore': matchScore,
-        'recommendedProducts':
-            recommendedProducts?.map((item) => item.toJson()).toList(),
-        'generatedAt': generatedAt?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'type': type,
+    'matchScore': matchScore,
+    'recommendedProducts': recommendedProducts
+        ?.map((item) => item.toJson())
+        .toList(),
+    'generatedAt': generatedAt?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }
 
 class ActivityEvent {
@@ -347,12 +361,12 @@ class ActivityEvent {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'description': description,
-        'user': user?.toJson(),
-        'metadata': metadata,
-        'createdAt': createdAt?.toIso8601String(),
-        'isLoaded': isLoaded,
-      };
+    'id': id,
+    'type': type,
+    'description': description,
+    'user': user?.toJson(),
+    'metadata': metadata,
+    'createdAt': createdAt?.toIso8601String(),
+    'isLoaded': isLoaded,
+  };
 }

@@ -6,10 +6,7 @@ import '../../theme/glass_theme.dart';
 import 'blend_card_decoration.dart';
 
 class BlendWardrobeCard extends StatelessWidget {
-  const BlendWardrobeCard({
-    super.key,
-    required this.results,
-  });
+  const BlendWardrobeCard({super.key, required this.results});
 
   final BlendResults results;
 
@@ -36,14 +33,20 @@ class BlendWardrobeCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Wardrobe Overlap',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Items you both would rock',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 24),
           if (overlap > 0) ...[
@@ -52,13 +55,20 @@ class BlendWardrobeCard extends StatelessWidget {
                 children: [
                   Text(
                     '$overlap',
-                    style: GlassTypography.display(fontSize: 64, weight: FontWeight.w900, color: context.trenzyColors.primary)
-                        .copyWith(height: 1),
+                    style: GlassTypography.display(
+                      fontSize: 64,
+                      weight: FontWeight.w900,
+                      color: context.trenzyColors.primary,
+                    ).copyWith(height: 1),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     overlap == 1 ? 'shared item' : 'shared items',
-                    style: GlassTypography.body(fontSize: 16, weight: FontWeight.w600, color: context.trenzyColors.mutedFg),
+                    style: GlassTypography.body(
+                      fontSize: 16,
+                      weight: FontWeight.w600,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ],
               ),
@@ -80,7 +90,11 @@ class BlendWardrobeCard extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     '+${allProducts.length - 4} more shared recommendations',
-                    style: GlassTypography.body(fontSize: 12, weight: FontWeight.w700, color: context.trenzyColors.primary),
+                    style: GlassTypography.body(
+                      fontSize: 12,
+                      weight: FontWeight.w700,
+                      color: context.trenzyColors.primary,
+                    ),
                   ),
                 ),
             ],
@@ -96,11 +110,7 @@ class BlendWardrobeCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.inventory_2_rounded,
-          size: 40,
-          color: GlassColors.fg20,
-        ),
+        Icon(Icons.inventory_2_rounded, size: 40, color: GlassColors.fg20),
         const SizedBox(height: 12),
         Text(
           'No wardrobe overlap yet',
@@ -153,9 +163,8 @@ class _OverlapProductRow extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: p!.imageUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, a) => Container(
-                        color: context.trenzyColors.fg10,
-                      ),
+                      placeholder: (_, a) =>
+                          Container(color: context.trenzyColors.fg10),
                       errorWidget: (_, a, b) => Container(
                         color: context.trenzyColors.fg10,
                         child: Icon(
@@ -182,21 +191,29 @@ class _OverlapProductRow extends StatelessWidget {
               children: [
                 Text(
                   p?.name ?? '',
-                  style: GlassTypography.body(fontSize: 14, weight: FontWeight.w700),
+                  style: GlassTypography.body(
+                    fontSize: 14,
+                    weight: FontWeight.w700,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   p?.brand ?? p?.category ?? '',
-                  style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+                  style: GlassTypography.body(
+                    fontSize: 12,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ],
             ),
           ),
           Text(
             '${(rankedProduct.matchScore ?? 0).toInt()}%',
-            style: GlassTypography.buttonLabel(fontSize: 14, color: context.trenzyColors.primary)
-                .copyWith(fontWeight: FontWeight.w900),
+            style: GlassTypography.buttonLabel(
+              fontSize: 14,
+              color: context.trenzyColors.primary,
+            ).copyWith(fontWeight: FontWeight.w900),
           ),
         ],
       ),

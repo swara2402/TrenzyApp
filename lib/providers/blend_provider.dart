@@ -8,8 +8,8 @@ import 'auth_provider.dart';
 
 final blendNotifierProvider =
     StateNotifierProvider<BlendNotifier, AsyncValue<void>>((ref) {
-  return BlendNotifier(ref.watch(apiServiceProvider));
-});
+      return BlendNotifier(ref.watch(apiServiceProvider));
+    });
 
 class BlendNotifier extends StateNotifier<AsyncValue<void>> {
   BlendNotifier(this._api) : super(const AsyncData(null));
@@ -40,7 +40,14 @@ class BlendNotifier extends StateNotifier<AsyncValue<void>> {
 final blendGroupProvider = FutureProvider.autoDispose
     .family<BlendGroup, String>((ref, groupId) async {
       final uid = ref.watch(authProvider.select((a) => a.valueOrNull?.id));
-      if (uid == null) return BlendGroup(id: groupId, name: '', inviteCode: '', members: const []);
+      if (uid == null) {
+        return BlendGroup(
+          id: groupId,
+          name: '',
+          inviteCode: '',
+          members: const [],
+        );
+      }
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendGroup(groupId);
@@ -50,7 +57,13 @@ final blendGroupProvider = FutureProvider.autoDispose
 final blendResultsProvider = FutureProvider.autoDispose
     .family<BlendResults, String>((ref, groupId) async {
       final uid = ref.watch(authProvider.select((a) => a.valueOrNull?.id));
-      if (uid == null) return BlendResults(groupId: groupId, groupName: '', recommendations: const []);
+      if (uid == null) {
+        return BlendResults(
+          groupId: groupId,
+          groupName: '',
+          recommendations: const [],
+        );
+      }
 
       final api = ref.watch(apiServiceProvider);
       final data = await api.getBlendResults(groupId);

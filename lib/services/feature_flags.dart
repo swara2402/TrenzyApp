@@ -45,10 +45,7 @@ class FeatureFlags {
   /// Enable with: --dart-define=FF_DEV_AUTH_BYPASS=true
   static const bool devAuthBypass = bool.fromEnvironment(
     'FF_DEV_AUTH_BYPASS',
-    defaultValue: bool.fromEnvironment(
-      'DEV_AUTH_BYPASS',
-      defaultValue: false,
-    ),
+    defaultValue: bool.fromEnvironment('DEV_AUTH_BYPASS', defaultValue: false),
   );
 
   /// Skip the Firebase email-verification gate for beta / debug builds.

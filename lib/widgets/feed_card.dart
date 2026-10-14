@@ -24,12 +24,16 @@ class FeedCard extends StatelessWidget {
         return Card(
           color: context.trenzyColors.graphite,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: CachedNetworkImage(
                   imageUrl: item.imageUrl,
                   height: 200,
@@ -39,12 +43,20 @@ class FeedCard extends StatelessWidget {
                   placeholder: (context, url) => Container(
                     height: 200,
                     color: context.trenzyColors.graphite,
-                    child: Center(child: Icon(Icons.image_outlined, color: context.trenzyColors.mutedFg)),
+                    child: Center(
+                      child: Icon(
+                        Icons.image_outlined,
+                        color: context.trenzyColors.mutedFg,
+                      ),
+                    ),
                   ),
                   errorWidget: (context, url, error) => Container(
                     height: 200,
                     color: context.trenzyColors.graphite,
-                    child: Icon(Icons.broken_image, color: context.trenzyColors.mutedFg),
+                    child: Icon(
+                      Icons.broken_image,
+                      color: context.trenzyColors.mutedFg,
+                    ),
                   ),
                 ),
               ),

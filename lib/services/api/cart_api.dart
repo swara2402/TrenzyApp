@@ -13,10 +13,10 @@ class CartApi {
     required String productId,
     int quantity = 1,
   }) async {
-    final data = await _client.post('/cart/items', body: {
-      'product_id': productId,
-      'quantity': quantity,
-    });
+    final data = await _client.post(
+      '/cart/items',
+      body: {'product_id': productId, 'quantity': quantity},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -24,9 +24,10 @@ class CartApi {
     required String productId,
     required int quantity,
   }) async {
-    final data = await _client.put('/cart/items/$productId', body: {
-      'quantity': quantity,
-    });
+    final data = await _client.put(
+      '/cart/items/$productId',
+      body: {'quantity': quantity},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 

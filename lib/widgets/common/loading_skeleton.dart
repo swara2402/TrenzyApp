@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../../theme/glass_theme.dart';
 
 /// Full-screen skeleton loader with shimmer effect
-/// 
+///
 /// Use this when loading primary content (home, search results, product details).
 /// Provides visual feedback that content is loading, not a blank screen.
 class SkeletonLoader extends StatefulWidget {
@@ -92,10 +92,7 @@ class _SkeletonItem extends StatelessWidget {
   final Animation<double> animation;
   final double height;
 
-  const _SkeletonItem({
-    required this.animation,
-    required this.height,
-  });
+  const _SkeletonItem({required this.animation, required this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -195,10 +192,7 @@ class _ShimmerItem extends StatelessWidget {
   final Animation<double> animation;
   final Widget? child;
 
-  const _ShimmerItem({
-    required this.animation,
-    this.child,
-  });
+  const _ShimmerItem({required this.animation, this.child});
 
   @override
   Widget build(BuildContext context) {

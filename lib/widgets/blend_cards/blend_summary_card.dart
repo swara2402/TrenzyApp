@@ -23,7 +23,9 @@ class BlendSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = results;
     final levelColor = _levelColor((r.fashionScore ?? 0).toInt());
-    final compatLevel = r.compatibilityLevel != null ? '${r.compatibilityLevel}' : '';
+    final compatLevel = r.compatibilityLevel != null
+        ? '${r.compatibilityLevel}'
+        : '';
 
     return Container(
       width: double.infinity,
@@ -57,14 +59,20 @@ class BlendSummaryCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Your Blend Recap',
-                style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900),
+                style: GlassTypography.body(
+                  fontSize: 20,
+                  weight: FontWeight.w900,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             r.groupName ?? '',
-            style: GlassTypography.body(fontSize: 12, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
           const SizedBox(height: 24),
           Row(
@@ -131,9 +139,7 @@ class BlendSummaryCard extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () {
-                context.push(
-                  '${AppRoutes.blendChat}?groupId=$groupId',
-                );
+                context.push('${AppRoutes.blendChat}?groupId=$groupId');
               },
               icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
               label: const Text('Start Blend Chat'),
@@ -155,9 +161,7 @@ class BlendSummaryCard extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
-                context.push(
-                  '${AppRoutes.blendLobby}?groupId=$groupId',
-                );
+                context.push('${AppRoutes.blendLobby}?groupId=$groupId');
               },
               icon: const Icon(Icons.group_add_rounded, size: 18),
               label: const Text('Create Group Blend'),
@@ -201,12 +205,20 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GlassTypography.body(fontSize: 20, weight: FontWeight.w900, color: color),
+            style: GlassTypography.body(
+              fontSize: 20,
+              weight: FontWeight.w900,
+              color: color,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: GlassTypography.body(fontSize: 12, weight: FontWeight.w600, color: context.trenzyColors.mutedFg),
+            style: GlassTypography.body(
+              fontSize: 12,
+              weight: FontWeight.w600,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
         ],
       ),

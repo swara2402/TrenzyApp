@@ -78,7 +78,8 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 _pendingMessageIds.contains(m.id) &&
                 m.senderId == msg.senderId &&
                 m.message == msg.message &&
-                msg.createdAt != null && m.createdAt != null &&
+                msg.createdAt != null &&
+                m.createdAt != null &&
                 msg.createdAt!.difference(m.createdAt!).abs() <
                     const Duration(seconds: 10),
           );
@@ -144,18 +145,20 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
       message: text,
     );
 
-    final tempId =
-        (-DateTime.now().millisecondsSinceEpoch - (_tempIdCounter++)).toString();
+    final tempId = (-DateTime.now().millisecondsSinceEpoch - (_tempIdCounter++))
+        .toString();
     setState(() {
       _pendingMessageIds.add(tempId);
-      _messages.add(GroupMessage(
-        id: tempId,
-        groupId: _groupId!,
-        senderId: userId,
-        displayName: userName,
-        message: text,
-        createdAt: DateTime.now(),
-      ));
+      _messages.add(
+        GroupMessage(
+          id: tempId,
+          groupId: _groupId!,
+          senderId: userId,
+          displayName: userName,
+          message: text,
+          createdAt: DateTime.now(),
+        ),
+      );
     });
 
     _messageController.clear();
@@ -185,7 +188,10 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [context.trenzyColors.primary, context.trenzyColors.emerald],
+                        colors: [
+                          context.trenzyColors.primary,
+                          context.trenzyColors.emerald,
+                        ],
                       ),
                     ),
                     child: CircleAvatar(
@@ -205,13 +211,18 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                     bottom: -2,
                     right: -4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: context.trenzyColors.emerald,
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: context.trenzyColors.emerald.withValues(alpha: 0.4),
+                            color: context.trenzyColors.emerald.withValues(
+                              alpha: 0.4,
+                            ),
                             blurRadius: 6,
                           ),
                         ],
@@ -234,7 +245,9 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _groupId != null ? 'Blend ${_groupId!.substring(0, _groupId!.length > 8 ? 8 : _groupId!.length)}...' : 'Blend Chat',
+                    _groupId != null
+                        ? 'Blend ${_groupId!.substring(0, _groupId!.length > 8 ? 8 : _groupId!.length)}...'
+                        : 'Blend Chat',
                     style: TextStyle(
                       color: context.trenzyColors.primary,
                       fontWeight: FontWeight.bold,
@@ -265,7 +278,11 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
               border: Border.all(color: context.trenzyColors.glassBorder),
             ),
             child: IconButton(
-              icon: Icon(Icons.more_vert, color: context.trenzyColors.mutedFg, size: 18),
+              icon: Icon(
+                Icons.more_vert,
+                color: context.trenzyColors.mutedFg,
+                size: 18,
+              ),
               onPressed: () {},
             ),
           ),
@@ -275,25 +292,32 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
         children: [
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: context.trenzyColors.primary))
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: context.trenzyColors.primary,
+                    ),
+                  )
                 : _messages.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No messages yet.\nSay hello to your blend!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 14),
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(20),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = _messages[index];
-                          final isMe = msg.senderId == myId;
-                          return _buildMessageBubble(msg, isMe);
-                        },
+                ? Center(
+                    child: Text(
+                      'No messages yet.\nSay hello to your blend!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: context.trenzyColors.mutedFg,
+                        fontSize: 14,
                       ),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      final isMe = msg.senderId == myId;
+                      return _buildMessageBubble(msg, isMe);
+                    },
+                  ),
           ),
           _buildChatInput(),
         ],
@@ -332,12 +356,20 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 placeholder: (_, _) => Container(
                   height: 160,
                   color: context.trenzyColors.graphite,
-                  child: Center(child: CircularProgressIndicator(color: context.trenzyColors.primary, strokeWidth: 2)),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: context.trenzyColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  ),
                 ),
                 errorWidget: (_, _, _) => Container(
                   height: 160,
                   color: context.trenzyColors.graphite,
-                  child: Icon(Icons.image_not_supported, color: context.trenzyColors.mutedFg),
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: context.trenzyColors.mutedFg,
+                  ),
                 ),
               ),
             ),
@@ -349,7 +381,10 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                   if (msg.message.isNotEmpty)
                     Text(
                       msg.message,
-                      style: TextStyle(color: context.trenzyColors.foreground, fontSize: 13),
+                      style: TextStyle(
+                        color: context.trenzyColors.foreground,
+                        fontSize: 13,
+                      ),
                     ),
                   if (msg.message.isNotEmpty) SizedBox(height: 8),
                   Row(
@@ -406,7 +441,9 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 onSubmitted: (_) => _sendMessage(),
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
-                  hintStyle: TextStyle(color: context.trenzyColors.mutedFg.withValues(alpha: 0.4)),
+                  hintStyle: TextStyle(
+                    color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -423,7 +460,11 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 ],
               ),
               child: IconButton(
-                icon: Icon(Icons.send_rounded, color: context.trenzyColors.primaryFg, size: 18),
+                icon: Icon(
+                  Icons.send_rounded,
+                  color: context.trenzyColors.primaryFg,
+                  size: 18,
+                ),
                 onPressed: _sendMessage,
               ),
             ),

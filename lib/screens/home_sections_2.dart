@@ -59,7 +59,10 @@ class _ContinueBlendCard extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [context.trenzyColors.primary, context.trenzyColors.emerald],
+                    colors: [
+                      context.trenzyColors.primary,
+                      context.trenzyColors.emerald,
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -82,7 +85,8 @@ class _ContinueBlendCard extends StatelessWidget {
                               color: context.trenzyColors.emerald,
                               boxShadow: [
                                 BoxShadow(
-                                  color: context.trenzyColors.emerald.withValues(alpha: 0.5),
+                                  color: context.trenzyColors.emerald
+                                      .withValues(alpha: 0.5),
                                   blurRadius: 6,
                                 ),
                               ],
@@ -106,8 +110,11 @@ class _ContinueBlendCard extends StatelessWidget {
                       SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.people_rounded,
-                              size: 14, color: context.trenzyColors.mutedFg),
+                          Icon(
+                            Icons.people_rounded,
+                            size: 14,
+                            color: context.trenzyColors.mutedFg,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             '${group.memberCount} ${group.memberCount == 1 ? 'person' : 'people'} swiping',
@@ -134,7 +141,9 @@ class _ContinueBlendCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: context.trenzyColors.primary.withValues(alpha: 0.25),
+                        color: context.trenzyColors.primary.withValues(
+                          alpha: 0.25,
+                        ),
                         blurRadius: 10,
                         offset: Offset(0, 3),
                       ),
@@ -157,4 +166,3 @@ class _ContinueBlendCard extends StatelessWidget {
     );
   }
 }
-

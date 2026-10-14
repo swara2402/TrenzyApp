@@ -30,10 +30,18 @@ class BlendLobbyScreen extends ConsumerWidget {
                   color: context.trenzyColors.glass,
                   border: Border.all(color: context.trenzyColors.glassBorder),
                 ),
-                child: Icon(Icons.group_off, color: context.trenzyColors.mutedFg, size: 36),
+                child: Icon(
+                  Icons.group_off,
+                  color: context.trenzyColors.mutedFg,
+                  size: 36,
+                ),
               ),
               SizedBox(height: 20),
-              DisplayText('No blend group selected', fontSize: 18, weight: FontWeight.w600),
+              DisplayText(
+                'No blend group selected',
+                fontSize: 18,
+                weight: FontWeight.w600,
+              ),
               SizedBox(height: 16),
               GlowButton(
                 label: 'Go to Blend Hub',
@@ -60,13 +68,28 @@ class BlendLobbyScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline, color: context.trenzyColors.crimson, size: 48),
+              Icon(
+                Icons.error_outline,
+                color: context.trenzyColors.crimson,
+                size: 48,
+              ),
               SizedBox(height: 16),
               DisplayText('Could not load blend group', fontSize: 16),
               SizedBox(height: 8),
-              Text(err.toString(), style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 12)),
+              Text(
+                err.toString(),
+                style: GlassTypography.body(
+                  color: context.trenzyColors.mutedFg,
+                  fontSize: 12,
+                ),
+              ),
               SizedBox(height: 16),
-              GlowButton(label: 'Retry', width: 120, height: 40, onTap: () => ref.invalidate(blendGroupProvider(groupId))),
+              GlowButton(
+                label: 'Retry',
+                width: 120,
+                height: 40,
+                onTap: () => ref.invalidate(blendGroupProvider(groupId)),
+              ),
             ],
           ),
         ),
@@ -93,7 +116,9 @@ class _BlendLobbyContent extends StatelessWidget {
             slivers: [
               // ── Glass app bar ─────────────────────────────────────────
               SliverAppBar(
-                backgroundColor: context.trenzyColors.background.withValues(alpha: 0.6),
+                backgroundColor: context.trenzyColors.background.withValues(
+                  alpha: 0.6,
+                ),
                 pinned: true,
                 elevation: 0,
                 leading: GlassBackButton(
@@ -102,28 +127,44 @@ class _BlendLobbyContent extends StatelessWidget {
                 title: Text.rich(
                   TextSpan(
                     text: 'Blend: ',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: context.trenzyColors.foreground),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: context.trenzyColors.foreground,
+                    ),
                     children: [
                       TextSpan(
                         text: group.name,
-                        style: TextStyle(color: context.trenzyColors.primary, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: context.trenzyColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 actions: [
                   Container(
-                    width: 36, height: 36,
+                    width: 36,
+                    height: 36,
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
                       color: context.trenzyColors.glass,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: context.trenzyColors.glassBorder),
+                      border: Border.all(
+                        color: context.trenzyColors.glassBorder,
+                      ),
                     ),
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: Icon(Icons.dashboard_rounded, color: context.trenzyColors.primary, size: 18),
-                      onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${group.id}'),
+                      icon: Icon(
+                        Icons.dashboard_rounded,
+                        color: context.trenzyColors.primary,
+                        size: 18,
+                      ),
+                      onPressed: () => context.go(
+                        '${AppRoutes.blendDashboard}?groupId=${group.id}',
+                      ),
                     ),
                   ),
                 ],
@@ -177,12 +218,19 @@ class _BlendLobbyContent extends StatelessWidget {
                 color: GlassColors.glass,
                 border: Border.all(color: GlassColors.glassBorder),
               ),
-              child: Icon(Icons.person_add_outlined, color: GlassColors.primary, size: 28),
+              child: Icon(
+                Icons.person_add_outlined,
+                color: GlassColors.primary,
+                size: 28,
+              ),
             ),
             SizedBox(height: 12),
             Text(
               'No members yet. Share the invite code to add people.',
-              style: GlassTypography.body(color: GlassColors.mutedFg, fontSize: 14),
+              style: GlassTypography.body(
+                color: GlassColors.mutedFg,
+                fontSize: 14,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -212,8 +260,14 @@ class _BlendLobbyContent extends StatelessWidget {
                       // Border color based on presence status
                       gradient: LinearGradient(
                         colors: member.isOnline == true
-                            ? [GlassColors.emerald, GlassColors.emerald.withValues(alpha: 0.7)]
-                            : [GlassColors.mutedFg, GlassColors.mutedFg.withValues(alpha: 0.5)],
+                            ? [
+                                GlassColors.emerald,
+                                GlassColors.emerald.withValues(alpha: 0.7),
+                              ]
+                            : [
+                                GlassColors.mutedFg,
+                                GlassColors.mutedFg.withValues(alpha: 0.5),
+                              ],
                       ),
                     ),
                     child: Container(
@@ -223,9 +277,13 @@ class _BlendLobbyContent extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          member.userName.isNotEmpty ? member.userName[0].toUpperCase() : '?',
+                          member.userName.isNotEmpty
+                              ? member.userName[0].toUpperCase()
+                              : '?',
                           style: TextStyle(
-                            color: member.isOnline == true ? GlassColors.emerald : GlassColors.mutedFg,
+                            color: member.isOnline == true
+                                ? GlassColors.emerald
+                                : GlassColors.mutedFg,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
@@ -244,7 +302,10 @@ class _BlendLobbyContent extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: GlassColors.emerald,
-                          border: Border.all(color: GlassColors.background, width: 3),
+                          border: Border.all(
+                            color: GlassColors.background,
+                            width: 3,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: GlassColors.emerald.withValues(alpha: 0.6),
@@ -265,9 +326,16 @@ class _BlendLobbyContent extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: GlassColors.primary,
-                          border: Border.all(color: GlassColors.background, width: 3),
+                          border: Border.all(
+                            color: GlassColors.background,
+                            width: 3,
+                          ),
                         ),
-                        child: const Icon(Icons.check, color: Colors.white, size: 14),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                       ),
                     ),
                 ],
@@ -287,14 +355,18 @@ class _BlendLobbyContent extends StatelessWidget {
   Widget _buildContextMessage(BuildContext context) {
     final members = group.members;
     final readyCount = members.where((m) => m.isReady == true).length;
-    final notReadyMembers = members.where((m) => m.isReady != true).map((m) => m.userName).toList();
-    final allReady = members.isNotEmpty && members.every((m) => m.isReady == true);
-    
+    final notReadyMembers = members
+        .where((m) => m.isReady != true)
+        .map((m) => m.userName)
+        .toList();
+    final allReady =
+        members.isNotEmpty && members.every((m) => m.isReady == true);
+
     final statusText = allReady
         ? 'Everyone ready \u2014 Start swiping to discover your shared style picks!'
         : (notReadyMembers.isNotEmpty
-            ? 'Waiting for ${notReadyMembers.join(', ')}'
-            : 'Invite friends to join this blend code!');
+              ? 'Waiting for ${notReadyMembers.join(', ')}'
+              : 'Invite friends to join this blend code!');
 
     return Column(
       children: [
@@ -317,20 +389,31 @@ class _BlendLobbyContent extends StatelessWidget {
               onTap: () {
                 Clipboard.setData(ClipboardData(text: group.inviteCode));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invite code copied to clipboard')),
+                  const SnackBar(
+                    content: Text('Invite code copied to clipboard'),
+                  ),
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: GlassColors.glass,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: GlassColors.primary.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: GlassColors.primary.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.content_copy_rounded, size: 16, color: GlassColors.primary),
+                    Icon(
+                      Icons.content_copy_rounded,
+                      size: 16,
+                      color: GlassColors.primary,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       group.inviteCode,
@@ -349,7 +432,10 @@ class _BlendLobbyContent extends StatelessWidget {
             GestureDetector(
               onTap: () => _shareInvite(context),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   gradient: GlassGradients.primary,
                   borderRadius: BorderRadius.circular(16),
@@ -364,7 +450,11 @@ class _BlendLobbyContent extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.share_rounded, size: 16, color: GlassColors.primaryFg),
+                    Icon(
+                      Icons.share_rounded,
+                      size: 16,
+                      color: GlassColors.primaryFg,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Share invite',
@@ -390,12 +480,14 @@ class _BlendLobbyContent extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: allReady ? GlassColors.emerald : GlassColors.mutedFg,
-                boxShadow: allReady ? [
-                  BoxShadow(
-                    color: GlassColors.emerald.withValues(alpha: 0.5),
-                    blurRadius: 6,
-                  ),
-                ] : null,
+                boxShadow: allReady
+                    ? [
+                        BoxShadow(
+                          color: GlassColors.emerald.withValues(alpha: 0.5),
+                          blurRadius: 6,
+                        ),
+                      ]
+                    : null,
               ),
             ),
             SizedBox(width: 8),
@@ -423,9 +515,7 @@ class _BlendLobbyContent extends StatelessWidget {
         'Join my Blend "${group.name}" with invite code ${group.inviteCode} '
         'and let\u2019s decide what to buy together. Download Trenzy to start swiping!';
     try {
-      await SharePlus.instance.share(
-        ShareParams(text: text, subject: subject),
-      );
+      await SharePlus.instance.share(ShareParams(text: text, subject: subject));
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -456,7 +546,11 @@ class _BlendLobbyContent extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.group_add_rounded, size: 20, color: GlassColors.primary),
+              Icon(
+                Icons.group_add_rounded,
+                size: 20,
+                color: GlassColors.primary,
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -473,7 +567,11 @@ class _BlendLobbyContent extends StatelessWidget {
           SizedBox(height: 6),
           Text(
             'Invite someone so you can both swipe and agree on what to buy together.',
-            style: GlassTypography.body(fontSize: 12, color: GlassColors.mutedFg, height: 1.4),
+            style: GlassTypography.body(
+              fontSize: 12,
+              color: GlassColors.mutedFg,
+              height: 1.4,
+            ),
             textAlign: TextAlign.left,
           ),
           SizedBox(height: 14),
@@ -496,8 +594,12 @@ class _BlendLobbyContent extends StatelessWidget {
 
   Widget _buildBottomBar(BuildContext context) {
     final members = group.members;
-    final notReadyMembers = members.where((m) => m.isReady != true).map((m) => m.userName).toList();
-    final allReady = members.isNotEmpty && members.every((m) => m.isReady == true);
+    final notReadyMembers = members
+        .where((m) => m.isReady != true)
+        .map((m) => m.userName)
+        .toList();
+    final allReady =
+        members.isNotEmpty && members.every((m) => m.isReady == true);
     return Positioned(
       bottom: 32,
       left: 20,
@@ -511,10 +613,7 @@ class _BlendLobbyContent extends StatelessWidget {
                 notReadyMembers.isNotEmpty
                     ? 'Waiting for ${notReadyMembers.first}'
                     : 'Wait for all members to be ready',
-                style: TextStyle(
-                  color: GlassColors.mutedFg,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: GlassColors.mutedFg, fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -523,7 +622,10 @@ class _BlendLobbyContent extends StatelessWidget {
             icon: Icons.bolt_rounded,
             height: 56,
             enabled: allReady,
-            onTap: allReady ? () => context.go('${AppRoutes.blendSwipe}?groupId=${group.id}') : null,
+            onTap: allReady
+                ? () =>
+                      context.go('${AppRoutes.blendSwipe}?groupId=${group.id}')
+                : null,
           ),
         ],
       ),

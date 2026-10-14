@@ -39,15 +39,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
       await ref.read(friendsProvider.notifier).sendRequest(uid);
       if (mounted) {
         _uidController.clear();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Friend request sent')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Friend request sent')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -94,14 +94,16 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
         ),
       ),
       body: async.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: colors.primary),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: colors.primary)),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Could not load friends', style: TextStyle(color: colors.mutedFg)),
+              Text(
+                'Could not load friends',
+                style: TextStyle(color: colors.mutedFg),
+              ),
               TextButton(
                 onPressed: () => ref.read(friendsProvider.notifier).refresh(),
                 child: const Text('Retry'),
@@ -149,11 +151,15 @@ class _FriendsList extends ConsumerWidget {
         final f = state.friends[i];
         return ListTile(
           tileColor: colors.graphite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           leading: CircleAvatar(
             backgroundColor: colors.primary.withValues(alpha: 0.2),
             child: Text(
-              f.name != null && f.name!.isNotEmpty ? f.name![0].toUpperCase() : '?',
+              f.name != null && f.name!.isNotEmpty
+                  ? f.name![0].toUpperCase()
+                  : '?',
               style: TextStyle(color: colors.primary),
             ),
           ),
@@ -167,7 +173,10 @@ class _FriendsList extends ConsumerWidget {
             children: [
               IconButton(
                 tooltip: 'Message',
-                icon: Icon(Icons.chat_bubble_outline_rounded, color: colors.primary),
+                icon: Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  color: colors.primary,
+                ),
                 onPressed: () => context.push(
                   '/chat/direct?uid=${Uri.encodeComponent(f.firebaseUid ?? '')}&name=${Uri.encodeComponent(f.name ?? '')}',
                 ),
@@ -175,12 +184,19 @@ class _FriendsList extends ConsumerWidget {
               IconButton(
                 tooltip: 'Report user',
                 icon: Icon(Icons.flag_outlined, color: colors.mutedFg),
-                onPressed: () => _showReportDialog(context, ref, f.firebaseUid ?? '', f.name ?? ''),
+                onPressed: () => _showReportDialog(
+                  context,
+                  ref,
+                  f.firebaseUid ?? '',
+                  f.name ?? '',
+                ),
               ),
               IconButton(
                 tooltip: 'Remove friend',
                 icon: Icon(Icons.person_remove_outlined, color: colors.crimson),
-                onPressed: () => ref.read(friendsProvider.notifier).remove(int.tryParse(f.id ?? '') ?? 0),
+                onPressed: () => ref
+                    .read(friendsProvider.notifier)
+                    .remove(int.tryParse(f.id ?? '') ?? 0),
               ),
             ],
           ),
@@ -202,7 +218,10 @@ class _RequestsList extends ConsumerWidget {
     final colors = context.trenzyColors;
     if (state.incoming.isEmpty) {
       return Center(
-        child: Text('No pending requests', style: TextStyle(color: colors.mutedFg)),
+        child: Text(
+          'No pending requests',
+          style: TextStyle(color: colors.mutedFg),
+        ),
       );
     }
     return ListView.separated(
@@ -213,8 +232,13 @@ class _RequestsList extends ConsumerWidget {
         final r = state.incoming[i];
         return ListTile(
           tileColor: colors.graphite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text(r.fromName ?? '', style: TextStyle(color: colors.foreground)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            r.fromName ?? '',
+            style: TextStyle(color: colors.foreground),
+          ),
           subtitle: Text(
             r.fromFirebaseUid ?? '',
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
@@ -224,11 +248,15 @@ class _RequestsList extends ConsumerWidget {
             children: [
               IconButton(
                 icon: Icon(Icons.check, color: colors.emerald),
-                onPressed: () => ref.read(friendsProvider.notifier).accept(int.tryParse(r.id ?? '') ?? 0),
+                onPressed: () => ref
+                    .read(friendsProvider.notifier)
+                    .accept(int.tryParse(r.id ?? '') ?? 0),
               ),
               IconButton(
                 icon: Icon(Icons.close, color: colors.crimson),
-                onPressed: () => ref.read(friendsProvider.notifier).reject(int.tryParse(r.id ?? '') ?? 0),
+                onPressed: () => ref
+                    .read(friendsProvider.notifier)
+                    .reject(int.tryParse(r.id ?? '') ?? 0),
               ),
             ],
           ),
@@ -295,14 +323,18 @@ class _FindList extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                title: Text(s.name ?? '', style: TextStyle(color: colors.foreground)),
+                title: Text(
+                  s.name ?? '',
+                  style: TextStyle(color: colors.foreground),
+                ),
                 subtitle: Text(
                   s.reason?.replaceAll('_', ' ') ?? '',
                   style: TextStyle(color: colors.mutedFg, fontSize: 12),
                 ),
                 trailing: TextButton(
-                  onPressed: () =>
-                      ref.read(friendsProvider.notifier).sendRequest(s.firebaseUid ?? ''),
+                  onPressed: () => ref
+                      .read(friendsProvider.notifier)
+                      .sendRequest(s.firebaseUid ?? ''),
                   child: const Text('Add'),
                 ),
               ),
@@ -311,8 +343,6 @@ class _FindList extends ConsumerWidget {
       ],
     );
   }
-
-
 }
 
 Future<void> _showReportDialog(
@@ -343,10 +373,12 @@ Future<void> _showReportDialog(
             DropdownButtonFormField<String>(
               initialValue: selected,
               items: reasons.entries
-                  .map((entry) => DropdownMenuItem(
-                        value: entry.key,
-                        child: Text(entry.value),
-                      ))
+                  .map(
+                    (entry) => DropdownMenuItem(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) => setState(() => selected = value ?? 'other'),
               decoration: const InputDecoration(labelText: 'Reason'),
@@ -382,7 +414,9 @@ Future<void> _showReportDialog(
   }
 
   try {
-    await ref.read(apiServiceProvider).reportUser(
+    await ref
+        .read(apiServiceProvider)
+        .reportUser(
           targetFirebaseUid: targetUid,
           reason: selected,
           details: detailsController.text,
@@ -394,12 +428,11 @@ Future<void> _showReportDialog(
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not submit report: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not submit report: $e')));
     }
   } finally {
     detailsController.dispose();
   }
 }
-

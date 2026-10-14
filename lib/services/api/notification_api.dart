@@ -14,9 +14,10 @@ class NotificationApi {
   }
 
   Future<void> markNotificationRead(String notificationId) async {
-    await _client.post('/notifications/read', body: {
-      'notificationId': notificationId,
-    });
+    await _client.post(
+      '/notifications/read',
+      body: {'notificationId': notificationId},
+    );
     _client.invalidateCache('notifications');
   }
 
@@ -30,10 +31,13 @@ class NotificationApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
-  Future<void> registerPushToken(String token, {String platform = 'fcm'}) async {
-    await _client.post('/notifications/push/register', body: {
-      'token': token,
-      'platform': platform,
-    });
+  Future<void> registerPushToken(
+    String token, {
+    String platform = 'fcm',
+  }) async {
+    await _client.post(
+      '/notifications/push/register',
+      body: {'token': token, 'platform': platform},
+    );
   }
 }

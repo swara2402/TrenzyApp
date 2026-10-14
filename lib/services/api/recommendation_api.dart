@@ -11,16 +11,18 @@ class RecommendationApi {
   }
 
   Future<Map<String, dynamic>> getRecommendedPeople({int limit = 10}) async {
-    final data = await _client.get('/recommend/people', queryParams: {
-      'limit': limit.toString(),
-    });
+    final data = await _client.get(
+      '/recommend/people',
+      queryParams: {'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> getRecommendedOutfits({int limit = 6}) async {
-    final data = await _client.get('/recommend/outfits', queryParams: {
-      'limit': limit.toString(),
-    });
+    final data = await _client.get(
+      '/recommend/outfits',
+      queryParams: {'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -36,9 +38,10 @@ class RecommendationApi {
 
   // ---------- Discover Swipes ----------
   Future<Map<String, dynamic>> discoverSwipe({int limit = 20}) async {
-    final data = await _client.get('/recommendations/discover/swipe', queryParams: {
-      'limit': limit.toString(),
-    });
+    final data = await _client.get(
+      '/recommendations/discover/swipe',
+      queryParams: {'limit': limit.toString()},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -46,10 +49,10 @@ class RecommendationApi {
     required String productId,
     required String swipeType,
   }) async {
-    await _client.post('/recommendations/discover/swipe', body: {
-      'productId': productId,
-      'swipeType': swipeType,
-    });
+    await _client.post(
+      '/recommendations/discover/swipe',
+      body: {'productId': productId, 'swipeType': swipeType},
+    );
   }
 
   // ---------- Trends ----------
@@ -64,7 +67,9 @@ class RecommendationApi {
       'limit': limit.toString(),
     };
     if (category != null && category.isNotEmpty) qp['category'] = category;
-    if (categories != null && categories.isNotEmpty) qp['categories'] = categories;
+    if (categories != null && categories.isNotEmpty) {
+      qp['categories'] = categories;
+    }
 
     final data = await _client.get('/trends', queryParams: qp);
     if (data is Map<String, dynamic> && data['trends'] is List) {
@@ -94,15 +99,23 @@ class RecommendationApi {
   }
 
   Future<String?> trackAffiliateClick(String productId) async {
-    final data = await _client.post('/trends/affiliate-click', body: {'product_id': productId});
+    final data = await _client.post(
+      '/trends/affiliate-click',
+      body: {'product_id': productId},
+    );
     if (data is Map<String, dynamic>) {
       return data['affiliate_link']?.toString();
     }
     return null;
   }
 
-  Future<Map<String, dynamic>> aggregateTrends({String timeframe = 'daily'}) async {
-    final data = await _client.post('/trends/aggregate', body: {'timeframe': timeframe});
+  Future<Map<String, dynamic>> aggregateTrends({
+    String timeframe = 'daily',
+  }) async {
+    final data = await _client.post(
+      '/trends/aggregate',
+      body: {'timeframe': timeframe},
+    );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -114,15 +127,19 @@ class RecommendationApi {
     required int aiScore,
     required int socialApproval,
   }) async {
-    final data = await _client.post('/decisions/reasoning', body: {
-      'query': query,
-      'option_title': optionTitle,
-      'option_price': optionPrice,
-      'ai_score': aiScore,
-      'social_approval': socialApproval,
-    });
+    final data = await _client.post(
+      '/decisions/reasoning',
+      body: {
+        'query': query,
+        'option_title': optionTitle,
+        'option_price': optionPrice,
+        'ai_score': aiScore,
+        'social_approval': socialApproval,
+      },
+    );
     if (data is Map<String, dynamic>) {
-      return data['reasoning']?.toString() ?? 'Recommended choice based on preferences.';
+      return data['reasoning']?.toString() ??
+          'Recommended choice based on preferences.';
     }
     return 'Recommended choice based on preferences.';
   }
@@ -134,13 +151,16 @@ class RecommendationApi {
     required int socialApproval,
     required String reasoning,
   }) async {
-    await _client.post('/decisions', body: {
-      'query': query,
-      'selected_options': selectedOptions,
-      'recommended_option_id': recommendedOptionId,
-      'social_approval': socialApproval,
-      'reasoning': reasoning,
-    });
+    await _client.post(
+      '/decisions',
+      body: {
+        'query': query,
+        'selected_options': selectedOptions,
+        'recommended_option_id': recommendedOptionId,
+        'social_approval': socialApproval,
+        'reasoning': reasoning,
+      },
+    );
   }
 
   Future<List<dynamic>> getDecisions() async {
