@@ -107,9 +107,11 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     bool requireBackendSync = false,
   }) async {
     try {
-      // Force-refresh the Firebase token before asking the backend to
-      // initialize or retrieve this user's profile.
-      final token = await user.getIdToken(true);
+      // Firebase sign-in has already established a valid session. Reuse its
+      // current token instead of forcing another network refresh on every
+      // login; ApiClient refreshes the token automatically if the backend
+      // rejects it with 401.
+      final token = await user.getIdToken();
       if (token == null || token.isEmpty) {
         if (requireBackendSync) {
           throw const ApiException(
@@ -204,8 +206,9 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       // Never reuse profile data from the previous account.
       ApiService.clearCache();
 
-      // Ensure a fresh token and require backend upsert/profile sync to succeed.
-      await user.getIdToken(true);
+      // Firebase sign-in already supplies a valid session token. Avoid an
+      // extra forced refresh here; the backend request obtains the current
+      // token and ApiClient handles refresh on 401.
       await _api.googleLogin();
 
       final synced = await _syncBackendUser(user, requireBackendSync: true);
