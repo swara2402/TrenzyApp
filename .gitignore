@@ -64,6 +64,9 @@ npm-debug.log*
 *.db
 uploads/
 *.log
+# Catalog audit temporary files
+backend/catalog_audit/images_cache/
+backend/catalog_audit/full_audit_log.txt
 
 # OS / editor
 .DS_Store
