@@ -167,7 +167,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       // Share the same in-flight preferences request used by the auth-state
       // hydration listener instead of issuing a duplicate network request.
       if (retry) ref.invalidate(serverPreferencesProvider);
-      final preferences = await ref.read(serverPreferencesProvider.future);
+      debugPrint('[Login] loading account preferences');
+      final preferences = await ref
+          .read(serverPreferencesProvider.future)
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw const ApiException(
+              'You are signed in, but loading your account is taking too long. Tap Retry to continue.',
+              statusCode: 408,
+            ),
+          );
+      debugPrint('[Login] account preferences loaded');
       if (!mounted) return;
       context.go(
         AppRoutes.firstIncompleteOnboardingRoute(
