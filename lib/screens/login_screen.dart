@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../models/api_exception.dart';
 import '../providers/auth_provider.dart';
 import '../providers/api_service_provider.dart';
+import '../providers/user_preferences_provider.dart';
 import '../router/app_router.dart';
 import '../services/feature_flags.dart';
 import '../theme/glass_theme.dart';
@@ -122,6 +123,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
+          action: e is ApiException && e.statusCode == 503
+              ? SnackBarAction(
+                  label: 'Retry setup',
+                  onPressed: _retryAccountInitialization,
+                )
+              : null,
           backgroundColor: context.trenzyColors.crimson,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
@@ -132,6 +139,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _retryAccountInitialization() async {
+    try {
+      final user = await ref
+          .read(authProvider.notifier)
+          .retryAccountInitialization();
+      if (!mounted) return;
+      if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
+        context.go(AppRoutes.verifyEmail);
+      } else {
+        await _routeAfterLogin();
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(friendlyFirebaseError(error)),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: _retryAccountInitialization,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _routeAfterLogin({bool retry = false}) async {
+    try {
+      // Share the same in-flight preferences request used by the auth-state
+      // hydration listener instead of issuing a duplicate network request.
+      if (retry) ref.invalidate(serverPreferencesProvider);
+      debugPrint('[Login] loading account preferences');
+      final preferences = await ref
+          .read(serverPreferencesProvider.future)
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw const ApiException(
+              'You are signed in, but loading your account is taking too long. Tap Retry to continue.',
+              statusCode: 408,
+            ),
+          );
+      debugPrint('[Login] account preferences loaded');
+      if (!mounted) return;
+      context.go(
+        AppRoutes.firstIncompleteOnboardingRoute(
+          preferences: preferences,
+          source: 'signup',
+        ),
+      );
     } on ApiException catch (error) {
       if (!mounted) return;
       // For post-login 401s: don't trigger session-expired (we just logged in!)
@@ -156,7 +212,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         content: Text('Could not load your account progress: $error'),
         action: SnackBarAction(
           label: 'Retry',
-          onPressed: () => _routeAfterLogin(),
+          onPressed: () => _routeAfterLogin(retry: true),
         ),
       ),
     );

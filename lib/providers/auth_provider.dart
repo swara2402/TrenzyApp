@@ -102,53 +102,89 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     return user.emailVerified;
   }
 
-  Future<UserModel> _syncBackendUser(User user) async {
+  Future<UserModel> _syncBackendUser(
+    User user, {
+    bool requireBackendSync = false,
+  }) async {
     try {
-      // Force-refresh token to guarantee it's valid before hitting the backend.
-      final token = await user.getIdToken(true);
+      // Firebase sign-in has already established a valid session. Reuse its
+      // current token instead of forcing another network refresh on every
+      // login; ApiClient refreshes the token automatically if the backend
+      // rejects it with 401.
+      final token = await user.getIdToken();
       if (token == null || token.isEmpty) {
+        if (requireBackendSync) {
+          throw const ApiException(
+            'We could not verify your session. Please try again.',
+            statusCode: 503,
+          );
+        }
         return _toUserModel(user).copyWith(emailVerified: _isVerified(user));
       }
 
       final backendUser = await _api.getCurrentUser();
-
       if (backendUser != null) {
         final synced = UserModel.fromJson(backendUser);
-
-
         return synced.copyWith(emailVerified: _isVerified(user));
       }
 
+      // During signup/login, a Firebase user without a backend profile is
+      // not ready to enter the app. Startup restoration remains best-effort
+      // so a transient backend outage does not erase a valid Firebase session.
+      if (requireBackendSync) {
+        throw const ApiException(
+          'Your account was authenticated, but Trenzy could not finish loading your profile. Check your connection and retry.',
+          statusCode: 503,
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      // Handle token expired error specifically
       if (e.code == 'user-token-expired') {
-        debugPrint('Firebase token expired, user will need to sign in again');
-        // Sign out the user to clear invalid state
+        debugPrint('[Auth] Firebase token expired; signing out');
         await _auth.signOut();
         ApiService.clearCache();
         state = const AsyncValue.data(null);
-        rethrow; // Re-throw to allow navigation guards to handle redirect to login
+        rethrow;
       }
-      // Fall back for other Firebase auth errors
+      if (requireBackendSync) {
+        throw ApiException(
+          'We could not verify your session with Trenzy. Please try again.',
+          statusCode: 503,
+          details: e,
+        );
+      }
+    } on ApiException catch (e) {
+      if (requireBackendSync) {
+        // Keep authentication/authorization failures distinct, but normalize
+        // backend/profile/network failures so the UI offers account-setup retry.
+        if (e.statusCode == 401 || e.statusCode == 403) rethrow;
+        throw ApiException(
+          'Your account was authenticated, but Trenzy could not finish loading your profile. Check your connection and retry.',
+          statusCode: 503,
+          details: e,
+        );
+      }
     } catch (e) {
-      // Fall back to Firebase profile when backend is unreachable / other token
-      // retrieval fails. Do NOT rethrow — the user is still authenticated.
-
+      if (requireBackendSync) {
+        throw ApiException(
+          'Your account was authenticated, but Trenzy could not finish loading your profile. Check your connection and retry.',
+          statusCode: 503,
+          details: e,
+        );
+      }
+      // Existing sessions can still be restored locally during a temporary
+      // backend outage; guarded routes will continue enforcing requirements.
     }
-    // Keep a previously synced age verification for the same user so a
-    // transient backend failure can't dump a verified user back onto the age
-    // gate (never carry it across accounts — state is nulled on sign-out).
+
+    // Best-effort fallback is only for session restoration, not for a fresh
+    // signup/login where the backend profile must be ready before proceeding.
     final previous = state.valueOrNull;
-    final keepVerified =
-        previous != null &&
+    final keepVerified = previous != null &&
         previous.firebaseUid == user.uid &&
         previous.ageVerified;
-    final fallback = _toUserModel(user).copyWith(
+    return _toUserModel(user).copyWith(
       emailVerified: _isVerified(user),
       ageVerified: keepVerified,
     );
-
-    return fallback;
   }
 
   // NOTE: provider invalidation must not happen here.
@@ -167,13 +203,15 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     try {
       final user = _auth.currentUser ?? await GoogleSignInService.instance.signIn();
 
-      // Ensure a fresh token before hitting backend.
-      await user.getIdToken(true);
+      // Never reuse profile data from the previous account.
+      ApiService.clearCache();
 
-      // Best-effort: call backend to upsert DB user.
+      // Firebase sign-in already supplies a valid session token. Avoid an
+      // extra forced refresh here; the backend request obtains the current
+      // token and ApiClient handles refresh on 401.
       await _api.googleLogin();
 
-      final synced = await _syncBackendUser(user);
+      final synced = await _syncBackendUser(user, requireBackendSync: true);
       state = AsyncValue.data(synced);
     } catch (e, st) {
       final msg = e is FirebaseAuthException
@@ -199,18 +237,45 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
 
     try {
       debugPrint('[Auth] login attempt');
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: trimmedEmail,
-        password: password,
-      );
+      // Avoid using a cached profile/preferences response from a previous
+      // account when switching users.
+      ApiService.clearCache();
+      debugPrint('[Auth] email/password Firebase sign-in started');
+      final userCredential = await _auth
+          .signInWithEmailAndPassword(
+            email: trimmedEmail,
+            password: password,
+          )
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw const ApiException(
+              'Sign-in is taking too long. Check your connection and try again.',
+              statusCode: 408,
+            ),
+          );
+      debugPrint('[Auth] Firebase sign-in completed');
 
       final user = userCredential.user;
       if (user == null) {
         state = const AsyncValue.data(null);
-        return;
+        throw const ApiException(
+          'Sign-in completed without an active user session. Please try again.',
+          statusCode: 503,
+        );
       }
 
-      final synced = await _syncBackendUser(user);
+      debugPrint('[Auth] backend profile sync started');
+      final synced = await _syncBackendUser(
+        user,
+        requireBackendSync: true,
+      ).timeout(
+        const Duration(seconds: 25),
+        onTimeout: () => throw const ApiException(
+          'You are signed in, but Trenzy is taking too long to load your profile. Please retry.',
+          statusCode: 503,
+        ),
+      );
+      debugPrint('[Auth] backend profile sync completed');
       state = AsyncValue.data(synced);
     } catch (e, st) {
       if (FeatureFlags.devAuthBypass) {
@@ -224,7 +289,12 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
         return;
       }
       final msg = friendlyFirebaseError(e);
-      state = AsyncValue.error(ApiException(msg), st);
+      // Preserve status/details so the login UI can offer the right retry path.
+      state = AsyncValue.error(
+        e is ApiException ? e : ApiException(msg),
+        st,
+      );
+      debugPrint('[Auth] email/password login failed: $e');
       rethrow;
     }
   }
@@ -307,6 +377,7 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
 
     try {
       debugPrint('[Auth] signup attempt');
+      ApiService.clearCache();
       final cred = await _auth.createUserWithEmailAndPassword(
         email: trimmedEmail,
         password: password,
@@ -314,26 +385,63 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
 
       await cred.user?.updateDisplayName(name);
 
-      try {
-        await cred.user?.sendEmailVerification();
-      } catch (e) {
-        // Keep registration successful even if email dispatch fails temporarily.
-        // But log it so developers can diagnose Firebase configuration issues.
-        debugPrint('Firebase verification email dispatch failed: $e');
-      }
-
       await _auth.currentUser?.reload();
       final user = _auth.currentUser;
 
       if (user != null) {
-        final synced = await _syncBackendUser(user);
+        // Establish the backend profile first. Then send verification with
+        // SDK + REST fallback so a delivery failure is visible and retryable.
+        final synced = await _syncBackendUser(user, requireBackendSync: true);
         state = AsyncValue.data(synced);
+        if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
+          try {
+            await _sendVerificationEmail();
+          } catch (e) {
+            throw ApiException(
+              'Your account was created, but we could not send the verification email. Check your connection and tap Continue to retry.',
+              statusCode: 503,
+              details: e,
+            );
+          }
+        }
       } else {
         state = const AsyncValue.data(null);
+        throw const ApiException(
+          'Firebase created the account, but the session could not be restored. Please retry account setup.',
+          statusCode: 503,
+        );
       }
     } catch (e, st) {
       final msg = friendlyFirebaseError(e);
-      state = AsyncValue.error(ApiException(msg), st);
+      state = AsyncValue.error(
+        e is ApiException ? e : ApiException(msg),
+        st,
+      );
+      rethrow;
+    }
+  }
+
+  /// Retry backend profile initialization after Firebase signup/login succeeded.
+  /// This avoids asking a user to create the same Firebase account a second time.
+  Future<UserModel> retryAccountInitialization() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const ApiException(
+        'Your sign-in session has expired. Please sign in again.',
+      );
+    }
+
+    state = const AsyncValue.loading();
+    ApiService.clearCache();
+    try {
+      final synced = await _syncBackendUser(user, requireBackendSync: true);
+      if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
+        await _sendVerificationEmail();
+      }
+      state = AsyncValue.data(synced);
+      return synced;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
       rethrow;
     }
   }

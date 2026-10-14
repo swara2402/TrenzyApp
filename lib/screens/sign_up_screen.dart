@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/providers/auth_provider.dart';
+import 'package:trenzy/models/api_exception.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/utils/firebase_error_handler.dart';
@@ -25,6 +27,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKeyStep2 = GlobalKey<FormState>();
   final _formKeyStep3 = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _accountCreatedButSetupFailed = false;
   String? _errorMessage;
   int _currentStep = 0;
 
@@ -69,7 +72,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _errorMessage = null;
     });
     try {
-      await ref.read(authProvider.notifier).signup(name, email, password);
+      if (_accountCreatedButSetupFailed) {
+        await ref.read(authProvider.notifier).retryAccountInitialization();
+      } else {
+        await ref.read(authProvider.notifier).signup(name, email, password);
+      }
       if (!mounted) return;
       final user = ref.read(authProvider).valueOrNull;
       if (user != null && !user.emailVerified && !FeatureFlags.skipEmailVerification) {
@@ -83,7 +90,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       // The router's refresh listener will automatically redirect to the correct page
     } catch (e) {
       if (!mounted) return;
-      setState(() => _errorMessage = friendlyFirebaseError(e));
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final createdForThisEmail = currentUser != null &&
+          currentUser.email?.trim().toLowerCase() == email.toLowerCase();
+      setState(() {
+        _accountCreatedButSetupFailed =
+            createdForThisEmail && e is ApiException && e.statusCode == 503;
+        _errorMessage = _accountCreatedButSetupFailed
+            ? 'Your account was created, but setup could not finish. Tap Continue to retry setup; you do not need to register again.'
+            : friendlyFirebaseError(e);
+      });
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

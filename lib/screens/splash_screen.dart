@@ -27,6 +27,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final Animation<double> _logoScale;
   Timer? _navigationTimer;
   Timer? _safetyTimer;
+  Duration? _playbackEnd;
 
   bool _videoReady = false;
   bool _navigated = false;
@@ -53,8 +54,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller = VideoPlayerController.asset('assets/videos/splash.mp4');
 
-    // Global safety net: navigate regardless of video state after 4 seconds (removed last 2s).
-    _safetyTimer = Timer(const Duration(seconds: 4), () {
+    // Safety net only: let the ~15-second splash video finish normally.
+    // This timer is for a stalled player, not a replacement for video timing.
+    _safetyTimer = Timer(const Duration(seconds: 20), () {
       if (mounted && !_navigated) {
         _navigated = true;
         _navigateAfterSplash();
@@ -84,10 +86,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       await _controller.setVolume(0);
 
       final videoDuration = _controller.value.duration;
+      // Skip the final second of the splash clip for a cleaner transition.
+      _playbackEnd = videoDuration > const Duration(seconds: 1)
+          ? videoDuration - const Duration(seconds: 1)
+          : videoDuration;
 
       if (videoDuration > Duration.zero) {
         _navigationTimer = Timer(
-          videoDuration + const Duration(milliseconds: 500),
+          _playbackEnd! + const Duration(milliseconds: 500),
           () {
             if (mounted && !_navigated) {
               if (kDebugMode) {
@@ -159,7 +165,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final prefs = await ref
           .read(serverPreferencesProvider.future)
           .timeout(
+<<<<<<< HEAD
             const Duration(seconds: 15),
+=======
+            const Duration(seconds: 45),
+>>>>>>> c5c805745457d187b79d05e9c28e45feae8a124b
             onTimeout: () =>
                 throw TimeoutException('Loading account progress timed out'),
           );
@@ -217,7 +227,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (value.isInitialized &&
         value.duration > Duration.zero &&
-        value.position >= value.duration) {
+        value.position >= (_playbackEnd ?? value.duration)) {
       _navigated = true;
       _navigationTimer?.cancel();
       _safetyTimer?.cancel();

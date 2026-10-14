@@ -213,12 +213,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 68,
-              backgroundColor: context.trenzyColors.graphite,
-              backgroundImage:
-                  NetworkImage(user.avatarUrl),
-              child: null,
+            child: ClipOval(
+              child: user.avatarUrl.trim().isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: user.avatarUrl,
+                      width: 140,
+                      height: 140,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => _avatarFallback(),
+                      errorWidget: (_, _, _) => _avatarFallback(),
+                    )
+                  : _avatarFallback(),
             ),
           ),
           SizedBox(height: GlassSpacing.md),
@@ -275,18 +280,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             color: context.trenzyColors.glassBorder,
           ),
         ),
-        child: Row(
-          children: [
-            _buildStatItem(Icons.article_outlined, 'Posts', '$postsCount'),
-            _buildVerticalDivider(),
-            _buildStatItem(Icons.people_outline_rounded, 'Followers', '$followersCount'),
-            _buildVerticalDivider(),
-            _buildStatItem(Icons.person_add_outlined, 'Following', '$followingCount'),
-            _buildVerticalDivider(),
-            _buildStatItem(Icons.checkroom_outlined, 'Wardrobe', '$wardrobeCount'),
-            _buildVerticalDivider(),
-            _buildStatItem(Icons.style_outlined, 'Outfits', '$outfitsCount'),
-          ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(),
+          child: Row(
+            children: [
+              _buildStatItem(Icons.article_outlined, 'Posts', '$postsCount'),
+              _buildVerticalDivider(),
+              _buildStatItem(Icons.people_outline_rounded, 'Followers', '$followersCount'),
+              _buildVerticalDivider(),
+              _buildStatItem(Icons.person_add_outlined, 'Following', '$followingCount'),
+              _buildVerticalDivider(),
+              _buildStatItem(Icons.checkroom_outlined, 'Wardrobe', '$wardrobeCount'),
+              _buildVerticalDivider(),
+              _buildStatItem(Icons.style_outlined, 'Outfits', '$outfitsCount'),
+            ],
+          ),
         ),
       ),
     );
@@ -301,7 +310,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildStatItem(IconData icon, String label, String value) {
-    return Expanded(
+    return SizedBox(
+      width: 78,
       child: Column(
         children: [
           Icon(icon, color: context.trenzyColors.primary, size: 18),
@@ -328,6 +338,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             maxLines: 1,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _avatarFallback() {
+    return Container(
+      width: 140,
+      height: 140,
+      color: context.trenzyColors.graphite,
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.person_rounded,
+        size: 56,
+        color: context.trenzyColors.mutedFg,
       ),
     );
   }
