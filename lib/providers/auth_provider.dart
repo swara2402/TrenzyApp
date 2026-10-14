@@ -240,18 +240,42 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
       // Avoid using a cached profile/preferences response from a previous
       // account when switching users.
       ApiService.clearCache();
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: trimmedEmail,
-        password: password,
-      );
+      debugPrint('[Auth] email/password Firebase sign-in started');
+      final userCredential = await _auth
+          .signInWithEmailAndPassword(
+            email: trimmedEmail,
+            password: password,
+          )
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw const ApiException(
+              'Sign-in is taking too long. Check your connection and try again.',
+              statusCode: 408,
+            ),
+          );
+      debugPrint('[Auth] Firebase sign-in completed');
 
       final user = userCredential.user;
       if (user == null) {
         state = const AsyncValue.data(null);
-        return;
+        throw const ApiException(
+          'Sign-in completed without an active user session. Please try again.',
+          statusCode: 503,
+        );
       }
 
-      final synced = await _syncBackendUser(user, requireBackendSync: true);
+      debugPrint('[Auth] backend profile sync started');
+      final synced = await _syncBackendUser(
+        user,
+        requireBackendSync: true,
+      ).timeout(
+        const Duration(seconds: 25),
+        onTimeout: () => throw const ApiException(
+          'You are signed in, but Trenzy is taking too long to load your profile. Please retry.',
+          statusCode: 503,
+        ),
+      );
+      debugPrint('[Auth] backend profile sync completed');
       state = AsyncValue.data(synced);
     } catch (e, st) {
       if (FeatureFlags.devAuthBypass) {
@@ -265,7 +289,12 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
         return;
       }
       final msg = friendlyFirebaseError(e);
-      state = AsyncValue.error(ApiException(msg), st);
+      // Preserve status/details so the login UI can offer the right retry path.
+      state = AsyncValue.error(
+        e is ApiException ? e : ApiException(msg),
+        st,
+      );
+      debugPrint('[Auth] email/password login failed: $e');
       rethrow;
     }
   }
