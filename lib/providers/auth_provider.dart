@@ -201,13 +201,14 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     try {
       final user = _auth.currentUser ?? await GoogleSignInService.instance.signIn();
 
-      // Ensure a fresh token before hitting backend.
-      await user.getIdToken(true);
+      // Never reuse profile data from the previous account.
+      ApiService.clearCache();
 
-      // Best-effort: call backend to upsert DB user.
+      // Ensure a fresh token and require backend upsert/profile sync to succeed.
+      await user.getIdToken(true);
       await _api.googleLogin();
 
-      final synced = await _syncBackendUser(user);
+      final synced = await _syncBackendUser(user, requireBackendSync: true);
       state = AsyncValue.data(synced);
     } catch (e, st) {
       final msg = e is FirebaseAuthException
@@ -352,20 +353,25 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
 
       await cred.user?.updateDisplayName(name);
 
-      try {
-        await cred.user?.sendEmailVerification();
-      } catch (e) {
-        // Keep registration successful even if email dispatch fails temporarily.
-        // But log it so developers can diagnose Firebase configuration issues.
-        debugPrint('Firebase verification email dispatch failed: $e');
-      }
-
       await _auth.currentUser?.reload();
       final user = _auth.currentUser;
 
       if (user != null) {
+        // Establish the backend profile first. Then send verification with
+        // SDK + REST fallback so a delivery failure is visible and retryable.
         final synced = await _syncBackendUser(user, requireBackendSync: true);
         state = AsyncValue.data(synced);
+        if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
+          try {
+            await _sendVerificationEmail();
+          } catch (e) {
+            throw ApiException(
+              'Your account was created, but we could not send the verification email. Check your connection and tap Continue to retry.',
+              statusCode: 503,
+              details: e,
+            );
+          }
+        }
       } else {
         state = const AsyncValue.data(null);
         throw const ApiException(
@@ -397,6 +403,9 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     ApiService.clearCache();
     try {
       final synced = await _syncBackendUser(user, requireBackendSync: true);
+      if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
+        await _sendVerificationEmail();
+      }
       state = AsyncValue.data(synced);
       return synced;
     } catch (e, st) {
