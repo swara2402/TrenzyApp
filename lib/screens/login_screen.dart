@@ -104,12 +104,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         _passwordController.text,
       );
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       final user = ref.read(authProvider).valueOrNull;
       final isEmailVerified = (user?.emailVerified ?? false) || FeatureFlags.skipEmailVerification;
       if (user != null && !isEmailVerified) {
-        if (!context.mounted) return;
+        if (!mounted) return;
         context.go(AppRoutes.verifyEmail);
         return;
       }
@@ -117,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       // Let router's redirect logic handle navigation based on auth/onboarding/age state
       // This ensures consistency with the central guardRedirect in app_router.dart
     } catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       final message = friendlyFirebaseError(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -144,14 +144,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       final user = await ref
           .read(authProvider.notifier)
           .retryAccountInitialization();
-      if (!context.mounted) return;
+      if (!mounted) return;
       if (!user.emailVerified && !FeatureFlags.devAuthBypass) {
         context.go(AppRoutes.verifyEmail);
       } else {
         await _routeAfterLogin();
       }
     } catch (error) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(friendlyFirebaseError(error)),
@@ -180,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
             ),
           );
       debugPrint('[Login] account preferences loaded');
-      if (!context.mounted) return;
+      if (!mounted) return;
       context.go(
         AppRoutes.firstIncompleteOnboardingRoute(
           preferences: preferences,
@@ -188,7 +188,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         ),
       );
     } on ApiException catch (error) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       // For post-login 401s: don't trigger session-expired (we just logged in!)
       if (error.statusCode == 401) {
         _showPreferencesRetry(error);
