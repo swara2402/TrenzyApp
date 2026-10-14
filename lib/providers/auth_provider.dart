@@ -150,9 +150,17 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
           details: e,
         );
       }
-    } on ApiException {
-      // Preserve the real API status/message for login/signup retry UI.
-      if (requireBackendSync) rethrow;
+    } on ApiException catch (e) {
+      if (requireBackendSync) {
+        // Keep authentication/authorization failures distinct, but normalize
+        // backend/profile/network failures so the UI offers account-setup retry.
+        if (e.statusCode == 401 || e.statusCode == 403) rethrow;
+        throw ApiException(
+          'Your account was authenticated, but Trenzy could not finish loading your profile. Check your connection and retry.',
+          statusCode: 503,
+          details: e,
+        );
+      }
     } catch (e) {
       if (requireBackendSync) {
         throw ApiException(
