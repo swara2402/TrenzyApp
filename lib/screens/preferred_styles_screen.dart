@@ -22,6 +22,20 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
   static const Color _ink = Color(0xFF35231F);
   static const Color _muted = Color(0xFF8B746C);
   static const Color _line = Color(0xFFF0DED5);
+  static const String _font = 'PlusJakartaSans';
+
+  static const Map<String, String> _styleDescriptions = {
+    'Casual': 'Easy, everyday comfort',
+    'Formal': 'Sharp, polished looks',
+    'Streetwear': 'Bold, city-inspired fits',
+    'Minimalist': 'Clean lines, less noise',
+    'Classic': 'Timeless wardrobe staples',
+    'Bohemian': 'Free-spirited and earthy',
+    'Sporty': 'Athletic, on-the-go energy',
+    'Ethnic': 'Heritage with a fresh twist',
+    'Preppy': 'Crisp, collegiate style',
+    'Grunge': 'Edgy, undone layers',
+  };
 
   final List<String> selectedStyles = [];
   bool _isSaving = false;
@@ -155,6 +169,7 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
                           RichText(
                             text: const TextSpan(
                               style: TextStyle(
+                                fontFamily: _font,
                                 color: _muted,
                                 fontSize: 15,
                                 height: 1.45,
@@ -233,7 +248,7 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
                             crossAxisCount: width < 355 ? 1 : 2,
                             crossAxisSpacing: 11,
                             mainAxisSpacing: 11,
-                            mainAxisExtent: 82,
+                            mainAxisExtent: 91,
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) => _buildStyleCard(styles[index]),
@@ -435,26 +450,46 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected ? const Color(0xFFFFDED2) : _rosePale,
                   ),
                   child: Icon(icon, color: _roseDeep, size: 24),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    style,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: _ink,
-                      fontSize: 13.5,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                      height: 1.15,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: _font,
+                          color: _ink,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _styleDescriptions[style] ?? 'Make it your own',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: _font,
+                          color: _muted,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          height: 1.15,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 4),
