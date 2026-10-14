@@ -96,7 +96,7 @@ def analyze_url_uniqueness(products: List[Dict[str, Any]]) -> Tuple[Dict[str, Li
     return reused_urls, len(url_to_products)
 
 def download_image(url: str, save_path: Path) -> Tuple[bool, str, Optional[Image.Image]]:
-    """Download an image from URL and save to local path."""
+    """Download an image from URL, verify it's a valid image file, not just HTTP 200."""
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -104,9 +104,23 @@ def download_image(url: str, save_path: Path) -> Tuple[bool, str, Optional[Image
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         
-        img = Image.open(BytesIO(response.content))
-        img.convert("RGB").save(save_path)
-        return True, "Success", img
+        # Check content type first - must be an image
+        content_type = response.headers.get('content-type', '').lower()
+        if not content_type.startswith('image/'):
+            return False, f"Invalid content-type: {content_type} (expected image/*)", None
+            
+        # Verify it's actually a parseable image file (not HTML or other non-image data masquerading as image)
+        try:
+            img = Image.open(BytesIO(response.content))
+            # Verify image has valid dimensions
+            if img.width < 1 or img.height < 1:
+                return False, f"Invalid image dimensions: {img.width}x{img.height}", None
+            # Verify we can convert it (catches corrupted images)
+            img.convert("RGB").save(save_path)
+            return True, "Success", img
+        except Exception as img_err:
+            return False, f"Not a valid image file: {str(img_err)}", None
+            
     except Exception as e:
         return False, str(e), None
 
@@ -351,7 +365,8 @@ def process_images(skip_downloads: bool = False, contact_sheets_only: bool = Fal
             info.error_message = "Downloads skipped, image not in cache"
         
         image_infos.append(info)
-        time.sleep(DOWNLOAD_DELAY)  # throttle requests to avoid 429 errors
+        if not skip_downloads:
+            time.sleep(DOWNLOAD_DELAY)  # only throttle when actually downloading
     
     return image_infos
 
