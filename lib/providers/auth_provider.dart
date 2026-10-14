@@ -435,7 +435,9 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
   }
 
   Future<void> verifyAge(DateTime dateOfBirth) async {
-    final current = state.valueOrNull;
+    final current =
+        state.valueOrNull ??
+        (_auth.currentUser != null ? _toUserModel(_auth.currentUser!) : null);
     if (current == null) {
       throw const ApiException('You must be signed in to verify your age.');
     }
