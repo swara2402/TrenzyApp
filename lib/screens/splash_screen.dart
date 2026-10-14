@@ -165,11 +165,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final prefs = await ref
           .read(serverPreferencesProvider.future)
           .timeout(
-<<<<<<< HEAD
-            const Duration(seconds: 15),
-=======
             const Duration(seconds: 45),
->>>>>>> c5c805745457d187b79d05e9c28e45feae8a124b
             onTimeout: () =>
                 throw TimeoutException('Loading account progress timed out'),
           );

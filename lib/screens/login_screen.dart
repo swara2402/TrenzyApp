@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/api_exception.dart';
 import '../providers/auth_provider.dart';
-import '../providers/api_service_provider.dart';
 import '../providers/user_preferences_provider.dart';
 import '../router/app_router.dart';
 import '../services/feature_flags.dart';
