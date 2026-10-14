@@ -5,7 +5,6 @@ import 'package:trenzy/providers/discover_providers.dart';
 import 'package:trenzy/providers/user_preferences_provider.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/router/app_router.dart';
-import 'package:trenzy/theme/glass_theme.dart';
 
 class PreferredStylesScreen extends ConsumerStatefulWidget {
   const PreferredStylesScreen({super.key});
