@@ -154,6 +154,15 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", str(_backend_dir / "uploads"))
 # Public base URL for served uploads (e.g. http://localhost:8000/uploads)
 UPLOAD_BASE_URL = os.getenv("UPLOAD_BASE_URL", "http://localhost:8000/uploads")
 
+# Ollama AI Configuration
+# ──────────────────────────────────────────────────────────────
+# Ollama base URL (local: http://localhost:11434, remote: your Ollama server URL)
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
+# Ollama model to use (e.g., llama3.2, mistral, gemma, etc.)
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
+# Optional API key for hosted Ollama services that require authentication
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+
 # Payment processing mode
 # ──────────────────────────────────────────────────────────────
 # PAYMENTS_MODE determines whether to use real payment processing or simulation:

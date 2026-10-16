@@ -375,7 +375,7 @@ class _CampaignBanner extends ConsumerWidget {
           radius: 24,
           padding: EdgeInsets.zero,
           clip: true,
-          onTap: () {},
+          onTap: () => context.push(AppRoutes.search),
           child: Container(
             height: 180,
             decoration: BoxDecoration(

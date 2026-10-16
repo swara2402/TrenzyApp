@@ -686,7 +686,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
           icon: Icons.bookmark,
           size: 24,
           color: context.trenzyColors.primary.withValues(alpha: 0.6),
-          onTap: () {},
+          onTap: () => _sendSwipe(groupId, user, SwipeType.like),
         ),
         SizedBox(width: 24),
         _buildControlButton(

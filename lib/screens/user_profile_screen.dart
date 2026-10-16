@@ -133,7 +133,51 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: Color(0xFFF2CA50)),
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet<void>(
+                context: context,
+                backgroundColor: const Color(0xFF1E1A10),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.share,
+                          color: Color(0xFFE9C349),
+                        ),
+                        title: const Text(
+                          'Share Profile',
+                          style: TextStyle(color: Color(0xFFEAE1D4)),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.flag_outlined,
+                          color: Colors.redAccent,
+                        ),
+                        title: const Text(
+                          'Report User',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Report submitted.')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

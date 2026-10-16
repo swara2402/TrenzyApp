@@ -1,0 +1,4 @@
+Path: /openapi.json, Name: openapi
+Path: /docs, Name: swagger_ui_html
+Path: /docs/oauth2-redirect, Name: swagger_ui_redirect
+Path: /redoc, Name: redoc_html

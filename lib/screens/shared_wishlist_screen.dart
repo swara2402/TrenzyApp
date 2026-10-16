@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
+import '../services/api_service.dart';
 import '../theme/glass_theme.dart';
 
 class SharedWishlistScreen extends ConsumerStatefulWidget {
@@ -534,7 +536,9 @@ class _WishlistItemCard extends StatelessWidget {
               child: Stack(
                 children: [
                   CachedNetworkImage(
-                    imageUrl: item.productImage,
+                    imageUrl:
+                        ApiService.resolveImageUrl(item.productImage) ??
+                        item.productImage,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     placeholder: (_, _) =>
@@ -701,7 +705,9 @@ class _ItemDetailsSheet extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: CachedNetworkImage(
-                  imageUrl: item.productImage,
+                  imageUrl:
+                      ApiService.resolveImageUrl(item.productImage) ??
+                      item.productImage,
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -820,7 +826,17 @@ class _ItemDetailsSheet extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final raw = item.productUrl;
+                    if (raw == null || raw.isEmpty) return;
+                    final uri = Uri.tryParse(raw);
+                    if (uri != null && await canLaunchUrl(uri)) {
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
                   icon: Icon(Icons.open_in_new, size: 16),
                   label: Text('View Product'),
                   style: OutlinedButton.styleFrom(

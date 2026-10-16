@@ -1,3 +1,5 @@
+import '../services/api_service.dart';
+
 class FeedItem {
   final String id;
   final String userId;
@@ -8,6 +10,9 @@ class FeedItem {
   final int likes;
   final int comments;
   final DateTime createdAt;
+
+  String get effectiveImageUrl =>
+      ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
   FeedItem({
     String? id,

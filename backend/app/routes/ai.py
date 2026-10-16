@@ -28,7 +28,7 @@ from ..ai.blends.blend_preference_aggregator import BlendPreferenceAggregator
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/ai", tags=["ai"])
+router = APIRouter(prefix="", tags=["ai"])
 
 # Initialize ONLY rule-based components required for basic functionality
 recommender = RuleBasedRecommender()
@@ -240,7 +240,7 @@ class ShoppingResponse(BaseModel):
 
 
 # Endpoints
-@router.get("/models/health")
+@router.get("/ai/models/health")
 async def get_models_health(
     current_user: User = Depends(get_current_db_user),
 ):
@@ -253,8 +253,7 @@ async def get_models_health(
     from ..ai.model_manager import ModelManager
     return ModelManager.instance().health()
 
-
-@router.get("/style-dna", response_model=StyleDNAResponse)
+@router.get("/ai/style-dna", response_model=StyleDNAResponse)
 async def get_style_dna(
     current_user: User = Depends(get_current_db_user),
     db: Session = Depends(get_db),
@@ -287,7 +286,7 @@ async def get_style_dna(
     )
 
 
-@router.post("/style-dna/refresh")
+@router.post("/ai/style-dna/refresh")
 async def refresh_style_dna(
     current_user: User = Depends(get_current_db_user),
     db: Session = Depends(get_db),
@@ -297,7 +296,7 @@ async def refresh_style_dna(
     return {"message": "Style DNA refreshed", "confidence": profile.confidence}
 
 
-@router.post("/recommendations", response_model=RecommendationResponse)
+@router.post("/ai/recommendations", response_model=RecommendationResponse)
 async def get_recommendations(
     request: RecommendationRequest,
     current_user: User = Depends(get_current_db_user),
@@ -362,7 +361,7 @@ async def get_recommendations(
     )
 
 
-@router.post("/outfits/generate", response_model=OutfitResponse)
+@router.post("/ai/outfits/generate", response_model=OutfitResponse)
 async def generate_outfit(
     request: OutfitRequest,
     current_user: User = Depends(get_current_db_user),
@@ -424,7 +423,7 @@ async def generate_outfit(
     )
 
 
-@router.post("/stylist/chat", response_model=ChatResponse)
+@router.post("/ai/stylist/chat", response_model=ChatResponse)
 async def stylist_chat(
     request: ChatRequest,
     current_user: User = Depends(get_current_db_user),
@@ -452,7 +451,7 @@ async def stylist_chat(
     )
 
 
-@router.post("/stylist/outfit")
+@router.post("/ai/stylist/outfit")
 async def stylist_outfit(
     prompt: str = Query(..., description="Outfit request prompt"),
     current_user: User = Depends(get_current_db_user),
@@ -468,7 +467,7 @@ async def stylist_outfit(
     return response
 
 
-@router.post("/events/track")
+@router.post("/ai/events/track")
 async def track_event(
     request: EventRequest,
     current_user: User = Depends(get_current_db_user),
@@ -488,7 +487,7 @@ async def track_event(
     return {"message": "Event tracked", "event_id": event.id}
 
 
-@router.get("/events/summary")
+@router.get("/ai/events/summary")
 async def get_event_summary(
     days: int = Query(default=30, ge=1, le=365),
     current_user: User = Depends(get_current_db_user),
@@ -504,7 +503,7 @@ async def get_event_summary(
     return summary
 
 
-@router.post("/events/view-product")
+@router.post("/ai/events/view-product")
 async def track_product_view(
     product_id: int,
     source: str = Query(default="unknown"),
@@ -524,7 +523,7 @@ async def track_product_view(
     return {"message": "View tracked", "event_id": event.id}
 
 
-@router.post("/events/like-product")
+@router.post("/ai/events/like-product")
 async def track_product_like(
     product_id: int,
     source: str = Query(default="unknown"),
@@ -542,7 +541,7 @@ async def track_product_like(
     return {"message": "Like tracked", "event_id": event.id}
 
 
-@router.post("/visual-search", response_model=VisualSearchResponse)
+@router.post("/ai/visual-search", response_model=VisualSearchResponse)
 async def visual_search(
     image: UploadFile = File(...),
     limit: int = Query(default=20, ge=1, le=50),
@@ -626,7 +625,7 @@ async def visual_search(
     )
 
 
-@router.post("/onboard", response_model=OnboardingResponse)
+@router.post("/ai/onboard", response_model=OnboardingResponse)
 async def user_onboarding(
     request: OnboardingRequest,
     current_user: User = Depends(get_current_db_user),
@@ -748,7 +747,7 @@ async def user_onboarding(
     )
 
 
-@router.get("/blends/{blend_id}/insights", response_model=BlendInsightsResponse)
+@router.get("/ai/blends/{blend_id}/insights", response_model=BlendInsightsResponse)
 async def get_blend_insights(
     blend_id: int,
     current_user: User = Depends(get_current_db_user),
@@ -769,7 +768,7 @@ async def get_blend_insights(
     return BlendInsightsResponse(**insights)
 
 
-@router.get("/blends/{blend_id}/picks", response_model=BlendPicksResponse)
+@router.get("/ai/blends/{blend_id}/picks", response_model=BlendPicksResponse)
 async def get_blend_picks(
     blend_id: int,
     limit: int = Query(default=10, ge=1, le=50),
@@ -842,7 +841,7 @@ async def get_blend_picks(
     )
 
 
-@router.get("/trends", response_model=TrendResponse)
+@router.get("/ai/trends", response_model=TrendResponse)
 async def get_trends(
     limit: int = Query(default=10, ge=1, le=50),
     current_user: User = Depends(get_current_db_user),
@@ -907,7 +906,7 @@ async def get_trends(
     )
 
 
-@router.get("/trends/product/{product_id}")
+@router.get("/ai/trends/product/{product_id}")
 async def get_product_trend(
     product_id: int,
     current_user: User = Depends(get_current_db_user),
@@ -930,7 +929,7 @@ async def get_product_trend(
     }
 
 
-@router.post("/shopping", response_model=ShoppingResponse)
+@router.post("/ai/shopping", response_model=ShoppingResponse)
 async def process_shopping_request(
     request: ShoppingRequest,
     current_user: User = Depends(get_current_db_user),

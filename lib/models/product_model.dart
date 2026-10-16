@@ -1,4 +1,5 @@
 import 'trend_model.dart';
+import '../services/api_service.dart';
 
 class ProductModel {
   final String id;
@@ -24,6 +25,9 @@ class ProductModel {
   final String usage;
   final String outfitRole;
   final List<String> tags;
+
+  String get effectiveImageUrl =>
+      ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
   ProductModel({
     String? id,

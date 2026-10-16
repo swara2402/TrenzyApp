@@ -7,11 +7,14 @@ import 'package:trenzy/models/group_message.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/auth_provider.dart' as auth_p;
 import 'package:trenzy/services/blend_socket_service.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class BlendChatScreen extends ConsumerStatefulWidget {
-  const BlendChatScreen({super.key});
+  const BlendChatScreen({super.key, this.groupId = ''});
+
+  final String groupId;
 
   @override
   ConsumerState<BlendChatScreen> createState() => _BlendChatScreenState();
@@ -283,7 +286,8 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
                 color: context.trenzyColors.mutedFg,
                 size: 18,
               ),
-              onPressed: () {},
+              onPressed: () =>
+                  context.push('/blend/dashboard?groupId=${widget.groupId}'),
             ),
           ),
         ],

@@ -244,9 +244,9 @@ class _LookbookCard extends StatelessWidget {
         physics: NeverScrollableScrollPhysics(),
         childAspectRatio: 1,
         children: displayItems.map((item) {
-          return item.imageUrl.isNotEmpty
+          return item.effectiveImageUrl.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: item.imageUrl,
+                  imageUrl: item.effectiveImageUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: context.trenzyColors.background,
@@ -281,9 +281,9 @@ class _LookbookCard extends StatelessWidget {
   Widget _buildSingleImage(WardrobeItem item) {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: item.imageUrl.isNotEmpty
+      child: item.effectiveImageUrl.isNotEmpty
           ? CachedNetworkImage(
-              imageUrl: item.imageUrl,
+              imageUrl: item.effectiveImageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               placeholder: (context, url) => Container(

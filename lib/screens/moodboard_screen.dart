@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
+import '../services/api_service.dart';
 import '../theme/glass_theme.dart';
 
 class MoodboardScreen extends ConsumerStatefulWidget {
@@ -268,7 +269,9 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: CachedNetworkImage(
-                    imageUrl: item.imageUrl,
+                    imageUrl:
+                        ApiService.resolveImageUrl(item.imageUrl) ??
+                        item.imageUrl,
                     height: 250,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -654,7 +657,8 @@ class _MoodboardTile extends StatelessWidget {
           children: [
             Expanded(
               child: CachedNetworkImage(
-                imageUrl: item.imageUrl,
+                imageUrl:
+                    ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 placeholder: (_, _) => _itemPlaceholder(item, context),

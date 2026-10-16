@@ -59,6 +59,7 @@ from .trends import router as trends_router
 from .users import router as users_router
 from .wishlist import router as wishlist_router
 from .payments import router as payments_router
+from .ai import router as ai_router
 
 # Feature group exports for clarity and organization
 __authentication_routes__ = [
@@ -98,6 +99,7 @@ __all__ = [
     "notifications_router",
     "products_router",
     "suggestions_router",
+    "ai_router",
     "trends_router",
     "users_router",
     "wishlist_router",

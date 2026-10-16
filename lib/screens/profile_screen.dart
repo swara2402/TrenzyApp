@@ -750,7 +750,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           top: Radius.circular(GlassRadius.card),
                         ),
                         child: CachedNetworkImage(
-                          imageUrl: item.imageUrl,
+                          imageUrl: item.effectiveImageUrl,
                           fit: BoxFit.cover,
                           placeholder: (_, _) =>
                               Container(color: context.trenzyColors.graphite),

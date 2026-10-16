@@ -214,6 +214,14 @@ class ModelManager:
         status = "ok" if self.ready and not self._errors else "degraded"
         if self.ready and self._models and not self._errors:
             status = "ok"
+            
+        # Add Ollama configuration status
+        from ..config import OLLAMA_BASE_URL, OLLAMA_MODEL
+        ollama_configured = OLLAMA_BASE_URL is not None
+        if ollama_configured:
+            # If Ollama is configured but we have other errors, keep degraded status
+            pass
+            
         return {
             "status": status,
             "ready": self.ready,
@@ -228,6 +236,14 @@ class ModelManager:
                     "recommendation", "style_dna", "outfit_compatibility", "blend", "trend",
                 ]
             },
+            "external_ai_services": {
+                "ollama": {
+                    "configured": ollama_configured,
+                    "base_url": OLLAMA_BASE_URL,
+                    "model": OLLAMA_MODEL if ollama_configured else None,
+                    "status": "available" if ollama_configured else "unavailable",
+                }
+            }
         }
 
     # ------------------------------------------------------------------ fallback chain

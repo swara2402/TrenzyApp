@@ -65,12 +65,14 @@ from .routes import (
     friends_router,
     notifications_router,
     products_router,
+    ai_router,
     suggestions_router,
     trends_router,
     users_router,
     wishlist_router,
     payments_router,
 )
+from .routes import ai
 
 # Import all remaining route modules directly (they don't have _router exports yet)
 from .routes import (
@@ -102,10 +104,11 @@ from .routes import (
     uploads,
     wardrobe,
     # AI/ML route modules (use lazy-loading so PyTorch doesn't load at import time)
-    ai,
     style_dna,
     recommendations,
 )
+
+
 
 # Don't call _preload_ml_models() at import time - models are loaded in lifespan startup
 # This prevents the macOS libomp crash caused by conflicting PyTorch and LightGBM libomp copies
@@ -551,12 +554,12 @@ app.include_router(feed_router)
 app.include_router(friends_router)
 app.include_router(notifications_router)
 app.include_router(products_router)
+app.include_router(ai_router, prefix="/api")
 app.include_router(suggestions_router)
 app.include_router(trends_router)
 app.include_router(users_router)
 app.include_router(wishlist_router)
 app.include_router(payments_router)
-app.include_router(ai.router)
 app.include_router(campaigns.router)
 app.include_router(moderation.router)
 app.include_router(blocks.router)

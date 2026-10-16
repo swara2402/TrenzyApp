@@ -150,7 +150,6 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const _BottomNavBar(),
     );
   }
 
@@ -510,7 +509,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
         final itemDataList = items
             .map((w) {
               final parsedId = int.tryParse(w.id) ?? 0;
-              return _ItemData(parsedId, w.brand, w.name, w.imageUrl);
+              return _ItemData(parsedId, w.brand, w.name, w.effectiveImageUrl);
             })
             .where((item) => item.id > 0)
             .toList();
@@ -695,107 +694,7 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar();
 
-  @override
-  Widget build(BuildContext context) {
-    final currentRoute = GoRouterState.of(context).uri.toString();
-
-    final colors = context.trenzyColors;
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(32),
-        topRight: Radius.circular(32),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          height: 90,
-          decoration: BoxDecoration(
-            color: colors.background.withAlpha(230),
-            border: Border(top: BorderSide(color: colors.fg10.withAlpha(51))),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context,
-                Icons.home,
-                'Home',
-                AppRoutes.home,
-                isActive: currentRoute == AppRoutes.home,
-              ),
-              _buildNavItem(
-                context,
-                Icons.search,
-                'Explore',
-                AppRoutes.search,
-                isActive: currentRoute == AppRoutes.search,
-              ),
-              _buildNavItem(
-                context,
-                Icons.style,
-                'Inspo',
-                AppRoutes.inspo,
-                isActive: currentRoute == AppRoutes.inspo,
-              ),
-              _buildNavItem(
-                context,
-                Icons.shopping_bag,
-                'Closet',
-                AppRoutes.wardrobe,
-                isActive: currentRoute == AppRoutes.wardrobe,
-              ),
-              _buildNavItem(
-                context,
-                Icons.person,
-                'Profile',
-                AppRoutes.profile,
-                isActive: currentRoute == AppRoutes.profile,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String route, {
-    bool isActive = false,
-  }) {
-    final colors = context.trenzyColors;
-    return GestureDetector(
-      onTap: () => GoRouter.of(context).go(route),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: isActive ? colors.primary : colors.foreground.withAlpha(102),
-            size: 28,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: isActive
-                  ? colors.primary
-                  : colors.foreground.withAlpha(102),
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _ItemData {
   final int id;

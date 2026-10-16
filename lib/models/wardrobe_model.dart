@@ -1,4 +1,5 @@
 import 'product_model.dart';
+import '../services/api_service.dart';
 
 /// Backend ids may arrive as ints (SQLite autoincrement) or strings.
 /// Coerce to String so `as String?` casts never throw a TypeError.
@@ -30,6 +31,9 @@ class WardrobeItem {
   final String season;
   final String occasion;
   final bool isLoaded;
+
+  String get effectiveImageUrl =>
+      ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
   WardrobeItem({
     String? id,
@@ -113,6 +117,9 @@ class Outfit {
   final bool isFavorite;
   final DateTime? createdAt;
   final bool isLoaded;
+
+  String get effectiveImageUrl =>
+      ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
   Outfit({
     String? id,
@@ -199,6 +206,9 @@ class OutfitIdea {
     this.matchScore,
     this.isLoaded,
   });
+
+  String get effectiveImageUrl =>
+      ApiService.resolveImageUrl(imageUrl) ?? (imageUrl ?? '');
 
   factory OutfitIdea.fromJson(Map<String, dynamic> json) {
     return OutfitIdea(

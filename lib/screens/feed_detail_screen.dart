@@ -22,7 +22,7 @@ class FeedDetailScreen extends StatelessWidget {
                 child: GlassBackButton(),
               ),
               CachedNetworkImage(
-                imageUrl: item.imageUrl,
+                imageUrl: item.effectiveImageUrl,
                 height: 300,
                 width: double.infinity,
                 fit: BoxFit.cover,

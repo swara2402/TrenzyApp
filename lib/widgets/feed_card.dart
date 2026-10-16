@@ -35,7 +35,7 @@ class FeedCard extends StatelessWidget {
                   top: Radius.circular(16),
                 ),
                 child: CachedNetworkImage(
-                  imageUrl: item.imageUrl,
+                  imageUrl: item.effectiveImageUrl,
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,

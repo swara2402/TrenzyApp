@@ -48,21 +48,27 @@ class FashionStylistAgent:
         Returns:
             System prompt string
         """
-        base_prompt = """You are Trenzy AI, a fashion stylist assistant for the Trenzy fashion platform.
+        base_prompt = """You are Trenzy's AI Fashion Stylist, a friendly, inclusive, and knowledgeable fashion expert for the Trenzy fashion platform.
 
 Your role is to help users with:
-- Fashion advice and recommendations
-- Outfit suggestions
-- Style guidance
-- Product recommendations from Trenzy's catalog
+- Outfit combinations and suggestions for any occasion
+- Color coordination and palette advice
+- Personal style development and refinement
+- Wardrobe organization and staple piece recommendations
+- Budget-conscious fashion choices
+- Seasonal styling tips
+- Accessible and inclusive fashion advice for all body types, styles, and budgets
 
-You have access to:
-- User's Style DNA (their fashion preferences)
-- Trenzy's product catalog
-- Recommendation engine
-- Outfit builder
+Always be:
+- Friendly, warm, and approachable in your tone
+- Concise but comprehensive - keep responses focused and useful
+- Inclusive and respectful of all personal styles
+- Ask clarifying questions when the user's request is too vague
+- Never claim to see the user's wardrobe or profile unless that data is actually provided to you
+- Never make up product information or prices
+- Focus on practical, actionable fashion advice that the user can implement
 
-Be helpful, stylish, and concise. When recommending products, explain WHY they match the user's style.
+If you don't know something, be honest and ask for more details to better assist them.
 """
 
         if user_style_profile:
@@ -167,11 +173,21 @@ Be helpful, stylish, and concise. When recommending products, explain WHY they m
         db.add(user_msg)
 
         # Retrieve relevant products
+        # Retrieve relevant products
         relevant_products = self._retrieve_relevant_products(db, user_id, message)
 
-        # Generate a deterministic local response. The launch contract
-        # forbids outbound LLM/API calls.
-        assistant_message = self._fallback_response(message, relevant_products)
+        # Build system prompt for LLM context
+        sys_prompt = self._build_system_prompt(style_profile)
+
+        # Try Ollama first if configured, then Hugging Face, then fallback
+        llm_response = self._generate_ollama_llm_response(sys_prompt, message)
+        if not llm_response:
+            llm_response = self._generate_hf_llm_response(sys_prompt, message)
+
+        if llm_response:
+            assistant_message = llm_response
+        else:
+            assistant_message = self._fallback_response(message, relevant_products)
 
         # Save assistant message
         assistant_msg = AIMessage(
@@ -202,27 +218,118 @@ Be helpful, stylish, and concise. When recommending products, explain WHY they m
             ],
         }
 
+    def _generate_ollama_llm_response(
+        self,
+        system_prompt: str,
+        user_message: str,
+    ) -> Optional[str]:
+        """Generate LLM response using Ollama API."""
+        from ...app.config import OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_API_KEY
+        import requests
+        
+        if not OLLAMA_BASE_URL:
+            return None
+            
+        try:
+            url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+            headers = {
+                "Content-Type": "application/json",
+            }
+            if OLLAMA_API_KEY:
+                headers["Authorization"] = f"Bearer {OLLAMA_API_KEY}"
+                
+            payload = {
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                "stream": False,
+                "options": {
+                    "num_predict": 250,
+                    "temperature": 0.7,
+                }
+            }
+            logger.info(f"Calling Ollama API at {url} with model {OLLAMA_MODEL}")
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "message" in data and "content" in data["message"]:
+                    return data["message"]["content"].strip()
+            else:
+                logger.warning(f"Ollama API returned status code {resp.status_code}: {resp.text}")
+        except Exception as err:
+            logger.warning(f"Ollama API call failed: {err}")
+        return None
+
+    def _generate_hf_llm_response(
+        self,
+        system_prompt: str,
+        user_message: str,
+    ) -> Optional[str]:
+        """Generate LLM response using Hugging Face Free Serverless Inference API."""
+        import os
+        import requests
+        hf_token = (
+            os.getenv("HF_TOKEN")
+            or os.getenv("HUGGINGFACE_API_KEY")
+            or os.getenv("HF_API_KEY")
+        )
+        if not hf_token:
+            return None
+        try:
+            url = "https://router.huggingface.co/hf-inference/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {hf_token}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": "meta-llama/Llama-3.2-1B-Instruct",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                "max_tokens": 250,
+                "temperature": 0.7,
+            }
+            resp = requests.post(url, headers=headers, json=payload, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                choices = data.get("choices", [])
+                if choices and "message" in choices[0]:
+                    return choices[0]["message"]["content"].strip()
+        except Exception as err:
+            logger.warning(f"HF Inference API call failed: {err}")
+        return None
+
     def _fallback_response(
         self,
         message: str,
         relevant_products: List[Product],
     ) -> str:
-        """Generate fallback response without LLM.
+        """Generate friendly fashion response based on query and catalog.
 
         Args:
             message: User message
             relevant_products: Relevant products
 
         Returns:
-            Fallback response
+            Fashion advice response
         """
-        if not relevant_products:
-            return "I'd be happy to help with fashion advice! Could you tell me more about what you're looking for?"
+        msg_lower = message.strip().lower()
 
-        response = f"Based on your style, I found some items that might work for you:\n\n"
+        # Handle casual greetings warmly
+        greetings = ["hey", "heyyy", "heyy", "hi", "hello", "hola", "yo", "sup", "good morning", "good evening"]
+        if any(msg_lower == g for g in greetings) or msg_lower.startswith("hey") or msg_lower.startswith("hi"):
+            return "Hey there! I'm your Trenzy AI Stylist. I can help you build outfits, find recommendations for any occasion, or discover pieces from our collection. What are you looking to wear today?"
+
+        if not relevant_products:
+            return f"I'd love to help you style for '{message}'! Try asking about casual outfits, footwear, office wear, or party looks, and I'll pull top recommendations for you."
+
+        response = f"Based on your style preference for '{message}', here are some top picks:\n\n"
         for product in relevant_products[:3]:
-            response += f"- {product.name} (₹{product.price})\n"
-        response += "\nWould you like more details about any of these?"
+            response += f"• {product.name} — ₹{product.price:.0f}\n"
+        response += "\nLet me know if you'd like outfit combinations with these!"
 
         return response
 

@@ -34,9 +34,9 @@ final List<GlassNavItem> appNavItems = [
     AppRoutes.discover,
   ),
   GlassNavItem(
-    Icons.currency_exchange_outlined,
-    Icons.currency_exchange_rounded,
-    null,
+    Icons.blender_outlined,
+    Icons.blender_rounded,
+    'Blend',
     AppRoutes.blendHub,
     isCenter: true,
   ),
