@@ -70,18 +70,21 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
           .aiStylistChat(message: text, conversationId: _conversationId);
       _conversationId = (result['conversation_id'] as num?)?.toInt();
 
-      final responseText =
-          result['message']?.toString() ?? 'I could not generate a response.';
-      final products =
-          (result['mentioned_products'] as List<dynamic>?)
-              ?.cast<Map<String, dynamic>>() ??
-          [];
+      final responseText = (result['message'] ?? result['reply'] ?? result['response'])
+          ?.toString()
+          .trim();
+      final rawProducts = result['mentioned_products'] ?? result['products'];
+      final products = rawProducts is List
+          ? rawProducts.whereType<Map<String, dynamic>>().toList()
+          : <Map<String, dynamic>>[];
 
       if (mounted) {
         setState(() {
           _messages.add({
             'role': 'assistant',
-            'text': responseText,
+            'text': (responseText == null || responseText.isEmpty)
+                ? 'Tell me the occasion, your preferred style, and what pieces you have. I’ll help you put together an outfit.'
+                : responseText,
             'products': products,
           });
         });
@@ -118,7 +121,9 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: c.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: c.foreground,
         elevation: 0,
         leading: const GlassBackButton(),
         title: Text(
