@@ -553,16 +553,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ],
                         ),
-                                  style: GlassTypography.body(
-                                    color: context.trenzyColors.primary,
-                                    weight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
->>>>>>> b690fe768d6251d745c0d3381e08ad6f15393021
+
                       ),
                     ),
                   ),
