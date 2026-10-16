@@ -373,7 +373,10 @@ class _WardrobeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl;
+    final rawImageUrl = item.imageUrl.isNotEmpty
+        ? item.imageUrl
+        : (item.product?.imageUrl ?? '');
+    final imageUrl = ApiService.resolveImageUrl(rawImageUrl) ?? rawImageUrl;
     final name = item.name;
     final category = item.category;
     final isFavorite = item.isFavorite;
