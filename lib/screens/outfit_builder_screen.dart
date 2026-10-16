@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trenzy/models/wardrobe_model.dart';
-import 'package:trenzy/providers/auth_provider.dart';
 import 'package:trenzy/providers/home_providers.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
