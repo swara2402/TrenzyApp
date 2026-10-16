@@ -9,6 +9,7 @@ import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/theme/trenzy_colors.dart';
+import '../services/api_service.dart';
 
 class OutfitBuilderScreen extends ConsumerStatefulWidget {
   final Outfit? initialOutfit;
@@ -38,7 +39,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 itemId,
                 item.brand.isEmpty ? 'Unknown' : item.brand,
                 item.name,
-                item.imageUrl,
+                ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
               ),
             );
           }
@@ -297,7 +298,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                               height: 160,
                               child: item.imageUrl.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: item.imageUrl,
+                                      imageUrl: ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
                                       fit: BoxFit.contain,
                                       errorWidget: (_, _, _) => Container(
                                         color: colors.surfaceContainer,
