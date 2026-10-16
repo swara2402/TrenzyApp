@@ -176,18 +176,10 @@ If you don't know something, be honest and ask for more details to better assist
         # Retrieve relevant products
         relevant_products = self._retrieve_relevant_products(db, user_id, message)
 
-        # Build system prompt for LLM context
-        sys_prompt = self._build_system_prompt(style_profile)
-
-        # Try Ollama first if configured, then Hugging Face, then fallback
-        llm_response = self._generate_ollama_llm_response(sys_prompt, message)
-        if not llm_response:
-            llm_response = self._generate_hf_llm_response(sys_prompt, message)
-
-        if llm_response:
-            assistant_message = llm_response
-        else:
-            assistant_message = self._fallback_response(message, relevant_products)
+        # Use the local catalog-backed response path for reliable beta replies.
+        # Remote model calls can stall when an optional provider is unavailable;
+        # the launch configuration requires the stylist to work without them.
+        assistant_message = self._fallback_response(message, relevant_products)
 
         # Save assistant message
         assistant_msg = AIMessage(
