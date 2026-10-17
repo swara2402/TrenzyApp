@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/models/wardrobe_model.dart';
+import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
 class AllLookbooksScreen extends ConsumerWidget {
@@ -139,91 +140,142 @@ class AllLookbooksScreen extends ConsumerWidget {
   }
 }
 
-class _LookbookCard extends StatelessWidget {
+class _LookbookCard extends ConsumerWidget {
   final Outfit outfit;
 
   const _LookbookCard({required this.outfit});
 
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      color: context.trenzyColors.graphite,
-      radius: 16,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Image grid (top section)
-          Expanded(
-            flex: 3,
-            child: (outfit.items.isNotEmpty == true)
-                ? _buildImageGrid(outfit.items)
-                : Container(
-                    decoration: BoxDecoration(
-                      color: context.trenzyColors.background,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.style_outlined,
-                      color: context.trenzyColors.mutedFg,
-                      size: 32,
-                    ),
-                  ),
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.trenzyColors.graphite,
+        title: Text(
+          'Delete lookbook?',
+          style: TextStyle(color: context.trenzyColors.foreground),
+        ),
+        content: Text(
+          'Remove "${outfit.name}" from your lookbooks.',
+          style: TextStyle(color: context.trenzyColors.mutedFg),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
           ),
-          // Outfit info (bottom section)
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    outfit.name,
-                    style: TextStyle(
-                      color: context.trenzyColors.foreground,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '${outfit.items.length} items',
-                    style: TextStyle(
-                      color: context.trenzyColors.mutedFg,
-                      fontSize: 11,
-                    ),
-                  ),
-                  Spacer(),
-                  if (outfit.occasion.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.trenzyColors.primary.withValues(
-                          alpha: 0.12,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        outfit.occasion,
-                        style: TextStyle(
-                          color: context.trenzyColors.primary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final outfitId = int.tryParse(outfit.id);
+    if (outfitId == null || outfitId <= 0) return;
+
+    try {
+      await ref.read(outfitsProvider.notifier).deleteOutfit(outfitId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Lookbook deleted')));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete lookbook')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.outfitBuilder, extra: outfit),
+      onLongPress: () => _confirmDelete(context, ref),
+      child: GlassContainer(
+        color: context.trenzyColors.graphite,
+        radius: 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Image grid (top section)
+            Expanded(
+              flex: 3,
+              child: (outfit.items.isNotEmpty == true)
+                  ? _buildImageGrid(outfit.items)
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: context.trenzyColors.background,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.style_outlined,
+                        color: context.trenzyColors.mutedFg,
+                        size: 32,
+                      ),
+                    ),
+            ),
+            // Outfit info (bottom section)
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      outfit.name,
+                      style: TextStyle(
+                        color: context.trenzyColors.foreground,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '${outfit.items.length} items',
+                      style: TextStyle(
+                        color: context.trenzyColors.mutedFg,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Spacer(),
+                    if (outfit.occasion.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.trenzyColors.primary.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          outfit.occasion,
+                          style: TextStyle(
+                            color: context.trenzyColors.primary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -247,6 +299,9 @@ class _LookbookCard extends StatelessWidget {
           return item.effectiveImageUrl.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl: item.effectiveImageUrl,
+                  httpHeaders: ApiService.imageHeadersFor(
+                    item.effectiveImageUrl,
+                  ),
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: context.trenzyColors.background,
@@ -284,6 +339,7 @@ class _LookbookCard extends StatelessWidget {
       child: item.effectiveImageUrl.isNotEmpty
           ? CachedNetworkImage(
               imageUrl: item.effectiveImageUrl,
+              httpHeaders: ApiService.imageHeadersFor(item.effectiveImageUrl),
               fit: BoxFit.cover,
               width: double.infinity,
               placeholder: (context, url) => Container(

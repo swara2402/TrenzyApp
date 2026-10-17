@@ -272,6 +272,7 @@ class _MoodboardScreenState extends ConsumerState<MoodboardScreen> {
                     imageUrl:
                         ApiService.resolveImageUrl(item.imageUrl) ??
                         item.imageUrl,
+                    httpHeaders: ApiService.imageHeadersFor(item.imageUrl),
                     height: 250,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -659,6 +660,7 @@ class _MoodboardTile extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl:
                     ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
+                httpHeaders: ApiService.imageHeadersFor(item.imageUrl),
                 fit: BoxFit.cover,
                 width: double.infinity,
                 placeholder: (_, _) => _itemPlaceholder(item, context),

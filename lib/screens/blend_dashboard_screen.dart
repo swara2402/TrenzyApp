@@ -12,6 +12,7 @@ import '../providers/blend_dashboard_provider.dart';
 import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
 import '../services/blend_socket_service.dart';
+import '../services/api_service.dart';
 
 class BlendDashboardScreen extends ConsumerStatefulWidget {
   const BlendDashboardScreen({super.key, this.groupId = ''});
@@ -1002,7 +1003,8 @@ class _MiniMoodboardCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
-        imageUrl: item.imageUrl,
+        imageUrl: ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
+        httpHeaders: ApiService.imageHeadersFor(item.imageUrl),
         fit: BoxFit.cover,
         width: double.infinity,
         placeholder: (_, _) => Center(

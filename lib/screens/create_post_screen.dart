@@ -15,7 +15,6 @@ class CreatePostScreen extends ConsumerStatefulWidget {
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   File? _selectedImage;
-  String? _imageUrl;
   final TextEditingController _captionController = TextEditingController();
   final FocusNode _captionFocusNode = FocusNode();
   bool _isUploading = false;
@@ -37,24 +36,24 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       final api = ref.read(apiServiceProvider);
+      final imageUrl = await api.uploadPostImage(XFile(_selectedImage!.path));
       await api.createPost(
         content: _captionController.text.trim(),
-        attachment: _imageUrl, // In a real implementation, you'd upload the image first to get a URL
+        attachment: imageUrl,
       );
-      
+
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Post shared successfully!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post shared successfully!')),
+      );
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      final message = e is ApiException ? e.message : 'Failed to create post. Please try again.';
+      final message = e is ApiException
+          ? e.message
+          : 'Failed to create post. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -76,28 +75,39 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: Color(0xFFF2CA50)),
-                title: const Text('Take a photo', style: TextStyle(color: Color(0xFFEAE1D4))),
+                title: const Text(
+                  'Take a photo',
+                  style: TextStyle(color: Color(0xFFEAE1D4)),
+                ),
                 onTap: () async {
                   context.pop();
-                  final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+                  final XFile? photo = await _picker.pickImage(
+                    source: ImageSource.camera,
+                  );
                   if (photo != null) {
                     setState(() {
                       _selectedImage = File(photo.path);
-                      _imageUrl = photo.path; // For local display; in production, upload to get a remote URL
                     });
                   }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFFF2CA50)),
-                title: const Text('Choose from gallery', style: TextStyle(color: Color(0xFFEAE1D4))),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFFF2CA50),
+                ),
+                title: const Text(
+                  'Choose from gallery',
+                  style: TextStyle(color: Color(0xFFEAE1D4)),
+                ),
                 onTap: () async {
                   context.pop();
-                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                  final XFile? image = await _picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
                   if (image != null) {
                     setState(() {
                       _selectedImage = File(image.path);
-                      _imageUrl = image.path; // For local display; in production, upload to get a remote URL
                     });
                   }
                 },
@@ -366,9 +376,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ),
           ),
           child: _isUploading
-              ? const CircularProgressIndicator(
-                  color: Color(0xFF241A00),
-                )
+              ? const CircularProgressIndicator(color: Color(0xFF241A00))
               : const Text(
                   'Share',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

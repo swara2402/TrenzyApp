@@ -676,8 +676,13 @@ GoRouter createRouter({
       GoRoute(
         path: AppRoutes.outfitBuilder,
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) =>
-            _buildPageWithTransition(context, state, OutfitBuilderScreen()),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context,
+          state,
+          OutfitBuilderScreen(
+            initialOutfit: state.extra is Outfit ? state.extra as Outfit : null,
+          ),
+        ),
       ),
       GoRoute(
         path: AppRoutes.persona,

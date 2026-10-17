@@ -50,7 +50,7 @@ class WardrobeApi {
   }) async {
     final normalizedImageUrl = ApiClient.resolveImageUrl(imageUrl);
     final body = <String, dynamic>{'name': name};
-    if (normalizedImageUrl != null) body['imageUrl'] = normalizedImageUrl;
+    if (normalizedImageUrl != null) body['image_url'] = normalizedImageUrl;
     if (category != null) body['category'] = category;
     if (color != null) body['color'] = color;
     if (season != null) body['season'] = season;
@@ -72,7 +72,7 @@ class WardrobeApi {
     final normalizedImageUrl = ApiClient.resolveImageUrl(imageUrl);
     final body = <String, dynamic>{};
     if (name != null) body['name'] = name;
-    if (normalizedImageUrl != null) body['imageUrl'] = normalizedImageUrl;
+    if (normalizedImageUrl != null) body['image_url'] = normalizedImageUrl;
     if (category != null) body['category'] = category;
     if (color != null) body['color'] = color;
     if (season != null) body['season'] = season;

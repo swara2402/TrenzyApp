@@ -84,6 +84,23 @@ class ApiClient {
     return Uri.parse(EnvConfig.apiBaseUrl).resolve(normalizedPath).toString();
   }
 
+  /// HTTP headers required to load [imageUrl].
+  ///
+  /// Private user uploads (wardrobe images) are served through an
+  /// owner-authenticated route, so network image widgets must send the bearer
+  /// token. Public assets (catalog photos, avatars, post attachments) need no
+  /// headers and return an empty map.
+  static Map<String, String> imageHeadersFor(String? imageUrl) {
+    final raw = imageUrl ?? '';
+    final isPrivateUpload =
+        raw.contains('/api/uploads/private/') ||
+        raw.contains('/api/uploads/user/');
+    if (!isPrivateUpload) return const <String, String>{};
+    final token = _cachedToken;
+    if (token == null || token.isEmpty) return const <String, String>{};
+    return <String, String>{'Authorization': 'Bearer $token'};
+  }
+
   static void clearCache() {
     _requestCache.clear();
     _cachedToken = null;

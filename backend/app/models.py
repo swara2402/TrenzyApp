@@ -201,12 +201,13 @@ class Product(Base):
     text_embedding_created_at: Mapped[Optional[DateTime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # pgvector columns for FashionCLIP embeddings — dimension driven by ml_config.
+    # Falls back to JSON when pgvector is unavailable (e.g. SQLite tests).
     image_embedding_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(_EMBEDDING_DIM),
+        Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
         nullable=True
     )
     text_embedding_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(_EMBEDDING_DIM),
+        Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
         nullable=True
     )
 
