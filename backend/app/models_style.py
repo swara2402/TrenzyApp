@@ -50,6 +50,7 @@ class StyleDNA(Base):
     """
 
     __tablename__ = "style_dna"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(
         String, primary_key=True, default=_new_uuid
@@ -61,7 +62,7 @@ class StyleDNA(Base):
         index=True,
     )
     dna_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(EMBEDDING_DIM) if _PGVECTOR_AVAILABLE else JSON,  # type: ignore[arg-type]
+        Vector(EMBEDDING_DIM),
         nullable=True,
     )
     model_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

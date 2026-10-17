@@ -34,12 +34,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ..db import Base
 
 # Try to import pgvector Vector type, fallback to JSON if not available
-# Temporarily force PGVECTOR_AVAILABLE to False to prevent server crash from HNSW index errors
 try:
-    # Temporarily skip importing pgvector to avoid SQLAlchemy Mapped annotation errors
-    # from pgvector.sqlalchemy import Vector
-    PGVECTOR_AVAILABLE = False  # Temporarily disabled
-    Vector = None  # type: ignore
+    from pgvector.sqlalchemy import Vector
+    PGVECTOR_AVAILABLE = True
 except ImportError:
     Vector = None  # type: ignore
     PGVECTOR_AVAILABLE = False
@@ -63,6 +60,7 @@ class UserStyleProfile(Base):
     """
 
     __tablename__ = "user_style_profiles"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -108,20 +106,31 @@ class UserStyleProfile(Base):
     interaction_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # pgvector column for the combined style embedding — dimension from ml_config.
-    embedding_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
+    embedding_vector: Mapped[list[float] | None] = mapped_column(
+        Vector(_EMBEDDING_DIM),
         nullable=True
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        onupdate="now()"
+        onupdate=func.now()
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
+
+    __table_args__ = ()
+    if PGVECTOR_AVAILABLE:
+        __table_args__ += (
+            Index(
+                "idx_user_style_profiles_vector",
+                embedding_vector,
+                postgresql_using="hnsw",
+                postgresql_with={"m": 16, "ef_construction": 64}
+            ),
+        )
 
 
 class UserEmbedding(Base):
@@ -132,6 +141,7 @@ class UserEmbedding(Base):
     """
 
     __tablename__ = "user_embeddings"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -146,7 +156,7 @@ class UserEmbedding(Base):
     
     # pgvector column for production vector search — dimension from ml_config.
     embedding_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
+        Vector(_EMBEDDING_DIM),
         nullable=True
     )
 
@@ -166,15 +176,16 @@ class UserEmbedding(Base):
         server_default=func.now()
     )
 
-
-# Add HNSW index for pgvector if available
-if PGVECTOR_AVAILABLE:
-    Index(
-        "idx_user_embeddings_vector",
-        UserEmbedding.embedding_vector,
-        postgresql_using="hnsw",
-        postgresql_with={"m": 16, "ef_construction": 64}
-    )
+    __table_args__ = ()
+    if PGVECTOR_AVAILABLE:
+        __table_args__ += (
+            Index(
+                "idx_user_embeddings_vector",
+                embedding_vector,
+                postgresql_using="hnsw",
+                postgresql_with={"m": 16, "ef_construction": 64}
+            ),
+        )
 
 
 class ProductEmbedding(Base):
@@ -185,6 +196,7 @@ class ProductEmbedding(Base):
     """
 
     __tablename__ = "product_embeddings"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[int] = mapped_column(
@@ -201,7 +213,7 @@ class ProductEmbedding(Base):
     
     # pgvector column for production vector search — dimension from ml_config.
     combined_embedding_vector: Mapped[Optional[list]] = mapped_column(
-        Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
+        Vector(_EMBEDDING_DIM),
         nullable=True
     )
 
@@ -221,22 +233,23 @@ class ProductEmbedding(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        onupdate="now()"
+        onupdate=func.now()
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
 
-
-# Add HNSW index for pgvector if available
-if PGVECTOR_AVAILABLE:
-    Index(
-        "idx_product_embeddings_vector",
-        ProductEmbedding.combined_embedding_vector,
-        postgresql_using="hnsw",
-        postgresql_with={"m": 16, "ef_construction": 64}
-    )
+    __table_args__ = ()
+    if PGVECTOR_AVAILABLE:
+        __table_args__ += (
+            Index(
+                "idx_product_embeddings_vector",
+                combined_embedding_vector,
+                postgresql_using="hnsw",
+                postgresql_with={"m": 16, "ef_construction": 64}
+            ),
+        )
 
 
 class InteractionEvent(Base):
@@ -247,6 +260,7 @@ class InteractionEvent(Base):
     """
 
     __tablename__ = "interaction_events"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -289,6 +303,7 @@ class RecommendationEvent(Base):
     """
 
     __tablename__ = "recommendation_events"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -329,6 +344,7 @@ class OutfitGeneration(Base):
     """
 
     __tablename__ = "outfit_generations"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -370,6 +386,7 @@ class AIConversation(Base):
     """
 
     __tablename__ = "ai_conversations"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -403,6 +420,7 @@ class AIMessage(Base):
     """Individual messages in AI conversations."""
 
     __tablename__ = "ai_messages"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     conversation_id: Mapped[int] = mapped_column(
@@ -436,6 +454,7 @@ class TrendPrediction(Base):
     """
 
     __tablename__ = "trend_predictions"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
@@ -482,6 +501,7 @@ class ModelEvaluation(Base):
     """
 
     __tablename__ = "model_evaluations"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
@@ -530,6 +550,7 @@ class ModelVersion(Base):
     """
 
     __tablename__ = "model_versions"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     model_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
