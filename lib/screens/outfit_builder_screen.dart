@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trenzy/models/wardrobe_model.dart';
-import 'package:trenzy/providers/auth_provider.dart';
 import 'package:trenzy/providers/home_providers.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/theme/trenzy_colors.dart';
+import '../services/api_service.dart';
 
 class OutfitBuilderScreen extends ConsumerStatefulWidget {
   final Outfit? initialOutfit;
@@ -39,7 +39,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 itemId,
                 item.brand.isEmpty ? 'Unknown' : item.brand,
                 item.name,
-                item.imageUrl,
+                ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
               ),
             );
           }
@@ -298,7 +298,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                               height: 160,
                               child: item.imageUrl.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: item.imageUrl,
+                                      imageUrl: ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
                                       fit: BoxFit.contain,
                                       errorWidget: (_, _, _) => Container(
                                         color: colors.surfaceContainer,
@@ -633,9 +633,7 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const _CustomAppBar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider).value;
-
+  Widget build(BuildContext context, WidgetRef _) {
     final colors = context.trenzyColors;
     return ClipRRect(
       child: BackdropFilter(
@@ -646,38 +644,27 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            leadingWidth: 150,
-            leading: Row(
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: colors.graphite,
-                  backgroundImage:
-                      (user?.avatarUrl != null && user!.avatarUrl.isNotEmpty)
-                      ? NetworkImage(user.avatarUrl)
-                      : null,
-                  child: (user?.avatarUrl == null || user!.avatarUrl.isEmpty)
-                      ? Text(
-                          (user?.name ?? 'U').substring(0, 1).toUpperCase(),
-                          style: TextStyle(
-                            color: colors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Trenzy',
-                  style: TextStyle(
-                    color: colors.primary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
+            leadingWidth: 56,
+            leading: IconButton(
+              tooltip: 'Back',
+              icon: Icon(Icons.arrow_back_rounded, color: colors.foreground),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(AppRoutes.home);
+                }
+              },
             ),
+            title: Text(
+              'Outfit Builder',
+              style: TextStyle(
+                color: colors.foreground,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            centerTitle: false,
             actions: [
               IconButton(
                 icon: Icon(Icons.notifications_none, color: colors.mutedFg),

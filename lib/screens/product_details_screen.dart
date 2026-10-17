@@ -96,6 +96,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       ),
                       data: (product) => SliverAppBar(
                         expandedHeight: 600,
+                        automaticallyImplyLeading: false,
                         backgroundColor: Colors.transparent,
                         elevation: 0,
                         pinned: false,
@@ -353,7 +354,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     try {
       await api.addWardrobeItem(
         name: product.name,
-        imageUrl: product.imageUrl,
+        imageUrl: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
         category: product.category.isEmpty
             ? product.outfitRole
             : product.category,
