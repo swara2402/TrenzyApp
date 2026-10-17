@@ -86,7 +86,7 @@ def check_ai_modules() -> None:
             __import__(module)
         except Exception:
             failed.append(module)
-    
+
     if not failed:
         _record(PASS, "AI modules", "All core AI modules import successfully")
     else:
