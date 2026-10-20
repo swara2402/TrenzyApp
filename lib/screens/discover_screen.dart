@@ -220,9 +220,10 @@ class DiscoverScreen extends ConsumerWidget {
                             [
                               'All',
                               'Dresses',
-                              'Shoes',
+                              'Footwear',
                               'Tops',
                               'Bottoms',
+                              'Outerwear',
                               'Accessories',
                             ].map((cat) {
                               final selected =
