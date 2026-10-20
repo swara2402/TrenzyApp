@@ -680,7 +680,7 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                                             ),
                                             const SizedBox(height: 5),
                                             Text(
-                                              product.hasPrice ? '₹${product.effectivePrice.toStringAsFixed(0)}' : 'Price unavailable',
+                                              product.hasPrice ? '₹${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                                               maxLines: 1,
                                               style: TextStyle(
                                                 color: context.trenzyColors.primary,
