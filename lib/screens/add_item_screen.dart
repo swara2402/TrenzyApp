@@ -60,7 +60,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       setState(() => _isUploadingImage = true);
       final url = await ref.read(apiServiceProvider).uploadImage(image);
       if (!mounted) return;
-      setState(() => _imageUrlController.text = url);
+      setState(() {
+        _imageUrlController.text = url;
+      });
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
