@@ -51,7 +51,7 @@ def _escape_like(value: str) -> str:
 
 def _catalog_category_is_classified():
     """Exclude legacy placeholder categories from customer-facing catalog queries."""
-    return func.lower(func.trim(func.coalesce(Product.category, ""))).notin_(("", "unknown", "uncategorized"))
+    return func.lower(func.trim(func.coalesce(Product.category, ""))).notin_(("", "unknown", "uncategorized", "none", "null"))
 
 
 def _product_tags(product):
