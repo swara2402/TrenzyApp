@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 from app.models import Product
 from app.routes.products import _product_tags
+from app.scripts.seed_from_manifest import build_product_record, infer_category
 from app.scripts.quarantine_unclassified_products import grounded_tags, is_unclassified
 
 
@@ -78,3 +79,34 @@ def test_products_endpoint_hides_unclassified_rows(client, db_session):
     ids = {item["id"] for item in response.json()["products"]}
     assert "test_classified_catalog_row" in ids
     assert "test_unclassified_catalog_row" not in ids
+
+
+
+def test_manifest_seed_never_guesses_category_or_invents_price():
+    assert infer_category("Beskid Museum exhibits", "") is None
+    assert build_product_record({
+        "title": "Beskid Museum exhibits",
+        "image_url": "https://example.test/archive.jpg",
+        "sha256": "abc123",
+    }, 1) is None
+    assert build_product_record({
+        "title": "Black Retro Sneakers",
+        "image_url": "https://example.test/sneakers.jpg",
+        "sha256": "def456",
+    }, 2) is None
+
+
+def test_manifest_seed_accepts_explicit_price_and_recognized_item_type():
+    product = build_product_record({
+        "title": "Black Retro Sneakers",
+        "image_url": "https://example.test/sneakers.jpg",
+        "sha256": "def456",
+        "price": 1299,
+        "source": "verified supplier feed",
+        "license": "owner-provided",
+    }, 3)
+    assert product is not None
+    assert product["category"] == "footwear"
+    assert product["price"] == 1299.0
+    assert product["brand"] is None
+    assert product["style"] is None
