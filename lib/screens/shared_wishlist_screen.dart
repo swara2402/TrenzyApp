@@ -598,7 +598,7 @@ class _WishlistItemCard extends StatelessWidget {
                     ...[
                       SizedBox(height: 2),
                       Text(
-                        '₹${item.productPrice.toStringAsFixed(0)}',
+                        item.hasProductPrice ? '₹${item.productPrice.toStringAsFixed(0)}' : 'Price unavailable',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -741,7 +741,7 @@ class _ItemDetailsSheet extends StatelessWidget {
                 ),
               ),
               Text(
-                '₹${item.productPrice.toStringAsFixed(0)}',
+                item.hasProductPrice ? '₹${item.productPrice.toStringAsFixed(0)}' : 'Price unavailable',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
