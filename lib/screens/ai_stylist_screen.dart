@@ -125,14 +125,54 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
         surfaceTintColor: Colors.transparent,
         foregroundColor: c.foreground,
         elevation: 0,
+        toolbarHeight: 68,
+        automaticallyImplyLeading: false,
+        leadingWidth: 52,
         leading: const GlassBackButton(),
-        title: Text(
-          'AI Stylist',
-          style: GlassTypography.display(
-            fontSize: 20,
-            weight: FontWeight.w700,
-            color: c.foreground,
-          ),
+        titleSpacing: 4,
+        title: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: c.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: c.primary.withValues(alpha: 0.28)),
+              ),
+              alignment: Alignment.center,
+              child: Icon(Icons.auto_awesome_rounded, color: c.primary, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI Stylist',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GlassTypography.display(
+                      fontSize: 18,
+                      weight: FontWeight.w700,
+                      color: c.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Your personal style assistant',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GlassTypography.meta(
+                      fontSize: 10,
+                      color: c.mutedFg,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       body: Column(
