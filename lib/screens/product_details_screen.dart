@@ -367,15 +367,45 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       trackWardrobeAdd(ref, product.id, category: product.category);
       ref.invalidate(wardrobeProvider);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Added to wardrobe')));
+        // Keep feedback above the persistent bottom action bar so it is readable
+        // on short screens and doesn't disappear behind the wardrobe controls.
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Added to wardrobe'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              MediaQuery.of(context).padding.bottom + 104,
+            ),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'VIEW',
+              onPressed: () => context.push(AppRoutes.wardrobe),
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Could not add to wardrobe')));
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Could not add to wardrobe. Please try again.'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              MediaQuery.of(context).padding.bottom + 104,
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isAddingToWardrobe = false);
