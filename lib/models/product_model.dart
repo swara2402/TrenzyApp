@@ -29,6 +29,12 @@ class ProductModel {
   String get effectiveImageUrl =>
       ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
 
+  /// Prefer a verified effective price, falling back to the listed price.
+  double get displayPrice => effectivePrice > 0 ? effectivePrice : price;
+
+  /// True only when a verified positive price is present in the API payload.
+  bool get hasPrice => displayPrice > 0;
+
   ProductModel({
     String? id,
     String? name,

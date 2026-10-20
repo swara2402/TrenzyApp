@@ -156,7 +156,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                         final parts = <String>[
                                           product.name,
                                           product.brand.toUpperCase(),
-                                          '\u20B9${product.price.toStringAsFixed(0)}',
+                                          if (product.hasPrice) '\u20B9${product.displayPrice.toStringAsFixed(0)}' else 'Price unavailable',
                                           'Shared from Trenzy',
                                         ];
                                         SharePlus.instance.share(
@@ -467,7 +467,7 @@ class _ProductInfoSection extends StatelessWidget {
           Row(
             children: [
               Text(
-                product.effectivePrice.toString(),
+                product.hasPrice ? '\u20B9${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                 style: GlassTypography.body(
                   fontSize: 22,
                   weight: FontWeight.w800,

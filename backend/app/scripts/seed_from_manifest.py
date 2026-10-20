@@ -11,7 +11,6 @@ Guarantees:
 import os
 import sys
 import json
-import random
 import logging
 from pathlib import Path
 from typing import Dict, List, Set, Any, Optional
@@ -80,27 +79,25 @@ COLORS = ["black", "white", "gray", "navy", "beige", "brown", "red", "blue", "gr
 BRANDS = ["Trenzy Studio", "Aura Urban", "Noir & Co", "Vogue Atelier", "Artisan Loom", "Minimalist Lab", "Solstice Wear", "Kashmir Craft"]
 
 
-def infer_category(title: str, cat_hint: str) -> str:
+def infer_category(title: str, cat_hint: str) -> Optional[str]:
+    """Infer only from explicit garment-type terms; never guess randomly."""
     combined = f"{title} {cat_hint}".lower()
     for kw, cat in CATEGORY_KEYWORDS.items():
         if kw in combined:
             return cat
     if "footwear" in combined:
         return "footwear"
-    if "garment" in combined or "cloth" in combined:
-        return "tops"
-    return random.choice(CATEGORIES)
+    return None
 
 
-def build_product_record(manifest_item: Dict[str, Any], idx: int) -> Dict[str, Any]:
-    # Prefer fields explicitly derived at acquisition time (e.g. by
-    # acquire_pexels_images) over title heuristics; fall back for legacy
-    # Wikimedia manifests that only carry title/category_hint.
-    title = (
-        manifest_item.get("product_name")
-        or manifest_item.get("title", f"Fashion Item {idx}")
-    )
-    # Clean up file title
+def build_product_record(manifest_item: Dict[str, Any], idx: int) -> Optional[Dict[str, Any]]:
+    """Build a product only when the manifest has defensible retail metadata.
+
+    Image filenames alone are not evidence of a product category, retail price,
+    brand, style, or rating. Missing fields are never filled with random/fake
+    values. This prevents historical/archive images from becoming shopping items.
+    """
+    title = str(manifest_item.get("product_name") or manifest_item.get("title") or "").strip()
     clean_title = (
         title.replace("File:", "")
         .replace(".jpg", "")
@@ -110,35 +107,45 @@ def build_product_record(manifest_item: Dict[str, Any], idx: int) -> Dict[str, A
         .replace("_", " ")
         .strip()
     )
-    if len(clean_title) > 60:
-        clean_title = clean_title[:57] + "..."
+    cat_hint = str(manifest_item.get("category_hint") or "")
+    raw_category = str(manifest_item.get("product_category") or "").strip().lower()
+    category = raw_category if raw_category in CATEGORIES else infer_category(clean_title, cat_hint)
 
-    cat_hint = manifest_item.get("category_hint", "")
-    category = manifest_item.get("product_category") or infer_category(clean_title, cat_hint)
-    style = random.choice(STYLES)
-    manifest_colors = manifest_item.get("colors") or []
-    color = manifest_colors[0] if manifest_colors else random.choice(COLORS)
-    brand = random.choice(BRANDS)
+    raw_price = manifest_item.get("price")
+    try:
+        price = float(raw_price)
+    except (TypeError, ValueError):
+        price = 0.0
 
-    # Deterministic price based on index
-    price_cents = 799 + (hash(manifest_item["sha256"]) % 4200)
-    price = float(price_cents)
+    # Fail closed: only a descriptive name, recognized category, and real,
+    # positive price supplied by the source can become a purchasable listing.
+    if len(clean_title) < 5 or not category or price <= 0:
+        return None
 
+    image_url = str(manifest_item.get("image_url") or "").strip()
+    sha256 = str(manifest_item.get("sha256") or "").strip()
+    if not image_url or not sha256:
+        return None
+
+    colors = manifest_item.get("colors") or []
+    color = str(manifest_item.get("color") or (colors[0] if colors else "")).strip() or None
+    style = str(manifest_item.get("style") or "").strip() or None
+    brand = str(manifest_item.get("brand") or "").strip() or None
     prod_id = f"trenzy_{idx:04d}"
 
     return {
         "id": prod_id,
-        "name": clean_title if len(clean_title) >= 5 else f"{brand} {style.capitalize()} {category.capitalize()}",
-        "description": f"Curated {style} {category} in {color} by {brand}. Sourced under {manifest_item.get('license', 'CC BY-SA')}.",
+        "name": clean_title[:60],
+        "description": str(manifest_item.get("description") or "").strip() or None,
         "category": category,
         "price": price,
-        "currency": "INR",
+        "currency": str(manifest_item.get("currency") or "INR"),
         "brand": brand,
         "style": style,
         "color": color,
-        "colors": manifest_colors or [color],
-        "image_url": manifest_item["image_url"],
-        "image_sha256": manifest_item["sha256"],
+        "colors": colors or ([color] if color else []),
+        "image_url": image_url,
+        "image_sha256": sha256,
         "image_phash": manifest_item.get("phash"),
         "source": manifest_item.get("source", "Wikimedia Commons"),
         "source_license": manifest_item.get("license", "CC BY-SA"),
@@ -146,7 +153,7 @@ def build_product_record(manifest_item: Dict[str, Any], idx: int) -> Dict[str, A
         "license_attribution": manifest_item.get("attribution") or manifest_item.get("license"),
         "author": manifest_item.get("author", "Unknown Contributor"),
         "is_archived": False,
-        "rating": round(4.0 + (hash(prod_id) % 10) * 0.1, 1),
+        "rating": manifest_item.get("rating"),
     }
 
 
@@ -184,6 +191,12 @@ def seed_catalog(target_count: Optional[int] = None, sync_db: bool = True) -> Li
             continue
 
         prod = build_product_record(item, i)
+        if prod is None:
+            logger.warning(
+                "Skipping manifest item %s: missing a recognized category or explicit positive retail price",
+                item.get("title") or item.get("image_url") or i,
+            )
+            continue
 
         # Validate with ML data contract
         contract = CatalogItemContract(

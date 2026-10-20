@@ -220,9 +220,10 @@ class DiscoverScreen extends ConsumerWidget {
                             [
                               'All',
                               'Dresses',
-                              'Shoes',
+                              'Footwear',
                               'Tops',
                               'Bottoms',
+                              'Outerwear',
                               'Accessories',
                             ].map((cat) {
                               final selected =
@@ -679,7 +680,7 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                                             ),
                                             const SizedBox(height: 5),
                                             Text(
-                                              '₹${product.effectivePrice.toStringAsFixed(0)}',
+                                              product.hasPrice ? '₹${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                                               maxLines: 1,
                                               style: TextStyle(
                                                 color: context.trenzyColors.primary,

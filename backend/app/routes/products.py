@@ -39,6 +39,9 @@ logger = logging.getLogger(__name__)
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
 from ..models import Brand, Product, ProductImage, ProductVariant, Wishlist
+from ..catalog_categories import canonical_category as _canonical_category
+from ..catalog_categories import canonical_category_expr as _canonical_category_expr
+from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
 from ..launch_flags import BETA_COMMERCE_ENABLED
 
 router = APIRouter(prefix="/api", tags=["products"])
@@ -49,11 +52,45 @@ def _escape_like(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def _product_tags(product):
+    """Normalize legacy tag JSON and fill gaps from verified product metadata."""
+    stored = product.tags
+    if isinstance(stored, dict):
+        stored_values = [
+            value for value in stored.values()
+            if isinstance(value, (str, int, float))
+        ]
+    elif isinstance(stored, (list, tuple, set)):
+        stored_values = list(stored)
+    else:
+        stored_values = []
+
+    values = stored_values + [
+        product.subcategory,
+        _canonical_category(product.subcategory),
+        product.style,
+        product.color,
+        product.occasion,
+        product.gender,
+    ]
+    tags = []
+    seen = set()
+    for value in values:
+        label = str(value or "").strip()
+        if not label or label.lower() in {"unknown", "none", "null", "uncategorized"}:
+            continue
+        key = label.casefold()
+        if key not in seen:
+            tags.append(label)
+            seen.add(key)
+    return tags
+
+
 def _product_payload(product):
     return {
         "id": product.id,
         "name": product.name,
-        "category": product.category,
+        "category": _canonical_category(product.subcategory),
         "subcategory": product.subcategory,
         "article_type": product.article_type,
         "gender": product.gender or "Unisex",
@@ -65,7 +102,7 @@ def _product_payload(product):
         "brand": product.brand,
         "rating": product.rating,
         "image_url": product.image_url,
-        "tags": product.tags,
+        "tags": _product_tags(product),
         "affiliate_links": product.affiliate_links if BETA_COMMERCE_ENABLED else None,
         "outfit_role": getattr(product, "outfit_role", None),
         "style": getattr(product, "style", None),
@@ -105,10 +142,10 @@ def list_products(
     limit = max(1, min(limit, 100))
     offset = max(0, offset)
 
-    base_stmt = select(Product).where(Product.is_archived.is_(False))
+    base_stmt = select(Product).where(Product.is_archived.is_(False), _catalog_category_is_classified())
     if category:
         base_stmt = base_stmt.where(
-            Product.category.ilike(f"%{_escape_like(category)}%", escape="\\")
+            _canonical_category_expr().ilike(f"%{_escape_like(category)}%", escape="\\")
         )
     if subcategory:
         base_stmt = base_stmt.where(
@@ -222,16 +259,16 @@ def search_products(
         stmt = (
             select(Product, rank_col)
             .where(sv.match(tsquery_str, postgresql_regconfig="english"))
-            .where(Product.is_archived.is_(False))
+            .where(Product.is_archived.is_(False), _catalog_category_is_classified())
         )
     else:
         # No valid tsquery — use ILIKE fallback
         rank_col = None
-        stmt = select(Product).where(Product.is_archived.is_(False))
+        stmt = select(Product).where(Product.is_archived.is_(False), _catalog_category_is_classified())
 
     if category:
         stmt = stmt.where(
-            Product.category.ilike(f"%{_escape_like(category)}%", escape="\\")
+            _canonical_category_expr().ilike(f"%{_escape_like(category)}%", escape="\\")
         )
     if subcategory:
         stmt = stmt.where(
@@ -255,7 +292,7 @@ def search_products(
             or_(
                 Product.name.ilike(pattern, escape="\\"),
                 Brand.name.ilike(pattern, escape="\\"),
-                Product.category.ilike(pattern, escape="\\"),
+                _canonical_category_expr().ilike(pattern, escape="\\"),
                 Product.subcategory.ilike(pattern, escape="\\"),
                 Product.article_type.ilike(pattern, escape="\\"),
             )
@@ -317,7 +354,7 @@ def batch_products(
         return {"products": []}
 
     product_ids = product_ids[:100]  # Cap at 100 to prevent abuse
-    products = session.query(Product).filter(Product.id.in_(product_ids)).all()
+    products = session.query(Product).filter(Product.id.in_(product_ids), Product.is_archived.is_(False), _catalog_category_is_classified()).all()
     return {"products": [_product_payload(p) for p in products]}
 
 
@@ -325,7 +362,7 @@ def batch_products(
 def get_product(request: Request, product_id: str, session: Session = Depends(get_session)):
     """Fetch a single product by its string identifier."""
 
-    p = session.query(Product).filter(Product.id == product_id).first()
+    p = session.query(Product).filter(Product.id == product_id, Product.is_archived.is_(False), _catalog_category_is_classified()).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
 
@@ -362,7 +399,7 @@ def get_product(request: Request, product_id: str, session: Session = Depends(ge
     similar = (
         session.query(Product)
         .filter(
-            Product.category == p.category,
+            _canonical_category_expr() == _canonical_category(p.subcategory),
             Product.id != product_id,
             Product.is_archived.is_(False),
         )
@@ -437,6 +474,7 @@ def unified_search(
         session.query(Product)
         .filter(
             Product.is_archived.is_(False),
+            _catalog_category_is_classified(),
             Product.name.ilike(pattern, escape="\\"),
         )
         .limit(limit)

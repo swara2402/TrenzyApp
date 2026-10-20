@@ -469,7 +469,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                               ],
                             ),
                             child: Text(
-                              '₹${product.price.toStringAsFixed(0)}',
+                              product.hasPrice ? '₹${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                               style: TextStyle(
                                 color: context.trenzyColors.primaryFg,
                                 fontSize: 15,

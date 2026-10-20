@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..models import Category, Product
+from ..catalog_categories import canonical_category_expr, catalog_category_is_classified
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +54,25 @@ def _build_tree(session: Session, parent_id: Optional[int] = None) -> list[dict[
 @router.get("")
 def list_categories(request: Request, session: Session = Depends(get_session)):
     """Return a flat list of distinct category name strings from products (Flutter frontend expects List<String>)."""
-    cats = session.query(Product.category).filter(Product.category.isnot(None)).distinct().order_by(Product.category).all()
-    return [c[0] for c in cats if c[0]]
+    category_expr = canonical_category_expr()
+    cats = (
+        session.query(category_expr.label("category"))
+        .filter(Product.is_archived.is_(False), catalog_category_is_classified())
+        .distinct()
+        .order_by("category")
+        .all()
+    )
+    return [row[0] for row in cats if row[0]]
 
 
 @router.get("/{category_name}/subcategories")
 def list_subcategories(request: Request, category_name: str, session: Session = Depends(get_session)):
     """Return subcategories for a given parent category name from products."""
     subcats = session.query(Product.subcategory).filter(
-        Product.category == category_name,
-        Product.subcategory.isnot(None)
+        canonical_category_expr() == category_name,
+        Product.is_archived.is_(False),
+        catalog_category_is_classified(),
+        Product.subcategory.isnot(None),
     ).distinct().order_by(Product.subcategory).all()
     return [c[0] for c in subcats if c[0]]
 

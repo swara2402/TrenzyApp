@@ -158,7 +158,7 @@ class Product(Base):
     category_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    tags: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    tags: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     affiliate_links: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
