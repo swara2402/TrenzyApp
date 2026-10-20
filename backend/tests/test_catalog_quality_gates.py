@@ -1,9 +1,17 @@
 from types import SimpleNamespace
 
 from app.models import Product
-from app.routes.products import _product_tags
+from app.routes.products import _canonical_category, _product_tags
 from app.scripts.seed_from_manifest import build_product_record, infer_category
 from app.scripts.quarantine_unclassified_products import grounded_tags, is_unclassified
+
+
+def test_legacy_style_groups_normalize_to_garment_categories():
+    assert _canonical_category("baggy washed denim jeans") == "Bottoms"
+    assert _canonical_category("retro basketball sneakers") == "Footwear"
+    assert _canonical_category("technical windbreaker") == "Outerwear"
+    assert _canonical_category("football jersey") == "Tops"
+    assert _canonical_category("layered streetwear outfit") == ""
 
 
 def test_unclassified_catalog_records_are_quarantined_not_guessed():
@@ -64,7 +72,7 @@ def test_products_endpoint_hides_unclassified_rows(client, db_session):
     classified = Product(
         id="test_classified_catalog_row",
         name="Retro Trainers",
-        category="footwear",
+        category="streetwear",
         subcategory="retro trainers",
         gender="men",
         image_url="https://example.test/trainers.jpg",
@@ -79,6 +87,8 @@ def test_products_endpoint_hides_unclassified_rows(client, db_session):
     ids = {item["id"] for item in response.json()["products"]}
     assert "test_classified_catalog_row" in ids
     assert "test_unclassified_catalog_row" not in ids
+    classified_item = next(item for item in response.json()["products"] if item["id"] == "test_classified_catalog_row")
+    assert classified_item["category"] == "Footwear"
 
 
 
