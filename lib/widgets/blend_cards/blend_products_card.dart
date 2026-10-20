@@ -117,7 +117,7 @@ class _ProductRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = rankedProduct.product;
     final brand = p?.effectiveBrand ?? p?.brand ?? '';
-    final price = p?.hasPrice == true ? '₹${p!.effectivePrice.toStringAsFixed(0)}' : '';
+    final price = p?.hasPrice == true ? '₹${p!.displayPrice.toStringAsFixed(0)}' : '';
     final metaText = [brand, price].where((s) => s.isNotEmpty).join(' · ');
     final matchScore = (rankedProduct.matchScore ?? 0).toInt();
 
