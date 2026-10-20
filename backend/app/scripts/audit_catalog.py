@@ -21,8 +21,18 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
     ids = [product.get("id") for product in products]
     image_urls = [product.get("image_url") for product in products]
     duplicate_ids = sum(count > 1 for count in Counter(ids).values())
+    active_products = [product for product in products if not product.get("is_archived", False)]
+    unknown = {"", "unknown", "uncategorized", "none", "null"}
+    unclassified = [
+        product for product in active_products
+        if str(product.get("category") or "").strip().lower() in unknown
+        or str(product.get("subcategory") or "").strip().lower() in unknown
+        or str(product.get("gender") or "").strip().lower() in unknown
+    ]
+    classified = [product for product in active_products if product not in unclassified]
     stats = {
         "records": len(products),
+        "active_records": len(active_products),
         "unique_ids": len(set(ids)),
         "unique_image_urls": len(set(image_urls)),
         "missing_ids": sum(not product.get("id") for product in products),
@@ -32,9 +42,21 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
             for product in products
         ),
         "duplicate_id_values": duplicate_ids,
+        "active_unclassified_products": len(unclassified),
+        "active_missing_tags": sum(not isinstance(product.get("tags"), list) or not product.get("tags") for product in classified),
+        "active_placeholder_names": sum(
+            str(product.get("name") or "").strip().lower().startswith("product ")
+            for product in active_products
+        ),
+        # Prices are reported separately because beta commerce is disabled; never invent them.
+        "active_missing_prices": sum(product.get("price") is None or float(product.get("price") or 0) <= 0 for product in active_products),
     }
 
-    failure_keys = {"missing_ids", "missing_image_urls", "missing_legal_metadata", "duplicate_id_values"}
+    failure_keys = {
+        "missing_ids", "missing_image_urls", "missing_legal_metadata",
+        "duplicate_id_values", "active_unclassified_products",
+        "active_missing_tags", "active_placeholder_names",
+    }
     failures = {
         key: value
         for key, value in stats.items()
