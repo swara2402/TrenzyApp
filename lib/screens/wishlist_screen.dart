@@ -267,7 +267,7 @@ class _WishlistProductRow extends StatelessWidget {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    product.hasPrice ? '\u20B9${product.price.toStringAsFixed(0)}' : 'Price unavailable',
+                    product.hasPrice ? '\u20B9${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                     style: GlassTypography.body(
                       fontSize: 13,
                       weight: FontWeight.w800,
