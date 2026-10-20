@@ -17,6 +17,7 @@ def test_legacy_style_groups_normalize_to_garment_categories():
 def test_unclassified_catalog_records_are_quarantined_not_guessed():
     assert is_unclassified({"category": "unknown", "subcategory": "unknown", "gender": "unknown"})
     assert is_unclassified({"category": "footwear", "subcategory": "unknown", "gender": "men"})
+    assert is_unclassified({"category": "streetwear", "subcategory": "layered streetwear outfit", "gender": "men"})
     assert not is_unclassified({"category": "footwear", "subcategory": "retro trainers", "gender": "men"})
 
 
