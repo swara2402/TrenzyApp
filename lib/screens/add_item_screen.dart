@@ -90,15 +90,36 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       ref.invalidate(aiOutfitMatchesProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Saved to wardrobe')));
+        final messenger = ScaffoldMessenger.of(context);
         context.pop();
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle_rounded, color: Colors.white),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('Added to your wardrobe')),
+                ],
+              ),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              backgroundColor: const Color(0xFF287A58),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            ),
+          );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: ${friendlyError(e)}')),
+          SnackBar(
+            content: Text('Could not add item. ${friendlyError(e)}'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            backgroundColor: context.trenzyColors.crimson,
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          ),
         );
       }
     } finally {
