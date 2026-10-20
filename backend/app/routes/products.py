@@ -55,11 +55,21 @@ def _catalog_category_is_classified():
 
 
 def _product_tags(product):
-    """Return stored tags, or derive safe display tags from verified product metadata."""
-    if product.tags:
-        return product.tags
-    values = [
+    """Normalize legacy tag JSON and fill gaps from verified product metadata."""
+    stored = product.tags
+    if isinstance(stored, dict):
+        stored_values = [
+            value for value in stored.values()
+            if isinstance(value, (str, int, float))
+        ]
+    elif isinstance(stored, (list, tuple, set)):
+        stored_values = list(stored)
+    else:
+        stored_values = []
+
+    values = stored_values + [
         product.subcategory,
+        product.category,
         product.style,
         product.color,
         product.occasion,
@@ -69,7 +79,7 @@ def _product_tags(product):
     seen = set()
     for value in values:
         label = str(value or "").strip()
-        if not label or label.lower() in {"unknown", "none", "null"}:
+        if not label or label.lower() in {"unknown", "none", "null", "uncategorized"}:
             continue
         key = label.casefold()
         if key not in seen:
