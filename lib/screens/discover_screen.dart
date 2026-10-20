@@ -31,6 +31,7 @@ class DiscoverScreen extends ConsumerWidget {
     final trendingState = ref.watch(
       trendingProductsProvider(TrendingParams(timeframe: 'daily', limit: 10)),
     );
+    final catalogState = ref.watch(productsProvider((category: null)));
 
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
@@ -122,7 +123,7 @@ class DiscoverScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _CategoryChips()),
               ),
-            if (trendingState.isLoading || trendingState.hasError || (trendingState.valueOrNull?.isNotEmpty ?? false))
+            if (trendingState.isLoading || trendingState.hasError || (trendingState.valueOrNull?.isNotEmpty ?? false) || (catalogState.valueOrNull?.isNotEmpty ?? false))
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _TrendingProducts()),
@@ -1043,62 +1044,71 @@ class _TrendingProducts extends ConsumerWidget {
     final trendingAsync = ref.watch(
       trendingProductsProvider(TrendingParams(timeframe: 'daily', limit: 10)),
     );
+    final catalogAsync = ref.watch(productsProvider((category: null)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionTitle(
           title: 'Trending Now',
-          subtitle: 'What everyone\'s watching',
+          subtitle: 'Popular picks and fresh finds',
           actionLabel: 'View All',
           onAction: () => context.push(AppRoutes.trends),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         trendingAsync.when(
           loading: () => _TrendingSkeleton(),
-          error: (e, _) => ErrorSection(
-            message: friendlyError(e),
-            onRetry: () => ref.invalidate(
-              trendingProductsProvider(
-                TrendingParams(timeframe: 'daily', limit: 10),
-              ),
-            ),
-            compact: true,
-            padding: EdgeInsets.zero,
-          ),
+          error: (e, _) => _fallbackCatalog(context, catalogAsync.valueOrNull),
           data: (trends) {
-            if (trends.isEmpty) return const SizedBox.shrink();
+            if (trends.isEmpty) {
+              return _fallbackCatalog(context, catalogAsync.valueOrNull);
+            }
 
-            return SizedBox(
-              height: 240,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: trends.length,
-                separatorBuilder: (_, _) => SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final trend = trends[index];
-                  final product = ProductModel.fromTrendModel(trend);
-
-                  return SizedBox(
-                    width: 160,
-                    child: ProductCard(
-                      product: product,
-                      compact: true,
-                      variant: ProductCardVariant.compact,
-                      heroTagSuffix: '_trending_$index',
-                      onTap: () {
-                        context.push(
-                          '${AppRoutes.productDetails}?productId=${product.id}',
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            );
+            final products = trends.map(ProductModel.fromTrendModel).toList();
+            return _productRail(context, products, suffix: 'trending');
           },
         ),
       ],
+    );
+  }
+
+  Widget _fallbackCatalog(BuildContext context, List<ProductModel>? products) {
+    final picks = (products ?? const <ProductModel>[]).take(10).toList();
+    if (picks.isEmpty) {
+      return EmptySection(
+        title: 'Fresh picks are on the way',
+        subtitle: 'Check back soon for products matched to your style',
+        icon: Icons.auto_awesome_rounded,
+      );
+    }
+    return _productRail(context, picks, suffix: 'catalog_fallback');
+  }
+
+  Widget _productRail(
+    BuildContext context,
+    List<ProductModel> products, {
+    required String suffix,
+  }) {
+    return SizedBox(
+      height: 240,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: products.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return SizedBox(
+            width: 160,
+            child: ProductCard(
+              product: product,
+              compact: true,
+              variant: ProductCardVariant.compact,
+              heroTagSuffix: '_${suffix}_$index',
+              onTap: () => context.push(AppRoutes.productDetailsFor(product.id)),
+            ),
+          );
+        },
+      ),
     );
   }
 }
