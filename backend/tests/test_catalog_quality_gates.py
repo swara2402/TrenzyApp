@@ -29,7 +29,7 @@ def test_grounded_tags_use_only_existing_metadata_and_dedupe_case_insensitively(
         "color": "Black",
         "gender": "men",
     }
-    assert grounded_tags(product) == ["Retro Trainers", "footwear", "Streetwear", "Black", "men"]
+    assert grounded_tags(product) == ["Retro Trainers", "Footwear", "Streetwear", "Black", "men"]
 
 
 def test_api_tag_normalizer_accepts_legacy_json_objects_and_returns_string_list():
@@ -43,7 +43,7 @@ def test_api_tag_normalizer_accepts_legacy_json_objects_and_returns_string_list(
         gender="men",
     )
     tags = _product_tags(product)
-    assert tags == ["Streetwear", "Black", "retro trainers", "footwear", "men"]
+    assert tags == ["Streetwear", "Black", "retro trainers", "Footwear", "men"]
     assert all(isinstance(tag, str) for tag in tags)
 
 
