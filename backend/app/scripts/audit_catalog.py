@@ -32,11 +32,14 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
     unknown = {"", "unknown", "uncategorized", "none", "null"}
     unclassified = [
         product for product in active_products
-        if str(product.get("category") or "").strip().lower() in unknown
-        or str(product.get("subcategory") or "").strip().lower() in unknown
-        or str(product.get("gender") or "").strip().lower() in unknown
-        or not canonical_category(product.get("subcategory"))
+        if not canonical_category(product.get("subcategory"))
     ]
+    category_mismatches = sum(
+        str(product.get("category") or "").strip().casefold()
+        != canonical_category(product.get("subcategory")).casefold()
+        for product in active_products
+        if canonical_category(product.get("subcategory"))
+    )
     classified = [product for product in active_products if product not in unclassified]
     stats = {
         "records": len(products),
@@ -51,6 +54,7 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
         ),
         "duplicate_id_values": duplicate_ids,
         "active_unclassified_products": len(unclassified),
+        "active_category_mismatches": category_mismatches,
         "active_missing_tags": sum(not isinstance(product.get("tags"), list) or not product.get("tags") for product in classified),
         "active_placeholder_names": sum(
             str(product.get("name") or "").strip().lower().startswith("product ")
@@ -63,7 +67,7 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
     failure_keys = {
         "missing_ids", "missing_image_urls", "missing_legal_metadata",
         "duplicate_id_values", "active_unclassified_products",
-        "active_missing_tags", "active_placeholder_names",
+        "active_category_mismatches", "active_missing_tags", "active_placeholder_names",
     }
     failures = {
         key: value
