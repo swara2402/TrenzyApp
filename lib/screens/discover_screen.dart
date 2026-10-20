@@ -541,9 +541,9 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
           actionLabel: 'See All',
           onAction: () => context.push(AppRoutes.swipeDiscovery),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         productsAsync.when(
-          loading: () => _SwipeDiscoverySkeleton(),
+          loading: () => const _SwipeDiscoverySkeleton(),
           error: (e, _) => ErrorSection(
             message: friendlyError(e),
             onRetry: () => ref.invalidate(discoverSwipeProductsProvider),
@@ -554,55 +554,76 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
             if (products.isEmpty) return const SizedBox.shrink();
             final preview = products.take(3).toList();
 
-            return GestureDetector(
-              onTap: () => context.push(AppRoutes.swipeDiscovery),
-              child: SizedBox(
-                height: 260,
-                child: Stack(
-                  children: List.generate(preview.length, (i) {
-                    final offset = i * 16.0;
-                    final scale = 1.0 - (i * 0.05);
-                    final product = preview[i];
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final cardWidth = (constraints.maxWidth - 32)
+                    .clamp(220.0, 320.0)
+                    .toDouble();
+                final cardHeight = (cardWidth * 1.18)
+                    .clamp(280.0, 360.0)
+                    .toDouble();
+                final stackWidth = cardWidth + 24;
 
-                    return Positioned(
-                      right: offset,
-                      top: offset,
-                      child: Transform.scale(
-                        scale: scale,
-                        child: Container(
-                          width: 180,
-                          height: 240,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 16,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                product.imageUrl.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl:
-                                            ApiService.resolveImageUrl(
+                return GestureDetector(
+                  onTap: () => context.push(AppRoutes.swipeDiscovery),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: cardHeight + 24,
+                    child: Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: List.generate(preview.length, (i) {
+                        final offset = i * 12.0;
+                        final product = preview[i];
+                        return Positioned(
+                          left: ((constraints.maxWidth - stackWidth) / 2) + offset,
+                          top: offset,
+                          child: Transform.scale(
+                            scale: 1.0 - (i * 0.035),
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: cardWidth,
+                              height: cardHeight,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.22),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 7),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      if (product.imageUrl.isNotEmpty)
+                                        CachedNetworkImage(
+                                          imageUrl: ApiService.resolveImageUrl(
+                                                product.imageUrl,
+                                              ) ??
                                               product.imageUrl,
-                                            ) ??
-                                            product.imageUrl,
-                                        fit: BoxFit.cover,
-                                        memCacheWidth: 400,
-                                        placeholder: (_, _) => Container(
-                                          color: context.trenzyColors.graphite,
-                                          child: Center(
-                                            child: CircularProgressIndicator(),
+                                          fit: BoxFit.cover,
+                                          memCacheWidth: 600,
+                                          placeholder: (_, _) => ColoredBox(
+                                            color: context.trenzyColors.graphite,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(),
+                                            ),
                                           ),
-                                        ),
-                                        errorWidget: (_, _, _) => Container(
+                                          errorWidget: (_, _, _) => ColoredBox(
+                                            color: context.trenzyColors.graphite,
+                                            child: Icon(
+                                              Icons.shopping_bag_rounded,
+                                              size: 48,
+                                              color: context.trenzyColors.mutedFg,
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        ColoredBox(
                                           color: context.trenzyColors.graphite,
                                           child: Icon(
                                             Icons.shopping_bag_rounded,
@@ -610,78 +631,77 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
                                             color: context.trenzyColors.mutedFg,
                                           ),
                                         ),
-                                      )
-                                    : Container(
-                                        color: context.trenzyColors.graphite,
-                                        child: Icon(
-                                          Icons.shopping_bag_rounded,
-                                          size: 48,
-                                          color: context.trenzyColors.mutedFg,
+                                      const Positioned.fill(
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.transparent,
+                                                Color(0xE6000000),
+                                              ],
+                                              stops: [0.35, 1],
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.85),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 14,
-                                  bottom: 14,
-                                  right: 14,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        product.effectiveBrand.toUpperCase(),
-                                        style: TextStyle(
-                                          color: context.trenzyColors.primary,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 1.5,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        product.name,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        product.effectivePrice.toString(),
-                                        style: TextStyle(
-                                          color: context.trenzyColors.primary,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
+                                      Positioned(
+                                        left: 14,
+                                        right: 14,
+                                        bottom: 14,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product.effectiveBrand.toUpperCase(),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: context.trenzyColors.primary,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 1.2,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              product.name,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                height: 1.15,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              '₹${product.effectivePrice.toStringAsFixed(0)}',
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                color: context.trenzyColors.primary,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
+                        );
+                      }),
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
