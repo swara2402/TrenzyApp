@@ -31,7 +31,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 import re
 
-from sqlalchemy import case, func, literal_column, or_, select
+from sqlalchemy import func, literal_column, or_, select
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -39,6 +39,9 @@ logger = logging.getLogger(__name__)
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
 from ..models import Brand, Product, ProductImage, ProductVariant, Wishlist
+from ..catalog_categories import canonical_category as _canonical_category
+from ..catalog_categories import canonical_category_expr as _canonical_category_expr
+from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
 from ..launch_flags import BETA_COMMERCE_ENABLED
 
 router = APIRouter(prefix="/api", tags=["products"])
@@ -47,43 +50,6 @@ router = APIRouter(prefix="/api", tags=["products"])
 def _escape_like(value: str) -> str:
     """Escape LIKE wildcards so user input can't inject % or _ patterns."""
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-
-
-# Item-type taxonomy: legacy data used style groups (e.g. streetwear) as
-# categories. Derive the display/filter category from the specific item type.
-_CATEGORY_RULES = (
-    ("Footwear", ("footwear", "sneaker", "shoe", "boot", "sandal", "loafer", "trainer", "derby", "heel", "flat")),
-    ("Bottoms", ("jeans", "trouser", "pants", "chinos", "shorts", "cargo", "skirt", "legging", "jogger")),
-    ("Dresses", ("dress", "gown", "lehenga", "one-piece")),
-    ("Outerwear", ("jacket", "coat", "blazer", "windbreaker", "varsity", "overshirt", "cardigan", "outerwear", "parka")),
-    ("Accessories", ("bag", "cap", "hat", "belt", "watch", "wallet", "sunglasses", "accessory", "jewelry", "jewellery")),
-    ("Tops", ("shirt", "jersey", "sweater", "sweatshirt", "t-shirt", "tee", "polo", "hoodie", "knit", "blouse", "top", "crewneck")),
-)
-
-
-def _canonical_category(subcategory):
-    """Return a canonical garment category only when the item type supports it."""
-    text = str(subcategory or "").strip().lower()
-    if not text or text in {"unknown", "none", "null", "uncategorized"}:
-        return ""
-    for category, keywords in _CATEGORY_RULES:
-        if any(keyword in text for keyword in keywords):
-            return category
-    return ""
-
-
-def _canonical_category_expr():
-    """SQL expression equivalent to _canonical_category for list/search filters."""
-    whens = []
-    for category, keywords in _CATEGORY_RULES:
-        condition = or_(*(Product.subcategory.ilike(f"%{keyword}%") for keyword in keywords))
-        whens.append((condition, category))
-    return case(*whens, else_="")
-
-
-def _catalog_category_is_classified():
-    """Hide legacy placeholders and non-product images without a recognized item type."""
-    return _canonical_category_expr() != ""
 
 
 def _product_tags(product):
