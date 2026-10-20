@@ -21,6 +21,7 @@ from sqlalchemy import func
 
 from ..db import SessionLocal
 from ..models import Product
+from ..catalog_categories import canonical_category
 
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "data" / "products.json"
 UNKNOWN = {"", "unknown", "uncategorized", "none", "null"}
@@ -31,7 +32,7 @@ def is_unclassified(product: dict[str, Any]) -> bool:
     category = str(product.get("category") or "").strip().lower()
     subcategory = str(product.get("subcategory") or "").strip().lower()
     gender = str(product.get("gender") or "").strip().lower()
-    return category in UNKNOWN or subcategory in UNKNOWN or gender in UNKNOWN
+    return category in UNKNOWN or subcategory in UNKNOWN or gender in UNKNOWN or not canonical_category(subcategory)
 
 
 def grounded_tags(product: dict[str, Any]) -> list[str]:
