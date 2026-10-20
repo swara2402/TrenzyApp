@@ -96,7 +96,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       ),
                       data: (product) => SliverAppBar(
                         expandedHeight: 600,
+                        // The floating glass bar below is the single back control.
                         automaticallyImplyLeading: false,
+                        leading: const SizedBox.shrink(),
                         backgroundColor: Colors.transparent,
                         elevation: 0,
                         pinned: false,
