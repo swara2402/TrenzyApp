@@ -90,6 +90,13 @@ def test_products_endpoint_hides_unclassified_rows(client, db_session):
     classified_item = next(item for item in response.json()["products"] if item["id"] == "test_classified_catalog_row")
     assert classified_item["category"] == "Footwear"
 
+    categories_response = client.get("/api/categories")
+    assert categories_response.status_code == 200
+    categories = categories_response.json()
+    assert "Footwear" in categories
+    assert "streetwear" not in categories
+    assert "unknown" not in categories
+
 
 
 def test_manifest_seed_never_guesses_category_or_invents_price():
