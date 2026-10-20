@@ -125,14 +125,31 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
         surfaceTintColor: Colors.transparent,
         foregroundColor: c.foreground,
         elevation: 0,
+        centerTitle: false,
+        titleSpacing: 0,
+        leadingWidth: 48,
+        toolbarHeight: 72,
         leading: const GlassBackButton(),
-        title: Text(
-          'AI Stylist',
-          style: GlassTypography.display(
-            fontSize: 20,
-            weight: FontWeight.w700,
-            color: c.foreground,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'AI Stylist',
+              style: GlassTypography.display(
+                fontSize: 20,
+                weight: FontWeight.w700,
+                color: c.foreground,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Your personal styling assistant',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GlassTypography.meta(fontSize: 11, color: c.mutedFg),
+            ),
+          ],
         ),
       ),
       body: Column(
