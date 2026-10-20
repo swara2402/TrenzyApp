@@ -56,6 +56,21 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
     }
   }
 
+  String _friendlyError(Object error) {
+    final message = error.toString().toLowerCase();
+    if (message.contains('timeout') ||
+        message.contains('connection failed') ||
+        message.contains('socketexception') ||
+        message.contains('clientexception') ||
+        message.contains('failed host lookup')) {
+      return "We couldn't connect to Trenzy right now. Check your internet connection and try again.";
+    }
+    if (message.contains('13 and older') || message.contains('13+')) {
+      return 'Trenzy is available to users aged 13 and older.';
+    }
+    return 'We couldn’t verify your age right now. Please try again.';
+  }
+
   Future<void> _submit() async {
     if (_ageVerified) {
       await _continueToOnboarding();
@@ -82,7 +97,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
       setState(() => _ageVerified = true);
       await _continueToOnboarding();
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = _friendlyError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
