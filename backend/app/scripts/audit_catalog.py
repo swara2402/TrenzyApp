@@ -15,6 +15,13 @@ from pathlib import Path
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "data" / "products.json"
 
 
+def _has_valid_price(product: dict) -> bool:
+    try:
+        return float(product.get("price") or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
 def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
     """Return catalog quality counts and fail on missing required fields."""
     products = json.loads(path.read_text(encoding="utf-8"))
@@ -49,7 +56,7 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
             for product in active_products
         ),
         # Prices are reported separately because beta commerce is disabled; never invent them.
-        "active_missing_prices": sum(product.get("price") is None or float(product.get("price") or 0) <= 0 for product in active_products),
+        "active_missing_prices": sum(not _has_valid_price(product) for product in active_products),
     }
 
     failure_keys = {
