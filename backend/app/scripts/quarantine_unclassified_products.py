@@ -29,17 +29,14 @@ UNKNOWN = {"", "unknown", "uncategorized", "none", "null"}
 
 def is_unclassified(product: dict[str, Any]) -> bool:
     """A product must have a meaningful category and subcategory to be listed."""
-    category = str(product.get("category") or "").strip().lower()
-    subcategory = str(product.get("subcategory") or "").strip().lower()
-    gender = str(product.get("gender") or "").strip().lower()
-    return category in UNKNOWN or subcategory in UNKNOWN or gender in UNKNOWN or not canonical_category(subcategory)
+    return not canonical_category(product.get("subcategory"))
 
 
 def grounded_tags(product: dict[str, Any]) -> list[str]:
     """Create tags only from metadata already present on the record."""
     values = (
         product.get("subcategory"),
-        product.get("category"),
+        canonical_category(product.get("subcategory")) or product.get("category"),
         product.get("style"),
         product.get("color"),
         product.get("gender"),
@@ -75,6 +72,7 @@ def main() -> int:
         for product in unclassified:
             product["is_archived"] = True
         for product in classified:
+            product["category"] = canonical_category(product.get("subcategory"))
             product["tags"] = grounded_tags(product)
         CATALOG_PATH.write_text(json.dumps(products, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(f"JSON catalog updated; backup: {backup}")
