@@ -164,58 +164,50 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
             color: colors.primary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            letterSpacing: 0.8,
           ),
         ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              widget.initialOutfit != null ? 'Edit Outfit' : 'Outfit Builder',
-              style: TextStyle(
-                color: colors.foreground,
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+        const SizedBox(height: 8),
+        Text(
+          widget.initialOutfit != null ? 'Edit Outfit' : 'Outfit Builder',
+          style: TextStyle(
+            color: colors.foreground,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: _isSaving ? null : _saveOutfit,
+            icon: _isSaving
+                ? SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.primaryFg,
+                    ),
+                  )
+                : Icon(Icons.save, color: colors.primary, size: 20),
+            label: Text(_isSaving ? 'SAVING...' : 'SAVE LOOK'),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: colors.foreground,
+              backgroundColor: colors.graphite,
+              disabledBackgroundColor: colors.graphite,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(99),
+                side: BorderSide(color: colors.fg15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
               ),
             ),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _isSaving ? null : _saveOutfit,
-                  icon: _isSaving
-                      ? SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.primaryFg,
-                          ),
-                        )
-                      : Icon(Icons.save, color: colors.primary, size: 20),
-                  label: Text(_isSaving ? 'SAVING...' : 'SAVE LOOK'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: colors.foreground,
-                    backgroundColor: colors.graphite,
-                    disabledBackgroundColor: colors.graphite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(99),
-                      side: BorderSide(color: colors.fg15),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 14,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ],
     );
