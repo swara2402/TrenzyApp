@@ -24,6 +24,13 @@ class DiscoverScreen extends ConsumerWidget {
     final user = ref.watch(auth_p.authProvider).valueOrNull;
     final avatarUrl = user?.avatarUrl;
     final userName = user?.name ?? 'U';
+    final campaignState = ref.watch(discoverCampaignProvider);
+    final swipeState = ref.watch(discoverSwipeProductsProvider);
+    final personaState = ref.watch(personaProvider);
+    final categoriesState = ref.watch(categoriesProvider);
+    final trendingState = ref.watch(
+      trendingProductsProvider(TrendingParams(timeframe: 'daily', limit: 10)),
+    );
 
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
@@ -95,26 +102,31 @@ class DiscoverScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverToBoxAdapter(child: _buildSearchAndFilter(context)),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              sliver: const SliverToBoxAdapter(child: _CampaignBanner()),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              sliver: const SliverToBoxAdapter(child: _SwipeDiscoveryPreview()),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              sliver: const SliverToBoxAdapter(child: _PersonaSection()),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              sliver: const SliverToBoxAdapter(child: _CategoryChips()),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-              sliver: const SliverToBoxAdapter(child: _TrendingProducts()),
-            ),
+            if (campaignState.isLoading || campaignState.hasError || campaignState.valueOrNull != null)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                sliver: const SliverToBoxAdapter(child: _CampaignBanner()),
+              ),
+            if (swipeState.isLoading || swipeState.hasError || (swipeState.valueOrNull?.isNotEmpty ?? false))
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                sliver: const SliverToBoxAdapter(child: _SwipeDiscoveryPreview()),
+              ),
+            if (personaState.isLoading || personaState.hasError || personaState.valueOrNull != null)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                sliver: const SliverToBoxAdapter(child: _PersonaSection()),
+              ),
+            if (categoriesState.isLoading || categoriesState.hasError || (categoriesState.valueOrNull?.isNotEmpty ?? false))
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                sliver: const SliverToBoxAdapter(child: _CategoryChips()),
+              ),
+            if (trendingState.isLoading || trendingState.hasError || (trendingState.valueOrNull?.isNotEmpty ?? false))
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: const SliverToBoxAdapter(child: _TrendingProducts()),
+              ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
               sliver: const SliverToBoxAdapter(child: _RecommendedSection()),
