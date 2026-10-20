@@ -34,6 +34,7 @@ Run this once against the same APK/build after the beta-fix PR is merged. Record
 - [ ] Confirm public post images are viewable by intended viewers and private wardrobe images are not exposed to other accounts.
 
 ## Catalog cleanup and release gates
+- [ ] Run `python -m app.scripts.export_catalog_review --all` from `backend/` and visually review image/name/category matches in the generated `catalog-review.html`.
 - [ ] Run the catalog quarantine script in dry-run mode and save the output before applying any changes.
 - [ ] Review the proposed records and backup plan; do not apply JSON/database cleanup until the dry-run counts and target environment are confirmed.
 - [ ] Verify the known timed-out catalog image again and record its result.
