@@ -17,9 +17,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
   // Map root category names to representative icons
   static const Map<String, IconData> _rootCategoryIcons = {
+    'Tops': Icons.checkroom_outlined,
+    'Bottoms': Icons.man_outlined,
+    'Footwear': Icons.hiking_outlined,
+    'Dresses': Icons.dry_cleaning_outlined,
+    'Outerwear': Icons.ac_unit_outlined,
+    'Accessories': Icons.watch_outlined,
+    // Legacy names remain readable while old cached responses expire.
     'Upper': Icons.checkroom_outlined,
     'Bottom': Icons.man_outlined,
-    'Footwear': Icons.hiking_outlined,
     'tops': Icons.checkroom_outlined,
     'bottoms': Icons.man_outlined,
     'footwear': Icons.hiking_outlined,
