@@ -150,7 +150,12 @@ class SharedWishlistItem {
   String get productImage => product?.imageUrl ?? '';
   String get productBrand => product?.brand ?? '';
   String get productCategory => product?.category ?? '';
-  double get productPrice => product?.price ?? product?.effectivePrice ?? 0.0;
+  double get productPrice {
+    final item = product;
+    if (item == null) return 0.0;
+    return item.effectivePrice > 0 ? item.effectivePrice : item.price;
+  }
+
   bool get hasProductPrice => product?.hasPrice ?? false;
   String get addedByName =>
       addedBy?.name ?? addedBy?.displayName ?? 'Anonymous';
