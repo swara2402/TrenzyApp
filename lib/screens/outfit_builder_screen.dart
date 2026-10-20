@@ -49,9 +49,18 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   }
 
   void _addItemToCanvas(_ItemData item) {
-    setState(() {
-      _canvasItems.add(item);
-    });
+    if (_canvasItems.any((existing) => existing.id == item.id)) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('This item is already in your look'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+    setState(() => _canvasItems.add(item));
   }
 
   void _removeItemFromCanvas(int index) {
@@ -137,14 +146,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       appBar: const _CustomAppBar(),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               _buildDigitalCanvas(context),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
               _buildWardrobeSection(),
             ],
           ),
@@ -159,63 +168,75 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CREATIVE SUITE',
+          'BUILD YOUR LOOK',
           style: TextStyle(
             color: colors.primary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.4,
           ),
         ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              widget.initialOutfit != null ? 'Edit Outfit' : 'Outfit Builder',
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 390;
+            final title = Text(
+              widget.initialOutfit != null ? 'Edit your look' : 'Create your look',
               style: TextStyle(
                 color: colors.foreground,
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.4,
               ),
-            ),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _isSaving ? null : _saveOutfit,
-                  icon: _isSaving
-                      ? SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.primaryFg,
-                          ),
-                        )
-                      : Icon(Icons.save, color: colors.primary, size: 20),
-                  label: Text(_isSaving ? 'SAVING...' : 'SAVE LOOK'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: colors.foreground,
-                    backgroundColor: colors.graphite,
-                    disabledBackgroundColor: colors.graphite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(99),
-                      side: BorderSide(color: colors.fg15),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 14,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
+            );
+            final saveButton = ElevatedButton.icon(
+              onPressed: _isSaving ? null : _saveOutfit,
+              icon: _isSaving
+                  ? SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colors.primaryFg,
+                      ),
+                    )
+                  : Icon(Icons.save_outlined, color: colors.primary, size: 18),
+              label: Text(_isSaving ? 'SAVING…' : 'SAVE LOOK'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: colors.foreground,
+                backgroundColor: colors.graphite,
+                disabledBackgroundColor: colors.graphite,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: colors.fg15),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+                textStyle: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            );
+
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  title,
+                  const SizedBox(height: 12),
+                  SizedBox(width: double.infinity, child: saveButton),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: title),
+                const SizedBox(width: 12),
+                saveButton,
               ],
-            ),
-          ],
+            );
+          },
         ),
       ],
     );
