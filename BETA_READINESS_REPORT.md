@@ -87,7 +87,7 @@ Based on the reported changes, the working tree includes:
 | `tests/test_uploads_public_private.py` | Adds tests for public image access and owner-restricted private images |
 | `models.py` | Reportedly guards against a backend vector initialization crash |
 
-These changes are reported as local changes, not a verified production release. The repository status was last reported as two commits ahead of `origin/main`, with additional uncommitted changes. The actual final diff has not been independently inspected in this response.
+These changes are reported as local changes, not a verified production release. The fixes are committed on `audit/beta-readiness-fixes` (six commits ahead of `main`) and are now available in draft PR #35. The branch diff has been compared against `main`; this report still reflects locally reported test results and does not replace CI, staging, or device verification.
 
 ---
 
@@ -115,7 +115,7 @@ These changes are reported as local changes, not a verified production release. 
 - Backend tests: 160 passed, 11 failed, 1 skipped.
 - Backend staging deployment: not completed.
 - APK installed and exercised through all critical journeys: not verified.
-- Commit/push: reported not committed; no new release commit or artifact is confirmed here.
+- Commit/push: six commits are pushed on `audit/beta-readiness-fixes`; draft PR #35 is open. No final release APK artifact is confirmed here.
 
 The successful debug build establishes that an APK can be produced. It does not establish that the deployed backend, authentication, uploads, and feature flows work together.
 
@@ -139,14 +139,14 @@ These are the outstanding release checks, not optional polish:
 
 Follow this order:
 
-- [ ] Preserve the current working tree and review the complete diff for unintended changes or secrets.
+- [ ] Review the complete diff in draft PR #35 for unintended changes or secrets.
 - [ ] Fix or quarantine invalid catalog records using a safe, reversible process.
 - [ ] Configure and verify persistent upload storage.
 - [ ] Deploy the backend changes to staging.
 - [ ] Retest AI Stylist, public post images, private wardrobe images, and authorization on staging.
 - [ ] Run the critical Android user journeys and cross-account tests.
 - [ ] Investigate the 11 backend failures and confirm no release-critical behavior is affected.
-- [ ] Commit the reviewed changes on a dedicated branch and open a pull request; do not force-push or bypass review.
+- [ ] Keep PR #35 in draft until CI is green or failures are triaged, then complete staging/device release checks; do not force-push or bypass review.
 - [ ] Rebuild the final APK after the verified code changes and retain the actual artifact.
 
 **Final conclusion:** Trenzy has made meaningful progress, and the local build/test results are encouraging. However, it is not yet verified as ready for beta. The immediate priorities are staging verification, upload durability, catalog quality, and real Android end-to-end testing.
