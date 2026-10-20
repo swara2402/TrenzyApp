@@ -1,21 +1,25 @@
-"""File upload endpoint for user profile images and post attachments.
+"""File upload endpoint for user profile images, post attachments, and wardrobe.
 
-Accepts multipart file uploads, validates file extension and magic bytes,
-generates a UUID filename, saves securely to the configured upload directory,
-and returns the public URL.
+Accepts multipart file uploads, validates file extension and magic bytes, and
+persists through the storage abstraction (local disk or S3).
+
+Privacy model:
+- Public uploads (avatars, post attachments) are stored under the public scope
+  and served without authentication (mounted at ``/uploads/public``).
+- Private uploads (wardrobe images) are stored under the private scope and are
+  only served through the authenticated route in this module.
 """
 from __future__ import annotations
 
 import logging
-import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
-from ..config import UPLOAD_BASE_URL, UPLOAD_DIR
-from ..storage import save_bytes, backend_name, StorageError
+from ..config import UPLOAD_DIR
+from ..storage import save_bytes, load_bytes, backend_name, StorageError
 from ..db import get_session
 from ..auth_deps import get_current_user
 from ..models import User
@@ -36,13 +40,13 @@ _MAGIC_BYTES = {
 }
 
 
-async def _validate_and_save_upload(
-    file: UploadFile, uid: str, subfolder: str
-) -> str:
-    """Validate upload headers, size, magic bytes, and save with UUID filename.
-    
-    Returns an authenticated URL string.
-    """
+def _safe_uid(uid: str) -> str:
+    safe = "".join(c for c in uid if c.isalnum() or c in "-_")[:64]
+    return safe or "user"
+
+
+async def _read_and_validate(file: UploadFile) -> tuple[bytes, str]:
+    """Validate extension, size, and magic bytes; return (contents, ext)."""
     ext = Path(file.filename or "").suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
@@ -81,28 +85,25 @@ async def _validate_and_save_upload(
     if detected_ext != ext:
         logger.warning(
             "Upload rejected: Magic bytes mismatch (detected=%s, declared=%s)",
-            detected_ext, ext
+            detected_ext, ext,
         )
         raise HTTPException(status_code=400, detail=f"File content does not match extension {ext}")
 
-    upload_root = Path(UPLOAD_DIR).resolve()
-    upload_path = (upload_root / subfolder).resolve()
-    upload_path.mkdir(parents=True, exist_ok=True)
+    return contents, ext
 
-    safe_uid = "".join(c for c in uid if c.isalnum() or c in "-_")[:64]
-    if not safe_uid:
-        safe_uid = "user"
 
-    filename = f"{safe_uid}_{uuid.uuid4().hex}{ext}"
-    filepath = (upload_path / filename).resolve()
-
-    # Prevent path traversal across platforms
-    if filepath.parent != upload_path:
-        logger.error("Upload path traversal detected for uid %s — refusing write", uid)
-        raise HTTPException(status_code=400, detail="Invalid upload destination")
-
-    filepath.write_bytes(contents)
-    return f"/api/uploads/user/{safe_uid}/{subfolder}/{filename}"
+async def _store_upload(
+    file: UploadFile, uid: str, subfolder: str, *, public: bool
+) -> str:
+    """Validate and persist an upload, returning the URL to store on the object."""
+    contents, ext = await _read_and_validate(file)
+    safe_uid = _safe_uid(uid)
+    subdir = subfolder if public else f"{safe_uid}/{subfolder}"
+    try:
+        return save_bytes(contents, ext, subdir=subdir, public=public)
+    except StorageError as exc:
+        logger.error("Upload storage failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to store upload")
 
 
 @router.post("/avatar")
@@ -111,12 +112,12 @@ async def upload_avatar(
     user: dict = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> dict[str, str]:
-    """Upload user avatar and update profile."""
+    """Upload user avatar (public) and update profile."""
     uid = user.get("uid") or user.get("firebase_uid")
     if not uid:
         raise HTTPException(status_code=401, detail="Missing uid claim")
 
-    avatar_url = await _validate_and_save_upload(file, str(uid), "avatars")
+    avatar_url = await _store_upload(file, str(uid), "avatars", public=True)
 
     db_user = session.query(User).filter(User.firebase_uid == str(uid)).first()
     if db_user:
@@ -132,19 +133,71 @@ async def upload_image(
     user: dict = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> dict[str, str]:
-    """Upload a general image (wardrobe item, post attachment, etc.)."""
+    """Upload a private image (wardrobe items). Served only to the owner."""
     uid = user.get("uid") or user.get("firebase_uid")
     if not uid:
         raise HTTPException(status_code=401, detail="Missing uid claim")
 
-    image_url = await _validate_and_save_upload(file, str(uid), "images")
+    image_url = await _store_upload(file, str(uid), "images", public=False)
     return {"image_url": image_url, "imageUrl": image_url}
+
+
+@router.post("/post-image")
+async def upload_post_image(
+    file: UploadFile,
+    user: dict = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> dict[str, str]:
+    """Upload a public post attachment, viewable by all users in the feed."""
+    uid = user.get("uid") or user.get("firebase_uid")
+    if not uid:
+        raise HTTPException(status_code=401, detail="Missing uid claim")
+
+    image_url = await _store_upload(file, str(uid), "posts", public=True)
+    return {"image_url": image_url, "imageUrl": image_url}
+
 
 @router.get("/storage-info")
 async def storage_info(user: dict = Depends(get_current_user)):
     """Return active storage backend (local|s3) for ops visibility."""
     return {"backend": backend_name()}
 
+
+@router.get("/private/{uid}/{subfolder}/{filename}")
+async def get_private_upload(
+    uid: str,
+    subfolder: str,
+    filename: str,
+    user: dict = Depends(get_current_user),
+):
+    """Serve a user's private upload only to that same authenticated user."""
+    current_uid = str(user.get("uid") or user.get("firebase_uid") or "")
+    if not current_uid or current_uid != uid:
+        raise HTTPException(status_code=403, detail="You do not have access to this file.")
+
+    if subfolder not in {"images"}:
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    if Path(filename).name != filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+
+    rel_key = f"private/{_safe_uid(uid)}/{subfolder}/{filename}"
+    try:
+        data = load_bytes(rel_key)
+    except StorageError:
+        raise HTTPException(status_code=404, detail="File not found.")
+    return Response(content=data, media_type=_content_type(filename))
+
+
+def _content_type(filename: str) -> str:
+    lower = filename.lower()
+    if lower.endswith(".png"):
+        return "image/png"
+    if lower.endswith(".gif"):
+        return "image/gif"
+    if lower.endswith(".webp"):
+        return "image/webp"
+    return "image/jpeg"
 
 
 @router.get("/user/{uid}/{subfolder}/{filename}")
@@ -154,7 +207,7 @@ async def get_user_upload(
     filename: str,
     user: dict = Depends(get_current_user),
 ):
-    """Serve a user's private upload only to that same authenticated user."""
+    """Legacy owner-only route for files written before the storage refactor."""
     current_uid = str(user.get("uid") or user.get("firebase_uid") or "")
     if not current_uid or current_uid != uid:
         raise HTTPException(status_code=403, detail="You do not have access to this file.")

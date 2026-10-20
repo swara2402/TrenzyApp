@@ -88,6 +88,7 @@ class User(Base):
     """
 
     __tablename__ = "users"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     firebase_uid: Mapped[str] = mapped_column(
@@ -139,6 +140,7 @@ class Product(Base):
     """
 
     __tablename__ = "products"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False, default="")
@@ -199,6 +201,7 @@ class Product(Base):
     text_embedding_created_at: Mapped[Optional[DateTime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # pgvector columns for FashionCLIP embeddings — dimension driven by ml_config.
+    # Falls back to JSON when pgvector is unavailable (e.g. SQLite tests).
     image_embedding_vector: Mapped[Optional[list]] = mapped_column(
         Vector(_EMBEDDING_DIM) if PGVECTOR_AVAILABLE else JSON,
         nullable=True
@@ -241,6 +244,7 @@ class Product(Base):
 
 class Room(Base):
     __tablename__ = "rooms"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     participant_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -268,6 +272,7 @@ class Wishlist(Base):
     __table_args__ = (
         UniqueConstraint("user_firebase_uid", "product_id", name="uq_wishlist_user_product"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -281,6 +286,7 @@ class Wishlist(Base):
 
 class Cart(Base):
     __tablename__ = "carts"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -295,6 +301,7 @@ class CartItem(Base):
         UniqueConstraint("cart_id", "product_id", name="uq_cart_items_cart_product"),
         CheckConstraint("quantity >= 1", name="ck_cart_items_quantity_positive"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     cart_id: Mapped[int] = mapped_column(
@@ -309,6 +316,7 @@ class CartItem(Base):
 
 class Order(Base):
     __tablename__ = "orders"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -321,6 +329,7 @@ class Order(Base):
 
 class OrderItem(Base):
     __tablename__ = "order_items"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     order_id: Mapped[str] = mapped_column(
@@ -334,6 +343,7 @@ class OrderItem(Base):
 
 class Brand(Base):
     __tablename__ = "brands"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
@@ -343,6 +353,7 @@ class Brand(Base):
 
 class Category(Base):
     __tablename__ = "categories"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
@@ -356,6 +367,7 @@ class Friend(Base):
     __table_args__ = (
         UniqueConstraint("user_firebase_uid", "friend_firebase_uid", name="uq_friends_user_friend"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -368,6 +380,7 @@ class Friend(Base):
 
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     from_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -384,6 +397,7 @@ class Follow(Base):
     __table_args__ = (
         UniqueConstraint("follower_firebase_uid", "following_firebase_uid", name="uq_follows_follower_following"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     follower_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -395,6 +409,7 @@ class Follow(Base):
 
 class Post(Base):
     __tablename__ = "posts"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -413,6 +428,7 @@ class PostProductTag(Base):
     __table_args__ = (
         UniqueConstraint("post_id", "product_id", name="uq_post_product_tag"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     post_id: Mapped[int] = mapped_column(
@@ -433,6 +449,7 @@ class ProductReview(Base):
     __table_args__ = (
         UniqueConstraint("product_id", "user_firebase_uid", name="uq_product_review_user"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(
@@ -455,6 +472,7 @@ class Like(Base):
     __table_args__ = (
         UniqueConstraint("post_id", "user_firebase_uid", name="uq_likes_post_user"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     post_id: Mapped[int] = mapped_column(
@@ -465,6 +483,7 @@ class Like(Base):
 
 class Comment(Base):
     __tablename__ = "comments"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     post_id: Mapped[int] = mapped_column(
@@ -479,6 +498,7 @@ class Comment(Base):
 
 class Save(Base):
     __tablename__ = "saves"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -495,6 +515,7 @@ class Save(Base):
 
 class Purchase(Base):
     __tablename__ = "purchases"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -512,6 +533,7 @@ class Purchase(Base):
 
 class WardrobeItem(Base):
     __tablename__ = "wardrobe_items"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -529,6 +551,7 @@ class WardrobeItem(Base):
 
 class Outfit(Base):
     __tablename__ = "outfits"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -542,6 +565,7 @@ class Outfit(Base):
 
 class OutfitItem(Base):
     __tablename__ = "outfit_items"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     outfit_id: Mapped[int] = mapped_column(
@@ -554,6 +578,7 @@ class OutfitItem(Base):
 
 class ActivityEvent(Base):
     __tablename__ = "activity_events"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -569,6 +594,7 @@ class ActivityEvent(Base):
 
 class Campaign(Base):
     __tablename__ = "campaigns"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -585,6 +611,7 @@ class Campaign(Base):
 
 class Decision(Base):
     __tablename__ = "decisions"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -600,6 +627,7 @@ class Decision(Base):
 
 class FriendSuggestion(Base):
     __tablename__ = "friend_suggestions"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     suggester_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -617,6 +645,7 @@ class StylePersona(Base):
     """
 
     __tablename__ = "style_personas"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True, unique=True)
@@ -631,6 +660,7 @@ class BlendMember(Base):
     __table_args__ = (
         UniqueConstraint("blend_id", "user_firebase_uid", name="uq_blend_members_blend_user"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     blend_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
@@ -643,6 +673,7 @@ class BlendMember(Base):
 
 class BlendInvitation(Base):
     __tablename__ = "blend_invitations"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     blend_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -673,6 +704,7 @@ class Blend(Base):
     """
 
     __tablename__ = "blends"
+    extend_existing = True
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False, default="")
@@ -708,6 +740,7 @@ class BlendSwipe(Base):
     __table_args__ = (
         UniqueConstraint("blend_id", "user_firebase_uid", "product_id", name="uq_blend_swipes_blend_user_product"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     blend_id: Mapped[str] = mapped_column(
@@ -729,6 +762,7 @@ class BlendMessage(Base):
     """
 
     __tablename__ = "blend_messages"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     blend_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -753,6 +787,7 @@ class UserPreference(Base):
     """
 
     __tablename__ = "user_preferences"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
@@ -771,6 +806,7 @@ class UserPreference(Base):
 
 class TrendingProduct(Base):
     __tablename__ = "trending_products"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -784,6 +820,7 @@ class TrendingProduct(Base):
 
 class TrendingCreator(Base):
     __tablename__ = "trending_creators"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -802,6 +839,7 @@ class View(Base):
     """
 
     __tablename__ = "views"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -819,6 +857,7 @@ class AffiliateClick(Base):
     """
 
     __tablename__ = "affiliate_clicks"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -840,6 +879,7 @@ class TrendMetric(Base):
     """
 
     __tablename__ = "trend_metrics"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -854,6 +894,7 @@ class TrendMetric(Base):
 
 class ProductImage(Base):
     __tablename__ = "product_images"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(
@@ -866,6 +907,7 @@ class ProductImage(Base):
 
 class ProductVariant(Base):
     __tablename__ = "product_variants"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[str] = mapped_column(
@@ -885,6 +927,7 @@ class DirectMessage(Base):
     """
 
     __tablename__ = "direct_messages"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     conversation_key: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -898,6 +941,7 @@ class DirectMessage(Base):
 
 class PushDevice(Base):
     __tablename__ = "push_devices"
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -919,6 +963,7 @@ class DiscoverySwipe(Base):
     __table_args__ = (
         UniqueConstraint("user_firebase_uid", "product_id", name="uq_discovery_swipes_user_product"),
     )
+    extend_existing = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_firebase_uid: Mapped[str] = mapped_column(String, nullable=False, index=True)

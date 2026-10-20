@@ -154,6 +154,23 @@ final serverPreferencesProvider = FutureProvider<Map<String, dynamic>?>((
   final res = await api.getPreferences();
   final prefs = res['preferences'];
   if (prefs is Map<String, dynamic>) return prefs;
+  // Handle new users with no preferences record yet (backend returns {"preferences": null})
+  // Return a default map with onboarding_step: 0 to trigger onboarding flow
+  if (prefs == null) {
+    return {
+      'onboarding_step': 0,
+      'preferred_categories': <String>[],
+      'preferred_brands': <String>[],
+      'preferred_colors': <String>[],
+      'preferred_seasons': <String>[],
+      'preferred_styles': <String>[],
+      'preferred_aesthetics': <String>[],
+      'preferred_occasions': <String>[],
+      'budget_max': null,
+      'shopping_priorities': <String>[],
+      'discover_preferences': <String>[],
+    };
+  }
   if (res.containsKey('onboarding_step') ||
       res.containsKey('preferred_categories')) {
     return res;

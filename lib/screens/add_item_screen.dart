@@ -151,6 +151,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       child: url != null
           ? CachedNetworkImage(
               imageUrl: url,
+              httpHeaders: ApiService.imageHeadersFor(url),
               fit: BoxFit.cover,
               errorWidget: (_, _, _) => Center(
                 child: Column(

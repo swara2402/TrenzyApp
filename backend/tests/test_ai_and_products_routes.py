@@ -20,7 +20,7 @@ def test_both_routes(client, auth_headers):
     print(f"Total routes in app during test: {len(app.routes)}")
     print("All APIRoute objects (actual HTTP routes):")
     for i, route in enumerate(app.routes):
-        if hasattr(route, 'path'):
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
             methods = ", ".join(sorted(route.methods))
             print(f"  {i+1}. {route.path:<50} METHODS: {methods}")
     print("="*80)

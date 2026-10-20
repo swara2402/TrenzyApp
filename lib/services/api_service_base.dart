@@ -229,6 +229,8 @@ abstract class ApiServiceBase {
 
   Future<String> uploadImage(XFile imageFile);
 
+  Future<String> uploadPostImage(XFile imageFile);
+
   // ---------- Outfits ----------
   Future<Map<String, dynamic>> getOutfits();
   Future<Map<String, dynamic>> createOutfit({

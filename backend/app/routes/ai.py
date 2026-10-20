@@ -242,7 +242,7 @@ class ShoppingResponse(BaseModel):
 # Endpoints
 @router.get("/ai/models/health")
 async def get_models_health(
-    current_user: User = Depends(get_current_db_user),
+    current_user: dict = Depends(get_current_user),
 ):
     """Get health status of all loaded ML models.
 

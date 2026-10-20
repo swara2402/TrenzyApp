@@ -133,6 +133,8 @@ class RuleBasedRecommender:
         db: Session,
         user_id: int,
         product_id: int,
+        interacted_embeddings: Optional[List[List[float]]] = None,
+        current_embedding: Optional[List[float]] = None,
     ) -> float:
         """Compute behavioral prediction score.
 
@@ -142,48 +144,38 @@ class RuleBasedRecommender:
             db: Database session
             user_id: User ID
             product_id: Product ID
+            interacted_embeddings: Optional pre-fetched embeddings of products
+                the user has interacted with. When ``None`` (the default) they
+                are loaded from the database. Supplying pre-fetched values lets
+                callers avoid an N+1 query pattern when scoring many products.
+            current_embedding: Optional pre-fetched embedding for ``product_id``.
 
         Returns:
             Behavioral score (0-1)
         """
-        # Get similar products the user has interacted with
-        similar_interactions = db.query(InteractionEvent).filter(
-            InteractionEvent.user_id == user_id,
-            InteractionEvent.entity_type == "product",
-            InteractionEvent.event_type.in_(["like_product", "wishlist", "purchase"]),
-        ).all()
-
-        if not similar_interactions:
-            return 0.5  # Neutral for new users
-
-        # Get the interacted product IDs
-        interacted_ids = [ie.entity_id for ie in similar_interactions if ie.entity_id]
-
-        # Get embeddings for interacted products
-        interacted_embeddings = db.query(ProductEmbedding).filter(
-            ProductEmbedding.product_id.in_(interacted_ids),
-            ProductEmbedding.combined_embedding.isnot(None),
-        ).all()
+        if interacted_embeddings is None:
+            interacted_embeddings = self._load_interacted_embeddings(db, user_id)
 
         if not interacted_embeddings:
-            return 0.5
+            return 0.5  # Neutral for new users
 
-        # Get current product embedding
-        current_embedding = db.query(ProductEmbedding).filter(
-            ProductEmbedding.product_id == product_id,
-            ProductEmbedding.combined_embedding.isnot(None),
-        ).first()
+        if current_embedding is None:
+            current = db.query(ProductEmbedding).filter(
+                ProductEmbedding.product_id == product_id,
+                ProductEmbedding.combined_embedding.isnot(None),
+            ).first()
+            current_embedding = current.combined_embedding if current else None
 
         if not current_embedding:
             return 0.5
 
         # Compute average similarity to interacted products
         similarities = []
-        for ie in interacted_embeddings:
-            if ie.combined_embedding:
+        for embedding in interacted_embeddings:
+            if embedding:
                 sim = compute_cosine_similarity(
-                    current_embedding.combined_embedding,
-                    ie.combined_embedding,
+                    current_embedding,
+                    embedding,
                 )
                 similarities.append(sim)
 
@@ -191,6 +183,35 @@ class RuleBasedRecommender:
             return 0.5
 
         return np.mean(similarities)
+
+    def _load_interacted_embeddings(
+        self,
+        db: Session,
+        user_id: int,
+    ) -> List[List[float]]:
+        """Load embeddings for products the user has positively interacted with.
+
+        Performed once per recommendation request so scoring many candidates
+        does not trigger a query per product.
+        """
+        interacted_ids = [
+            entity_id
+            for (entity_id,) in db.query(InteractionEvent.entity_id).filter(
+                InteractionEvent.user_id == user_id,
+                InteractionEvent.entity_type == "product",
+                InteractionEvent.event_type.in_(["like_product", "wishlist", "purchase"]),
+            ).all()
+            if entity_id
+        ]
+
+        if not interacted_ids:
+            return []
+
+        rows = db.query(ProductEmbedding.combined_embedding).filter(
+            ProductEmbedding.product_id.in_(interacted_ids),
+            ProductEmbedding.combined_embedding.isnot(None),
+        ).all()
+        return [row[0] for row in rows if row[0]]
 
     def _compute_context_score(
         self,
@@ -275,17 +296,28 @@ class RuleBasedRecommender:
         style_profile: Optional[UserStyleProfile] = None,
         context: Optional[Dict[str, any]] = None,
         already_selected: Optional[List[Product]] = None,
+        product_embedding: Optional[List[float]] = None,
+        behavioral_score: Optional[float] = None,
+        interacted_embeddings: Optional[List[List[float]]] = None,
+        product_embedding_provided: bool = False,
     ) -> float:
         """Compute final recommendation score combining all signals.
 
         Args:
             db: Database session
             user_id: User ID
-            product: Product to score
+            product: Product
             user_embedding: User embedding vector
             style_profile: User Style DNA profile
             context: Request context
             already_selected: Already selected products for diversity
+            product_embedding: Pre-fetched combined embedding for ``product``.
+                When ``product_embedding_provided`` is True, no embedding query
+                is issued for this product.
+            behavioral_score: Pre-computed behavioral score. When provided the
+                behavioral query path is skipped.
+            interacted_embeddings: Pre-fetched interacted embeddings used for the
+                behavioral score when ``behavioral_score`` is not supplied.
 
         Returns:
             Final score (0-1)
@@ -299,10 +331,17 @@ class RuleBasedRecommender:
             ).first()
             user_embedding = user_emb.embedding if user_emb else None
 
-        # Get product embedding
-        product_emb = db.query(ProductEmbedding).filter(
-            ProductEmbedding.product_id == product.id
-        ).first()
+        # Get product embedding (unless the caller already provided one, which
+        # is how the batched ``recommend`` path avoids an N+1 query pattern).
+        if product_embedding_provided:
+            resolved_product_embedding = product_embedding
+        else:
+            product_emb = db.query(ProductEmbedding).filter(
+                ProductEmbedding.product_id == product.id
+            ).first()
+            resolved_product_embedding = (
+                product_emb.combined_embedding if product_emb else None
+            )
 
         # Get style profile if not provided
         if style_profile is None:
@@ -311,10 +350,10 @@ class RuleBasedRecommender:
             ).first()
 
         # Compute individual scores
-        if user_embedding and product_emb and product_emb.combined_embedding:
+        if user_embedding and resolved_product_embedding:
             scores["embedding"] = self._compute_embedding_score(
                 user_embedding,
-                product_emb.combined_embedding,
+                resolved_product_embedding,
             )
         else:
             scores["embedding"] = 0.5
@@ -324,7 +363,16 @@ class RuleBasedRecommender:
         else:
             scores["style"] = 0.5
 
-        scores["behavioral"] = self._compute_behavioral_score(db, user_id, product.id)
+        if behavioral_score is not None:
+            scores["behavioral"] = behavioral_score
+        else:
+            scores["behavioral"] = self._compute_behavioral_score(
+                db,
+                user_id,
+                product.id,
+                interacted_embeddings=interacted_embeddings,
+                current_embedding=resolved_product_embedding,
+            )
 
         if context:
             scores["context"] = self._compute_context_score(product, context)
@@ -378,17 +426,52 @@ class RuleBasedRecommender:
         if not candidates:
             return []
 
+        # Pre-fetch all per-user / per-candidate data ONCE before scoring. The
+        # scoring loop must not issue a query per product, otherwise a large
+        # catalog turns a single recommendation call into thousands of round
+        # trips (slow enough to time a request out / exhaust the worker).
+        user_emb = db.query(UserEmbedding).filter(
+            UserEmbedding.user_id == user_id
+        ).first()
+        user_embedding = user_emb.embedding if user_emb else None
+
+        style_profile = db.query(UserStyleProfile).filter(
+            UserStyleProfile.user_id == user_id
+        ).first()
+
+        interacted_embeddings = self._load_interacted_embeddings(db, user_id)
+
+        candidate_ids = [p.id for p in candidates]
+        embedding_rows = db.query(
+            ProductEmbedding.product_id,
+            ProductEmbedding.combined_embedding,
+        ).filter(
+            ProductEmbedding.product_id.in_(candidate_ids),
+            ProductEmbedding.combined_embedding.isnot(None),
+        ).all()
+        embeddings_by_product = {
+            product_id: embedding
+            for product_id, embedding in embedding_rows
+            if embedding
+        }
+
         # Score all candidates
         scored_products = []
         already_selected = []
 
         for product in candidates:
+            product_embedding = embeddings_by_product.get(product.id)
             score = self.compute_final_score(
                 db=db,
                 user_id=user_id,
                 product=product,
+                user_embedding=user_embedding,
+                style_profile=style_profile,
                 context=context,
                 already_selected=already_selected,
+                product_embedding=product_embedding,
+                interacted_embeddings=interacted_embeddings,
+                product_embedding_provided=True,
             )
             scored_products.append((product, score))
 

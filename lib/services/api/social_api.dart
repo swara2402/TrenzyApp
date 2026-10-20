@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import '../../models/friend.dart';
 import 'api_client.dart';
 
@@ -118,6 +119,23 @@ class SocialApi {
   }
 
   // ---------- Posts ----------
+  Future<String> uploadPostImage(XFile imageFile) async {
+    final data = await _client.uploadMultipart(
+      '/uploads/post-image',
+      imageFile,
+    );
+    if (data is Map<String, dynamic>) {
+      final imageUrl =
+          data['image_url']?.toString() ?? data['imageUrl']?.toString();
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        return ApiClient.resolveImageUrl(imageUrl) ?? imageUrl;
+      }
+    }
+    throw StateError(
+      'Post image upload response did not contain an image URL.',
+    );
+  }
+
   Future<Map<String, dynamic>> createPost({
     required String content,
     String? attachment,

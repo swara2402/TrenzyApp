@@ -275,6 +275,7 @@ class _EditClothingScreenState extends ConsumerState<EditClothingScreen> {
                       (url.startsWith('http://') || url.startsWith('https://')))
                     CachedNetworkImage(
                       imageUrl: url,
+                      httpHeaders: ApiService.imageHeadersFor(url),
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,

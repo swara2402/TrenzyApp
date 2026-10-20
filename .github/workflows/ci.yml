@@ -130,3 +130,22 @@ jobs:
         env:
           POSTGRES_PASSWORD: ci-test-password
         run: python -m pytest backend/tests/test_age_gate.py -q
+
+  backend-full-suite:
+    name: Backend full regression suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        working-directory: backend
+        run: python -m pip install -r requirements.txt
+      - name: Run complete backend regression suite
+        working-directory: backend
+        env:
+          POSTGRES_PASSWORD: ci-test-password
+        run: python -m pytest tests -q

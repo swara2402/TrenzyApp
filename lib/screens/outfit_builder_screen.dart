@@ -298,7 +298,14 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                               height: 160,
                               child: item.imageUrl.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
+                                      imageUrl:
+                                          ApiService.resolveImageUrl(
+                                            item.imageUrl,
+                                          ) ??
+                                          item.imageUrl,
+                                      httpHeaders: ApiService.imageHeadersFor(
+                                        item.imageUrl,
+                                      ),
                                       fit: BoxFit.contain,
                                       errorWidget: (_, _, _) => Container(
                                         color: colors.surfaceContainer,
@@ -536,7 +543,10 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 height: 100,
                 child: item.imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: item.imageUrl,
+                        imageUrl:
+                            ApiService.resolveImageUrl(item.imageUrl) ??
+                            item.imageUrl,
+                        httpHeaders: ApiService.imageHeadersFor(item.imageUrl),
                         fit: BoxFit.contain,
                       )
                     : Icon(
@@ -681,8 +691,6 @@ class _CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-
-
 class _ItemData {
   final int id;
   final String brand;
@@ -720,7 +728,12 @@ class _ItemCard extends StatelessWidget {
                   Positioned.fill(
                     child: item.imageUrl.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: item.imageUrl,
+                            imageUrl:
+                                ApiService.resolveImageUrl(item.imageUrl) ??
+                                item.imageUrl,
+                            httpHeaders: ApiService.imageHeadersFor(
+                              item.imageUrl,
+                            ),
                             fit: BoxFit.cover,
                             errorWidget: (_, _, _) => Container(
                               color: context.trenzyColors.surfaceContainer,

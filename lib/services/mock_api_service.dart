@@ -848,6 +848,12 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<String> uploadPostImage(XFile imageFile) async {
+    await _delay(const Duration(milliseconds: 1000)); // Simulate network delay
+    return 'https://picsum.photos/seed/${DateTime.now().millisecondsSinceEpoch}/600/400';
+  }
+
+  @override
   Future<Map<String, dynamic>> getOutfits() async {
     await _delay(const Duration(milliseconds: 300));
     return {'outfits': []};

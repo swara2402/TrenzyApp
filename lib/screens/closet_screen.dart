@@ -404,6 +404,7 @@ class _WardrobeCard extends StatelessWidget {
                   imageUrl.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
+                          httpHeaders: ApiService.imageHeadersFor(imageUrl),
                           fit: BoxFit.cover,
                           placeholder: (_, _) => Container(
                             color: context.trenzyColors.graphite,

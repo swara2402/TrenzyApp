@@ -107,6 +107,8 @@ class ApiService implements ApiServiceBase {
   static void clearCache() => ApiClient.clearCache();
   static String? resolveImageUrl(String? imageUrl) =>
       ApiClient.resolveImageUrl(imageUrl);
+  static Map<String, String> imageHeadersFor(String? imageUrl) =>
+      ApiClient.imageHeadersFor(imageUrl);
   static String get socketBaseUrl => ApiClient.socketBaseUrl;
 
   // ---------- Auth ----------
@@ -315,6 +317,10 @@ class ApiService implements ApiServiceBase {
   @override
   Future<String> uploadImage(XFile imageFile) =>
       _wardrobeApi.uploadImage(imageFile);
+
+  @override
+  Future<String> uploadPostImage(XFile imageFile) =>
+      _socialApi.uploadPostImage(imageFile);
 
   @override
   Future<Map<String, dynamic>> getOutfits() => _wardrobeApi.getOutfits();

@@ -1,9 +1,15 @@
-def test_both_endpoints_work(client, auth_headers):
+def test_both_endpoints_work(client, auth_headers, db_session):
     """Test that both products (known good) and ai endpoints return non-404."""
     print("\n" + "="*80)
     print("TESTING BOTH PRODUCTS AND AI ENDPOINTS IN SAME TEST CONTEXT")
     print("="*80)
     
+    # The chat route needs a real, age-verified profile, just as production does.
+    from datetime import date
+    from app.models import User
+    db_session.add(User(firebase_uid="test-user-1", name="Test User", username="test-user-route-check", date_of_birth=date(2000, 1, 1)))
+    db_session.commit()
+
     # First test products endpoint (should work, not 404)
     products_response = client.get("/api/products")
     print(f"/api/products status: {products_response.status_code}")
