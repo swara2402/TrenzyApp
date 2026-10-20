@@ -466,6 +466,7 @@ def unified_search(
         session.query(Product)
         .filter(
             Product.is_archived.is_(False),
+            _catalog_category_is_classified(),
             Product.name.ilike(pattern, escape="\\"),
         )
         .limit(limit)
