@@ -49,6 +49,35 @@ def _escape_like(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def _catalog_category_is_classified():
+    """Exclude legacy placeholder categories from customer-facing catalog queries."""
+    return func.lower(func.trim(func.coalesce(Product.category, ""))).notin_(("", "unknown", "uncategorized"))
+
+
+def _product_tags(product):
+    """Return stored tags, or derive safe display tags from verified product metadata."""
+    if product.tags:
+        return product.tags
+    values = [
+        product.subcategory,
+        product.style,
+        product.color,
+        product.occasion,
+        product.gender,
+    ]
+    tags = []
+    seen = set()
+    for value in values:
+        label = str(value or "").strip()
+        if not label or label.lower() in {"unknown", "none", "null"}:
+            continue
+        key = label.casefold()
+        if key not in seen:
+            tags.append(label)
+            seen.add(key)
+    return tags
+
+
 def _product_payload(product):
     return {
         "id": product.id,
@@ -65,7 +94,7 @@ def _product_payload(product):
         "brand": product.brand,
         "rating": product.rating,
         "image_url": product.image_url,
-        "tags": product.tags,
+        "tags": _product_tags(product),
         "affiliate_links": product.affiliate_links if BETA_COMMERCE_ENABLED else None,
         "outfit_role": getattr(product, "outfit_role", None),
         "style": getattr(product, "style", None),
@@ -105,7 +134,7 @@ def list_products(
     limit = max(1, min(limit, 100))
     offset = max(0, offset)
 
-    base_stmt = select(Product).where(Product.is_archived.is_(False))
+    base_stmt = select(Product).where(Product.is_archived.is_(False), _catalog_category_is_classified())
     if category:
         base_stmt = base_stmt.where(
             Product.category.ilike(f"%{_escape_like(category)}%", escape="\\")
@@ -222,12 +251,12 @@ def search_products(
         stmt = (
             select(Product, rank_col)
             .where(sv.match(tsquery_str, postgresql_regconfig="english"))
-            .where(Product.is_archived.is_(False))
+            .where(Product.is_archived.is_(False), _catalog_category_is_classified())
         )
     else:
         # No valid tsquery — use ILIKE fallback
         rank_col = None
-        stmt = select(Product).where(Product.is_archived.is_(False))
+        stmt = select(Product).where(Product.is_archived.is_(False), _catalog_category_is_classified())
 
     if category:
         stmt = stmt.where(
@@ -317,7 +346,7 @@ def batch_products(
         return {"products": []}
 
     product_ids = product_ids[:100]  # Cap at 100 to prevent abuse
-    products = session.query(Product).filter(Product.id.in_(product_ids)).all()
+    products = session.query(Product).filter(Product.id.in_(product_ids), Product.is_archived.is_(False), _catalog_category_is_classified()).all()
     return {"products": [_product_payload(p) for p in products]}
 
 
@@ -325,7 +354,7 @@ def batch_products(
 def get_product(request: Request, product_id: str, session: Session = Depends(get_session)):
     """Fetch a single product by its string identifier."""
 
-    p = session.query(Product).filter(Product.id == product_id).first()
+    p = session.query(Product).filter(Product.id == product_id, Product.is_archived.is_(False), _catalog_category_is_classified()).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
 
