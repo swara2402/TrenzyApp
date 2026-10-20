@@ -17,8 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import func
-
 from ..db import SessionLocal
 from ..models import Product
 from ..catalog_categories import canonical_category
@@ -80,15 +78,30 @@ def main() -> int:
     if args.apply_db:
         db = SessionLocal()
         try:
-            unknown_expr = func.lower(func.trim(func.coalesce(Product.category, ""))).in_(UNKNOWN)
-            unknown_subcategory = func.lower(func.trim(func.coalesce(Product.subcategory, ""))).in_(UNKNOWN)
-            unknown_gender = func.lower(func.trim(func.coalesce(Product.gender, ""))).in_(UNKNOWN)
-            query = db.query(Product).filter(unknown_expr | unknown_subcategory | unknown_gender)
-            rows = query.all()
+            rows = db.query(Product).all()
+            archived_count = 0
+            normalized_count = 0
             for product in rows:
-                product.is_archived = True
+                category = canonical_category(product.subcategory)
+                if not category:
+                    if not product.is_archived:
+                        product.is_archived = True
+                        archived_count += 1
+                    continue
+
+                if product.category != category:
+                    product.category = category
+                    normalized_count += 1
+                product.tags = grounded_tags({
+                    "category": category,
+                    "subcategory": product.subcategory,
+                    "style": product.style,
+                    "color": product.color,
+                    "gender": product.gender,
+                })
             db.commit()
-            print(f"Archived {len(rows)} unclassified database products (no rows deleted).")
+            print(f"Archived {archived_count} unclassified database products (no rows deleted).")
+            print(f"Normalized categories/tags on {normalized_count} classified database products.")
         except Exception:
             db.rollback()
             raise
