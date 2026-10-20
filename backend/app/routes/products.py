@@ -31,7 +31,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 import re
 
-from sqlalchemy import func, literal_column, or_, select
+from sqlalchemy import case, func, literal_column, or_, select
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -49,9 +49,41 @@ def _escape_like(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+# Item-type taxonomy: legacy data used style groups (e.g. streetwear) as
+# categories. Derive the display/filter category from the specific item type.
+_CATEGORY_RULES = (
+    ("Footwear", ("footwear", "sneaker", "shoe", "boot", "sandal", "loafer", "trainer", "derby", "heel", "flat")),
+    ("Bottoms", ("jeans", "trouser", "pants", "chinos", "shorts", "cargo", "skirt", "legging", "jogger")),
+    ("Dresses", ("dress", "gown", "lehenga", "one-piece")),
+    ("Outerwear", ("jacket", "coat", "blazer", "windbreaker", "varsity", "overshirt", "cardigan", "outerwear", "parka")),
+    ("Accessories", ("bag", "cap", "hat", "belt", "watch", "wallet", "sunglasses", "accessory", "jewelry", "jewellery")),
+    ("Tops", ("shirt", "jersey", "sweater", "sweatshirt", "t-shirt", "tee", "polo", "hoodie", "knit", "blouse", "top", "crewneck")),
+)
+
+
+def _canonical_category(subcategory):
+    """Return a canonical garment category only when the item type supports it."""
+    text = str(subcategory or "").strip().lower()
+    if not text or text in {"unknown", "none", "null", "uncategorized"}:
+        return ""
+    for category, keywords in _CATEGORY_RULES:
+        if any(keyword in text for keyword in keywords):
+            return category
+    return ""
+
+
+def _canonical_category_expr():
+    """SQL expression equivalent to _canonical_category for list/search filters."""
+    whens = []
+    for category, keywords in _CATEGORY_RULES:
+        condition = or_(*(Product.subcategory.ilike(f"%{keyword}%") for keyword in keywords))
+        whens.append((condition, category))
+    return case(*whens, else_="")
+
+
 def _catalog_category_is_classified():
-    """Exclude legacy placeholder categories from customer-facing catalog queries."""
-    return func.lower(func.trim(func.coalesce(Product.category, ""))).notin_(("", "unknown", "uncategorized", "none", "null"))
+    """Hide legacy placeholders and non-product images without a recognized item type."""
+    return _canonical_category_expr() != ""
 
 
 def _product_tags(product):
@@ -69,7 +101,7 @@ def _product_tags(product):
 
     values = stored_values + [
         product.subcategory,
-        product.category,
+        _canonical_category(product.subcategory),
         product.style,
         product.color,
         product.occasion,
@@ -92,7 +124,7 @@ def _product_payload(product):
     return {
         "id": product.id,
         "name": product.name,
-        "category": product.category,
+        "category": _canonical_category(product.subcategory),
         "subcategory": product.subcategory,
         "article_type": product.article_type,
         "gender": product.gender or "Unisex",
@@ -147,7 +179,7 @@ def list_products(
     base_stmt = select(Product).where(Product.is_archived.is_(False), _catalog_category_is_classified())
     if category:
         base_stmt = base_stmt.where(
-            Product.category.ilike(f"%{_escape_like(category)}%", escape="\\")
+            _canonical_category_expr().ilike(f"%{_escape_like(category)}%", escape="\\")
         )
     if subcategory:
         base_stmt = base_stmt.where(
@@ -270,7 +302,7 @@ def search_products(
 
     if category:
         stmt = stmt.where(
-            Product.category.ilike(f"%{_escape_like(category)}%", escape="\\")
+            _canonical_category_expr().ilike(f"%{_escape_like(category)}%", escape="\\")
         )
     if subcategory:
         stmt = stmt.where(
@@ -294,7 +326,7 @@ def search_products(
             or_(
                 Product.name.ilike(pattern, escape="\\"),
                 Brand.name.ilike(pattern, escape="\\"),
-                Product.category.ilike(pattern, escape="\\"),
+                _canonical_category_expr().ilike(pattern, escape="\\"),
                 Product.subcategory.ilike(pattern, escape="\\"),
                 Product.article_type.ilike(pattern, escape="\\"),
             )
@@ -401,7 +433,7 @@ def get_product(request: Request, product_id: str, session: Session = Depends(ge
     similar = (
         session.query(Product)
         .filter(
-            Product.category == p.category,
+            _canonical_category_expr() == _canonical_category(p.subcategory),
             Product.id != product_id,
             Product.is_archived.is_(False),
         )
