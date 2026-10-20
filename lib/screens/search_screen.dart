@@ -862,7 +862,7 @@ class _SearchResults extends ConsumerWidget {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                product.hasPrice ? '\u20B9${product.price.toStringAsFixed(0)}' : 'Price unavailable',
+                                product.hasPrice ? '\u20B9${product.displayPrice.toStringAsFixed(0)}' : 'Price unavailable',
                                 style: TextStyle(
                                   color: context.trenzyColors.primary,
                                   fontSize: 14,
