@@ -31,7 +31,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     'Bottoms',
     'Outerwear',
     'Dresses',
-    'Shoes',
+    'Footwear',
     'Accessories',
   ];
 
@@ -47,6 +47,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   }
 
   Future<void> _saveItem() async {
+    if (_isSaving) return;
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
