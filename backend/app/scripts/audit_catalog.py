@@ -35,6 +35,7 @@ def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
         if str(product.get("category") or "").strip().lower() in unknown
         or str(product.get("subcategory") or "").strip().lower() in unknown
         or str(product.get("gender") or "").strip().lower() in unknown
+        or not canonical_category(product.get("subcategory"))
     ]
     classified = [product for product in active_products if product not in unclassified]
     stats = {
