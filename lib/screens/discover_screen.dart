@@ -543,7 +543,7 @@ class _SwipeDiscoveryPreview extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         productsAsync.when(
-          loading: () => const _SwipeDiscoverySkeleton(),
+          loading: () => _SwipeDiscoverySkeleton(),
           error: (e, _) => ErrorSection(
             message: friendlyError(e),
             onRetry: () => ref.invalidate(discoverSwipeProductsProvider),
