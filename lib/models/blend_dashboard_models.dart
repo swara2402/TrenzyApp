@@ -151,6 +151,7 @@ class SharedWishlistItem {
   String get productBrand => product?.brand ?? '';
   String get productCategory => product?.category ?? '';
   double get productPrice => product?.price ?? product?.effectivePrice ?? 0.0;
+  bool get hasProductPrice => product?.hasPrice ?? false;
   String get addedByName =>
       addedBy?.name ?? addedBy?.displayName ?? 'Anonymous';
   DateTime? get createdAt => addedAt;
