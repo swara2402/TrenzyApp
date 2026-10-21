@@ -125,15 +125,22 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         child: TapScale(
                           onTap: () {
                             HapticFeedback.mediumImpact();
+                            final isSaved = _isWishlisted(widget.product.id);
                             ref
                                 .read(wishlistProvider.notifier)
                                 .toggle(widget.product.id);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Saved to wishlist'),
+                                content: Text(
+                                  isSaved
+                                      ? 'Removed from wishlist'
+                                      : 'Saved to wishlist',
+                                ),
                                 duration: Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
-                                backgroundColor: context.trenzyColors.emerald,
+                                backgroundColor: isSaved
+                                    ? context.trenzyColors.graphite
+                                    : context.trenzyColors.emerald,
                               ),
                             );
                           },
@@ -159,13 +166,17 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    Icons.bookmark_add_outlined,
+                                    _isWishlisted(widget.product.id)
+                                        ? Icons.bookmark_added
+                                        : Icons.bookmark_add_outlined,
                                     size: 14,
                                     color: context.trenzyColors.primaryFg,
                                   ),
                                   SizedBox(width: 4),
                                   Text(
-                                    'SAVE',
+                                    _isWishlisted(widget.product.id)
+                                        ? 'SAVED'
+                                        : 'SAVE',
                                     style: TextStyle(
                                       fontFamily: GlassTypography.bodyFont,
                                       fontSize: 11,
@@ -226,7 +237,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         ],
                         // Show recommendation reason if available
                         if (widget.product.reason.isNotEmpty) ...[
-                          SizedBox(height: 4),
+                          SizedBox(height: 2),
                           Text(
                             widget.product.reason,
                             style: GlassTypography.body(
@@ -235,54 +246,11 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                                 alpha: 0.8,
                               ),
                             ),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                        Spacer(),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            LikeBounce(
-                              isLiked: _isWishlisted(widget.product.id),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ref
-                                    .read(wishlistProvider.notifier)
-                                    .toggle(widget.product.id);
-                              },
-                              child: Icon(
-                                _isWishlisted(widget.product.id)
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                size: 18,
-                                color: _isWishlisted(widget.product.id)
-                                    ? context.trenzyColors.crimson
-                                    : context.trenzyColors.mutedFg,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            SaveSlide(
-                              isSaved: _isWishlisted(widget.product.id),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ref
-                                    .read(wishlistProvider.notifier)
-                                    .toggle(widget.product.id);
-                              },
-                              child: Icon(
-                                _isWishlisted(widget.product.id)
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border,
-                                size: 18,
-                                color: _isWishlisted(widget.product.id)
-                                    ? context.trenzyColors.primary
-                                    : context.trenzyColors.mutedFg,
-                              ),
-                            ),
-                          ],
-                        ),
+
                       ],
                     ),
                   ),
@@ -377,9 +345,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(
-            aspectRatio: 1,
+          Expanded(
             child: Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
@@ -393,7 +361,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               ),
             ),
           ),
-          SizedBox(height: 12),
+          SizedBox(height: 8),
           Text(
             widget.product.effectiveBrand.toUpperCase(),
             style: TextStyle(
@@ -403,36 +371,36 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               letterSpacing: 1.5,
             ),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 2),
           Text(
             widget.product.name,
             style: TextStyle(
               color: context.trenzyColors.foreground,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 2),
           Text(
             widget.customPriceText ?? '${widget.product.effectivePrice}',
             style: TextStyle(
               color: context.trenzyColors.primary,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
           // Show recommendation reason if available in compact mode
           if (widget.product.reason.isNotEmpty) ...[
-            SizedBox(height: 4),
+            SizedBox(height: 2),
             Text(
               widget.product.reason,
               style: TextStyle(
                 color: context.trenzyColors.mutedFg.withValues(alpha: 0.7),
                 fontSize: 10,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],

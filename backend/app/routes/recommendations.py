@@ -30,6 +30,7 @@ from ..firebase_auth import verify_firebase_token
 from ..models import Product, User, Outfit, OutfitItem, WardrobeItem, UserPreference, StylePersona, BlendSwipe, DiscoverySwipe, Wishlist
 from ..json_compat import json_array_contains
 from ..color_taxonomy import normalize_color, expand_canonical_to_raw
+from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
 from .priority_scorer import priority_score_expr
 
 logger = logging.getLogger(__name__)
@@ -297,7 +298,9 @@ def _build_personalized_query(
         return q.order_by(score.desc()).limit(fetch_limit).all()
 
     def _base_query():
-        q = session.query(Product).filter(Product.is_archived.is_(False))
+        q = session.query(Product).filter(
+            Product.is_archived.is_(False), _catalog_category_is_classified()
+        )
         if swiped_ids:
             q = q.filter(Product.id.notin_(list(swiped_ids)))
         return q
@@ -583,7 +586,9 @@ def recommend_products(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     verify_firebase_token(request)
-    query = session.query(Product).filter(Product.is_archived.is_(False))
+    query = session.query(Product).filter(
+        Product.is_archived.is_(False), _catalog_category_is_classified()
+    )
     if category:
         query = query.filter(Product.category == category)
     products = query.order_by(Product.rating.desc().nullslast()).limit(limit).all()

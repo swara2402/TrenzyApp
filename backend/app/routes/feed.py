@@ -40,6 +40,7 @@ from ..json_compat import json_array_contains
 from .products import _product_payload
 from .priority_scorer import priority_score_expr
 from .recommendations import _reason_for_item
+from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
 
 router = APIRouter(prefix="/api/feed", tags=["feed"])
 
@@ -133,7 +134,9 @@ def get_feed(
 
     # Section 1: Trending Now — highest-rated products, filtered by preferences
     try:
-        trending_query = session.query(Product).filter(Product.is_archived.is_(False))
+        trending_query = session.query(Product).filter(
+            Product.is_archived.is_(False), _catalog_category_is_classified()
+        )
         if prefs and prefs.preferred_categories:
             trending_query = trending_query.filter(
                 Product.category.in_(prefs.preferred_categories)
@@ -142,7 +145,7 @@ def get_feed(
         if not trending:
             trending = (
                 session.query(Product)
-                .filter(Product.is_archived.is_(False))
+                .filter(Product.is_archived.is_(False), _catalog_category_is_classified())
                 .order_by(Product.rating.desc().nullslast())
                 .offset(offset)
                 .limit(limit)
@@ -160,7 +163,9 @@ def get_feed(
 
     # Section 2: Just Dropped — newest products, filtered by preferences
     try:
-        newest_query = session.query(Product).filter(Product.is_archived.is_(False))
+        newest_query = session.query(Product).filter(
+            Product.is_archived.is_(False), _catalog_category_is_classified()
+        )
         if prefs and prefs.preferred_categories:
             newest_query = newest_query.filter(
                 Product.category.in_(prefs.preferred_categories)
@@ -173,7 +178,7 @@ def get_feed(
         if not newest:
             newest = (
                 session.query(Product)
-                .filter(Product.is_archived.is_(False))
+                .filter(Product.is_archived.is_(False), _catalog_category_is_classified())
                 .order_by(Product.id.desc())
                 .offset(offset)
                 .limit(limit)
@@ -191,7 +196,9 @@ def get_feed(
 
     # Section 3: For You — personalized based on preferences/persona
 
-    for_you_query = session.query(Product).filter(Product.is_archived.is_(False))
+    for_you_query = session.query(Product).filter(
+        Product.is_archived.is_(False), _catalog_category_is_classified()
+    )
     if prefs and prefs.preferred_categories:
         for_you_query = for_you_query.filter(
             Product.category.in_(prefs.preferred_categories)

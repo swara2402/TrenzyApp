@@ -760,42 +760,40 @@ class _SecondaryAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    return Expanded(
-      child: TapScale(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: enabled
-                ? context.trenzyColors.glass
-                : context.trenzyColors.glass.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(GlassRadius.button),
-            border: Border.all(color: context.trenzyColors.glassBorder),
-          ),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 16,
+    return TapScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: enabled
+              ? context.trenzyColors.glass
+              : context.trenzyColors.glass.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(GlassRadius.button),
+          border: Border.all(color: context.trenzyColors.glassBorder),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: enabled
+                  ? context.trenzyColors.fg60
+                  : context.trenzyColors.fg30,
+            ),
+            SizedBox(width: 6),
+            Text(
+              label,
+              style: GlassTypography.body(
+                fontSize: 12,
+                weight: FontWeight.w700,
                 color: enabled
-                    ? context.trenzyColors.fg60
+                    ? context.trenzyColors.fg70
                     : context.trenzyColors.fg30,
               ),
-              SizedBox(width: 6),
-              Text(
-                label,
-                style: GlassTypography.body(
-                  fontSize: 12,
-                  weight: FontWeight.w700,
-                  color: enabled
-                      ? context.trenzyColors.fg70
-                      : context.trenzyColors.fg30,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
