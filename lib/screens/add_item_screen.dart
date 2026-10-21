@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/home_providers.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
@@ -25,13 +26,14 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   String _selectedCategory = 'Tops';
   String _selectedSeason = 'FALL';
   bool _isSaving = false;
+  bool _isUploadingImage = false;
 
   static const _categories = [
     'Tops',
     'Bottoms',
     'Outerwear',
     'Dresses',
-    'Shoes',
+    'Footwear',
     'Accessories',
   ];
 
@@ -46,7 +48,39 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     super.dispose();
   }
 
+  Future<void> _pickAndUploadImage() async {
+    if (_isUploadingImage || _isSaving) return;
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1800,
+      );
+      if (image == null || !mounted) return;
+      setState(() => _isUploadingImage = true);
+      final url = await ref.read(apiServiceProvider).uploadImage(image);
+      if (!mounted) return;
+      setState(() {
+        _imageUrlController.text = url;
+      });
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Image uploaded. Save the item to keep it in your wardrobe.')),
+        );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not upload image. ${friendlyError(e)}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
+  }
+
   Future<void> _saveItem() async {
+    if (_isSaving) return;
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +140,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 3),
               backgroundColor: const Color(0xFF287A58),
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             ),
           );
       }
@@ -160,71 +194,54 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
 
   Widget _buildImagePlaceholder() {
     final url = ApiService.resolveImageUrl(_imageUrlController.text.trim());
-    return Container(
-      height: 240,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: context.trenzyColors.graphite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: context.trenzyColors.glassBorder),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: url != null
-          ? CachedNetworkImage(
-              imageUrl: url,
-              httpHeaders: ApiService.imageHeadersFor(url),
-              fit: BoxFit.cover,
-              errorWidget: (_, _, _) => Center(
-                child: Column(
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        Container(
+          height: 240,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: context.trenzyColors.graphite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: context.trenzyColors.glassBorder),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: url != null
+              ? CachedNetworkImage(
+                  imageUrl: url,
+                  httpHeaders: ApiService.imageHeadersFor(url),
+                  fit: BoxFit.cover,
+                  errorWidget: (_, _, _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.broken_image, color: context.trenzyColors.mutedFg, size: 40),
+                        const SizedBox(height: 8),
+                        Text('Could not load this image', style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.broken_image,
-                      color: context.trenzyColors.mutedFg,
-                      size: 40,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Invalid Image URL',
-                      style: TextStyle(
-                        color: context.trenzyColors.mutedFg,
-                        fontSize: 12,
-                      ),
-                    ),
+                    Icon(Icons.image_search_rounded, color: context.trenzyColors.mutedFg, size: 36),
+                    const SizedBox(height: 12),
+                    Text('Choose a photo or enter an image URL', textAlign: TextAlign.center, style: GlassTypography.body(color: context.trenzyColors.mutedFg, fontSize: 12)),
                   ],
                 ),
-              ),
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.trenzyColors.fg40,
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.image_search_rounded,
-                    color: context.trenzyColors.mutedFg,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Enter Image URL Below'.toUpperCase(),
-                  style: GlassTypography.body(
-                    color: context.trenzyColors.mutedFg,
-                    fontSize: 12,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: FilledButton.tonalIcon(
+            onPressed: (_isUploadingImage || _isSaving) ? null : _pickAndUploadImage,
+            icon: _isUploadingImage
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.photo_library_outlined, size: 18),
+            label: Text(_isUploadingImage ? 'Uploading…' : 'Choose photo'),
+          ),
+        ),
+      ],
     );
   }
 
