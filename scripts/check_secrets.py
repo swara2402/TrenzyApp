@@ -53,7 +53,12 @@ PLACEHOLDER_MARKERS = [
 ]
 
 # Paths that are never scanned (build artifacts, vendored deps, lockfiles).
-SKIP_PREFIXES = (".git/", "build/", ".dart_tool/", ".pub-cache/", "node_modules/")
+SKIP_PREFIXES = (
+    ".git/", "build/", ".dart_tool/", ".pub-cache/", "node_modules/",
+    # Local Python virtual environments — third-party packages routinely contain
+    # PEM blocks and test fixtures that are not project secrets.
+    ".venv/", "venv/", "backend/.venv/", "backend/venv/",
+)
 SKIP_NAMES = {"pubspec.lock", "package-lock.json"}
 
 
