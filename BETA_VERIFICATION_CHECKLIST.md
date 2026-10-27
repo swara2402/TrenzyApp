@@ -2,12 +2,13 @@
 
 Run this once against the same APK/build after the beta-fix PR is merged. Record Pass / Fail / Blocked and attach screenshots for failures.
 
-**Automated audit result (2026-10-21 · HEAD `59e69b9`):**  
-`176 backend tests passed · 13 Flutter tests passed · flutter analyze: no issues · APK built (190 MB) · staging healthy`  
-**→ BETA READY (controlled beta, ~20–25 users)**
+**Automated audit snapshot (2026-10-21 · historical HEAD `59e69b9`; re-run checks on the current commit):**  
+`176 backend tests passed · 13 Flutter tests passed · flutter analyze: no issues · DEBUG APK built · staging reported healthy`  
+**→ NOT YET VERIFIED FOR BETA DISTRIBUTION.** Automated checks do not replace the unchecked device, account, privacy, persistence, and release-signing checks below. Do not mark BETA READY until every release-critical check is completed and recorded against the exact candidate build.
 
 ## Build and launch
-- [x] Build APK using `flutter build apk --debug --dart-define=TRENZY_API_BASE_URL=https://trenzy-staging-api.onrender.com`. *(Passed — 190 MB debug APK)*
+- [x] CI debug smoke-test APK built using `flutter build apk --debug --dart-define=TRENZY_API_BASE_URL=https://trenzy-staging-api.onrender.com`. *(Debug only; not a release artifact.)*
+- [ ] Build and verify a release-signed APK using the documented signing configuration; install that exact artifact on a physical Android device before distribution.
 - [x] Staging API healthy: Firebase ✅ · PostgreSQL ✅ · Redis ✅ · migrations up_to_date ✅ · catalog 4,000 products ✅
 - [ ] Confirm the build launches and points to the staging API, not a local or production URL. *(device test required)*
 - [ ] Fresh install, sign up, verify age/email as required, complete onboarding, force-close, reopen, and confirm session persistence.
@@ -29,7 +30,7 @@ Run this once against the same APK/build after the beta-fix PR is merged. Record
 - [x] Wardrobe upload flow has explicit success/error feedback (PR #38).
 - [x] Private wardrobe images are protected by Bearer auth (`/api/uploads/private/` route).
 - [ ] Add a wardrobe item with a gallery photo; upload succeeds, preview appears, save succeeds, and the same image remains after leaving and reopening the closet.  
-  ⚠️ **RISK:** Render uses ephemeral local disk — images may be lost on service redeploy. Acceptable for controlled beta; inform users.
+  🚫 **RELEASE BLOCKER unless explicitly waived:** Render local disk is ephemeral; wardrobe uploads may be lost after restart/redeploy. Configure and verify durable object storage (for example S3-compatible/R2 with correct public URL configuration), or document a deliberate temporary-beta decision before inviting users. Do not describe wardrobe persistence as verified until tested across a restart/redeploy.
 - [ ] Add an item with a URL and verify its image; try an invalid URL and confirm readable feedback.
 - [ ] Success/error feedback is readable above the bottom navigation and is not clipped.
 - [ ] Edit an item and verify name/category/image persist after refresh.
