@@ -1,4 +1,4 @@
-name: Build Trenzy Android APK
+name: Build Trenzy Android Debug APK
 
 on:
   push:
@@ -25,16 +25,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
+      # This workflow intentionally creates a DEBUG-only smoke-test artifact.
+      # It is not a release-signed beta distribution APK.
+      - name: Build debug APK
         run: flutter build apk --debug --dart-define=TRENZY_API_BASE_URL=https://trenzy-staging-api.onrender.com
 
-      - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/Trenzy.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Trenzy-APK
-          path: build/app/outputs/flutter-apk/Trenzy.apk
+          name: Trenzy-Debug-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 7
