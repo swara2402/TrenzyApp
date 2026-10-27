@@ -125,7 +125,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         child: TapScale(
                           onTap: () {
                             HapticFeedback.mediumImpact();
-                            final isSaved = _isWishlisted(widget.product.id);
+                            final isSaved = ref.read(wishlistProvider).valueOrNull?.contains(widget.product.id) ?? false;
                             ref
                                 .read(wishlistProvider.notifier)
                                 .toggle(widget.product.id);
