@@ -1,4 +1,4 @@
-""""Regression tests for catalog quarantine in feed and recommendations."""
+"""Regression tests for catalog quarantine in feed and recommendations."""
 from app.models import Product
 
 
