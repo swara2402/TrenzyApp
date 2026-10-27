@@ -1,4 +1,4 @@
-"""Regression tests for catalog quarantine in feed and recommendations."""
+""""Regression tests for catalog quarantine in feed and recommendations."""
 from app.models import Product
 
 
@@ -37,10 +37,12 @@ def _insert_catalog_pair(db_session):
     return classified_id, unclassified_id
 
 
-def test_feed_product_sections_exclude_unclassified_catalog_rows(client, db_session):
+def test_feed_product_sections_exclude_unclassified_catalog_rows(
+    client, db_session, auth_headers
+):
     classified_id, unclassified_id = _insert_catalog_pair(db_session)
 
-    response = client.get("/api/feed?limit=50")
+    response = client.get("/api/feed?limit=50", headers=auth_headers)
     assert response.status_code == 200, response.text
 
     sections = response.json()["sections"]
@@ -57,10 +59,14 @@ def test_feed_product_sections_exclude_unclassified_catalog_rows(client, db_sess
         assert unclassified_id not in ids
 
 
-def test_recommend_products_excludes_unclassified_catalog_rows(client, db_session):
+def test_recommend_products_excludes_unclassified_catalog_rows(
+    client, db_session, auth_headers
+):
     classified_id, unclassified_id = _insert_catalog_pair(db_session)
 
-    response = client.get("/api/recommend/products?limit=50")
+    response = client.get(
+        "/api/recommend/products?limit=50", headers=auth_headers
+    )
     assert response.status_code == 200, response.text
 
     ids = {item["id"] for item in response.json()["products"]}
