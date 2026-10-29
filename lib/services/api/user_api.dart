@@ -15,6 +15,11 @@ class UserApi {
       'bio': bio,
     });
     _client.invalidateCache('currentUser');
+    // PATCH /users/me wraps the updated profile as {"user": {...}}.
+    // Return the profile object expected by UserModel.fromJson.
+    if (data is Map && data['user'] is Map) {
+      return Map<String, dynamic>.from(data['user'] as Map);
+    }
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
