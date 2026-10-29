@@ -8,6 +8,9 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/providers/search_providers.dart';
+import 'package:trenzy/providers/api_service_provider.dart';
+import 'package:trenzy/models/product_model.dart';
+import 'package:trenzy/widgets/product_card.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:trenzy/widgets/section_states.dart';
 
@@ -634,6 +637,42 @@ class _SearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final category = initialFilters['category'];
+    if (category != null && category.trim().isNotEmpty) {
+      final categoryAsync = ref.watch(categorySearchProductsProvider(category));
+      return categoryAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => ErrorSection(
+          title: 'Could not load this category',
+          message: 'Please try again in a moment.',
+          onRetry: () => ref.invalidate(categorySearchProductsProvider(category)),
+        ),
+        data: (products) {
+          if (products.isEmpty) {
+            return _NoResultsView(query: category);
+          }
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: products.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.62,
+            ),
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return ProductCard(
+                product: product,
+                variant: ProductCardVariant.standard,
+                heroTagSuffix: '_category_${category}_$index',
+                onTap: () => context.push(AppRoutes.productDetailsFor(product.id)),
+              );
+            },
+          );
+        },
+      );
+    }
     final unifiedSearchAsync = ref.watch(unifiedSearchProvider(query));
 
     return unifiedSearchAsync.when(
