@@ -78,17 +78,32 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
         if (inviterId == null) return;
 
         final friendIds = selectedFriends.map((friend) => friend.id).toList();
-        await Future.wait(
-          friendIds.map(
-            (friendId) => ref
-                .read(apiServiceProvider)
-                .inviteToBlend(
-                  blendId: newBlend['id'],
-                  inviterId: inviterId,
-                  inviteeId: friendId.toString(),
+        try {
+          await Future.wait(
+            friendIds.map(
+              (friendId) => ref
+                  .read(apiServiceProvider)
+                  .inviteToBlend(
+                    blendId: newBlend['id'],
+                    inviterId: inviterId,
+                    inviteeId: friendId.toString(),
+                  ),
+            ),
+          );
+        } catch (_) {
+          // Creating the Blend and inviting members are separate operations.
+          // A failed invitation must not strand the user on the create screen
+          // after the Blend has already been persisted.
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Blend created, but an invite could not be sent. You can invite friends from the Blend screen.',
                 ),
-          ),
-        );
+              ),
+            );
+          }
+        }
       }
 
       if (mounted && newBlend != null) {
