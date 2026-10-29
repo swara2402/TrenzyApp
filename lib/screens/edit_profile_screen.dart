@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/api_service_provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/glass_theme.dart';
 
@@ -41,12 +40,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
     try {
-      await ref.read(apiServiceProvider).updateProfile(
+      await ref.read(authProvider.notifier).updateProfile(
         name: _nameController.text.trim(),
         username: _usernameController.text.trim().replaceFirst(RegExp(r'^@'), '').toLowerCase(),
         bio: _bioController.text.trim(),
       );
-      ref.invalidate(authProvider);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully ✨')),
