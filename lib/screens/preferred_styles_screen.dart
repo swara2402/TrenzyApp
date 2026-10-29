@@ -73,7 +73,7 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
             label: 'Retry',
             onPressed: _continueToDiscovery,
           ),
-          backgroundColor: _ink,
+          backgroundColor: _cream,
           behavior: SnackBarBehavior.floating,
         ),
       );
