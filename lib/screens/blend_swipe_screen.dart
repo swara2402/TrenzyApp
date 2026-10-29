@@ -423,13 +423,32 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
           icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
           onPressed: () => context.go(AppRoutes.blendHub),
         ),
-        title: Text(
-          'You $mySwipes \u00B7 Group $groupSwipes',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: context.trenzyColors.primary,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.group.name.isNotEmpty ? widget.group.name : 'Blend Swipe',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: context.trenzyColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'You $mySwipes · Group $groupSwipes votes',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: context.trenzyColors.primary,
+              ),
+            ),
+          ],
         ),
         actions: [
           if (widget.group.members.isNotEmpty)
@@ -476,46 +495,63 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                   _snapBack();
                 }
               },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (_isAnimating)
-              Opacity(
-                opacity: exitOpacity.clamp(0, 1),
-                child: Transform.translate(
-                  offset: Offset(
-                    _dragX + exitOffset.dx,
-                    _dragY + exitOffset.dy,
-                  ),
-                  child: Transform.rotate(
-                    angle: exitRotation,
-                    child: _ProductCard(product: product),
-                  ),
-                ),
-              ),
-            Opacity(
-              opacity: _isAnimating ? enterOpacity : 1.0,
-              child: Transform.scale(
-                scale: _isAnimating ? enterScale : 1.0,
-                child: _isAnimating && _currentIndex + 1 < _products.length
-                    ? Opacity(
-                        opacity: 0.3,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Fit the card between the app bar and action buttons on compact phones.
+            final cardWidth = (constraints.maxWidth - 32).clamp(0.0, 340.0).toDouble();
+            final cardHeight = (constraints.maxHeight - 24).clamp(0.0, 460.0).toDouble();
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                if (_isAnimating)
+                  Opacity(
+                    opacity: exitOpacity.clamp(0, 1),
+                    child: Transform.translate(
+                      offset: Offset(
+                        _dragX + exitOffset.dx,
+                        _dragY + exitOffset.dy,
+                      ),
+                      child: Transform.rotate(
+                        angle: exitRotation,
                         child: _ProductCard(
-                          product: _products[_currentIndex + 1],
+                          product: product,
+                          width: cardWidth,
+                          height: cardHeight,
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ),
-            if (!_isAnimating)
-              Transform.translate(
-                offset: Offset(_dragX, _dragY),
-                child: Transform.rotate(
-                  angle: _dragX / 500,
-                  child: _ProductCard(product: product),
+                      ),
+                    ),
+                  ),
+                Opacity(
+                  opacity: _isAnimating ? enterOpacity : 1.0,
+                  child: Transform.scale(
+                    scale: _isAnimating ? enterScale : 1.0,
+                    child: _isAnimating && _currentIndex + 1 < _products.length
+                        ? Opacity(
+                            opacity: 0.3,
+                            child: _ProductCard(
+                              product: _products[_currentIndex + 1],
+                              width: cardWidth,
+                              height: cardHeight,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 ),
-              ),
-          ],
+                if (!_isAnimating)
+                  Transform.translate(
+                    offset: Offset(_dragX, _dragY),
+                    child: Transform.rotate(
+                      angle: _dragX / 500,
+                      child: _ProductCard(
+                        product: product,
+                        width: cardWidth,
+                        height: cardHeight,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -551,26 +587,36 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
 }
 
 class _ProductCard extends StatelessWidget {
-  const _ProductCard({required this.product});
+  const _ProductCard({
+    required this.product,
+    required this.width,
+    required this.height,
+  });
 
   final ProductModel product;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.trenzyColors;
     return Container(
-      width: 300,
-      height: 420,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
-        color: context.trenzyColors.graphite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: context.trenzyColors.foreground.withValues(alpha: 0.1),
-        ),
+        color: colors.graphite,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.32)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 30,
-            offset: Offset(0, 15),
+            color: colors.primary.withValues(alpha: 0.08),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.42),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -579,66 +625,129 @@ class _ProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: product.imageUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl:
-                        ApiService.resolveImageUrl(product.imageUrl) ??
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (product.imageUrl.isNotEmpty)
+                  CachedNetworkImage(
+                    imageUrl: ApiService.resolveImageUrl(product.imageUrl) ??
                         product.imageUrl,
                     fit: BoxFit.cover,
-                    width: double.infinity,
-                    placeholder: (_, _) => Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        color: context.trenzyColors.mutedFg,
-                        size: 24,
-                      ),
+                    placeholder: (_, _) => Container(
+                      color: colors.graphite,
+                      child: Center(child: Icon(Icons.image_outlined,
+                          color: colors.mutedFg, size: 34)),
                     ),
-                    errorWidget: (_, _, _) => Center(
-                      child: Icon(
-                        Icons.image,
-                        color: context.trenzyColors.mutedFg,
-                      ),
+                    errorWidget: (_, _, _) => Container(
+                      color: colors.graphite,
+                      child: Center(child: Icon(Icons.broken_image_outlined,
+                          color: colors.mutedFg, size: 34)),
                     ),
                   )
-                : Center(
-                    child: Icon(
-                      Icons.image,
-                      color: context.trenzyColors.mutedFg,
-                      size: 48,
+                else
+                  Container(
+                    color: colors.graphite,
+                    child: Center(child: Icon(Icons.checkroom_rounded,
+                        color: colors.mutedFg, size: 42)),
+                  ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.28),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.68),
+                        ],
+                        stops: const [0, 0.42, 1],
+                      ),
                     ),
                   ),
+                ),
+                Positioned(
+                  top: 14, left: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.48),
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.groups_rounded, size: 14, color: colors.primary),
+                      const SizedBox(width: 5),
+                      const Text('BLEND PICK', style: TextStyle(
+                        color: Colors.white, fontSize: 9,
+                        fontWeight: FontWeight.w800, letterSpacing: 1.1,
+                      )),
+                    ]),
+                  ),
+                ),
+                Positioned(
+                  left: 16, right: 16, bottom: 16,
+                  child: Text(
+                    product.brand.isNotEmpty ? product.brand.toUpperCase() : 'TRENDING STYLE',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      shadows: const [Shadow(color: Colors.black54, blurRadius: 8)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(17, 14, 17, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   product.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: context.trenzyColors.foreground,
-                  ),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4),
-                Text(
-                  product.brand,
                   style: TextStyle(
-                    fontSize: 14,
-                    color: context.trenzyColors.mutedFg,
+                    fontSize: 17,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                    color: colors.foreground,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  product.effectivePrice.toString(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: context.trenzyColors.primary,
-                  ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        product.category.isNotEmpty ? product.category : 'Style pick',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: colors.mutedFg),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.13),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        product.effectivePrice.toString(),
+                        style: TextStyle(
+                          color: colors.primary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

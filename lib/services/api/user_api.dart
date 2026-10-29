@@ -4,9 +4,23 @@ class UserApi {
   UserApi(this._client);
   final ApiClient _client;
 
-  Future<Map<String, dynamic>> updateProfile({required String name}) async {
-    final data = await _client.patch('/users/me', body: {'name': name});
-    _client.invalidateCache('currentUser');
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  }) async {
+    final data = await _client.patch('/users/me', body: {
+      'name': name,
+      'username': username,
+      'bio': bio,
+    });
+    // A profile change affects the current-user payload and any cached profile views.
+    ApiClient.clearCache();
+    // PATCH /users/me wraps the updated profile as {"user": {...}}.
+    // Return the profile object expected by UserModel.fromJson.
+    if (data is Map && data['user'] is Map) {
+      return Map<String, dynamic>.from(data['user'] as Map);
+    }
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
@@ -17,6 +31,19 @@ class UserApi {
     );
     _client.invalidateCache('currentUser');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
+  Future<List<Map<String, dynamic>>> searchUsersByUsername(String query) async {
+    final data = await _client.get(
+      '/users/search?query=${Uri.encodeQueryComponent(query)}&limit=30',
+    );
+    if (data is Map && data['users'] is List) {
+      return (data['users'] as List)
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+    return const [];
   }
 
   Future<Map<String, dynamic>> getUserProfile(String userId) async {

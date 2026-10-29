@@ -3,6 +3,7 @@ import '../services/api/api_client.dart';
 class UserModel {
   final String id;
   final String name;
+  final String username;
   final String displayName;
   final String email;
   final String profileImageUrl;
@@ -26,6 +27,7 @@ class UserModel {
   UserModel({
     String? id,
     String? name,
+    String? username,
     String? displayName,
     String? email,
     String? profileImageUrl,
@@ -40,6 +42,7 @@ class UserModel {
     bool? isMinor,
   }) : id = id ?? '',
        name = name ?? displayName ?? '',
+       username = username ?? '',
        displayName = displayName ?? name ?? '',
        email = email ?? '',
        profileImageUrl = _normalizeImageUrl(profileImageUrl),
@@ -72,6 +75,7 @@ class UserModel {
     return UserModel(
       id: json['id']?.toString(),
       name: json['name'] as String?,
+      username: json['username'] as String?,
       displayName: json['displayName'] as String?,
       email: json['email'] as String?,
       profileImageUrl: json['profileImageUrl'] as String?,
@@ -90,6 +94,7 @@ class UserModel {
   UserModel copyWith({
     String? id,
     String? name,
+    String? username,
     String? displayName,
     String? email,
     String? profileImageUrl,
@@ -106,6 +111,7 @@ class UserModel {
     return UserModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      username: username ?? this.username,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
@@ -125,6 +131,7 @@ class UserModel {
     return {
       'id': id,
       'name': name,
+      'username': username,
       'displayName': displayName,
       'email': email,
       'profileImageUrl': profileImageUrl,

@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:trenzy/models/product_model.dart';
 import 'package:trenzy/providers/products_provider.dart';
 import 'package:trenzy/providers/wishlist_provider.dart';
+import 'package:trenzy/providers/blend_provider.dart';
+import 'package:trenzy/models/blend_model.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
@@ -316,7 +318,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     isAddingToWardrobe: _isAddingToWardrobe,
                     onToggleWishlist: () => _toggleWishlist(product),
                     onAddToWardrobe: () => _addToWardrobe(product),
-                    onAddToBlend: () => context.push(AppRoutes.blendHub),
+                    onAddToBlend: () => _addToBlend(product),
                   ),
                 ),
                 _TopAppBar(
@@ -326,6 +328,101 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               ],
             ),
     );
+  }
+
+  Future<void> _addToBlend(ProductModel product) async {
+    try {
+      final blends = await ref.read(userBlendGroupsProvider.future);
+      if (!mounted) return;
+      if (blends.isEmpty) {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Create a Blend first'),
+            content: const Text(
+              'Create a Blend with friends, then you can add this product to its shared wishlist.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Not now'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.push(AppRoutes.createBlend);
+                },
+                child: const Text('Create Blend'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      final selectedBlend = await showModalBottomSheet<BlendGroup>(
+        context: context,
+        backgroundColor: context.trenzyColors.graphite,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Add to which Blend?', style: TextStyle(
+                  color: context.trenzyColors.foreground,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                )),
+                const SizedBox(height: 8),
+                Text('This product will be added to the Blend shared wishlist.',
+                  style: TextStyle(color: context.trenzyColors.mutedFg)),
+                const SizedBox(height: 16),
+                ...blends.map((blend) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: context.trenzyColors.primary.withValues(alpha: 0.14),
+                    child: Icon(Icons.groups_rounded, color: context.trenzyColors.primary),
+                  ),
+                  title: Text(blend.name, style: TextStyle(
+                    color: context.trenzyColors.foreground,
+                    fontWeight: FontWeight.w700,
+                  )),
+                  subtitle: Text('${blend.memberCount} members', style: TextStyle(
+                    color: context.trenzyColors.mutedFg,
+                  )),
+                  trailing: Icon(Icons.add_circle_outline, color: context.trenzyColors.primary),
+                  onTap: () => Navigator.of(sheetContext).pop(blend),
+                )),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (selectedBlend == null || !mounted) return;
+
+      await ref.read(apiServiceProvider).addToSharedWishlist(
+        selectedBlend.id,
+        productId: product.id,
+        productName: product.name,
+        productPrice: product.hasPrice ? product.displayPrice : null,
+        productImage: ApiService.resolveImageUrl(product.imageUrl) ?? product.imageUrl,
+        productBrand: product.brand,
+        productCategory: product.category,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Added to ${selectedBlend.name} ✨')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not add this product to a Blend. Please try again.')),
+      );
+    }
   }
 
   Future<void> _toggleWishlist(ProductModel product) async {

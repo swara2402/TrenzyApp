@@ -67,9 +67,16 @@ class _FavoriteCategoriesScreenState
           .read(apiServiceProvider)
           .savePreferences(
             preferredCategories: _selectedCategories,
-            onboardingStep: 2,
+            onboardingStep: GoRouterState.of(context).uri.queryParameters['source'] == 'settings' ? null : 2,
           );
-      if (mounted) context.go(AppRoutes.preferredStyles);
+      if (mounted) {
+        final source = GoRouterState.of(context).uri.queryParameters['source'];
+        if (source == 'settings') {
+          context.pop();
+        } else {
+          context.go(AppRoutes.preferredStyles);
+        }
+      }
     } catch (error) {
       // For intermediate onboarding steps, if save fails, don't navigate forward automatically
       // Instead, show error and let user retry - this prevents skipping steps without saving progress
@@ -93,7 +100,9 @@ class _FavoriteCategoriesScreenState
   void _onBack() {
     final source =
         GoRouterState.of(context).uri.queryParameters['source'] ?? 'onboarding';
-    if (source == 'signup') {
+    if (source == 'settings') {
+      context.pop();
+    } else if (source == 'signup') {
       // If coming from signup, go back to sign-up screen instead of login
       context.go(AppRoutes.signUp);
     } else {

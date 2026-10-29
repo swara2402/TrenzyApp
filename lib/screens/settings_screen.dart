@@ -24,6 +24,103 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  void _showHelpAndSupport(BuildContext context) {
+    final colors = context.trenzyColors;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.graphite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Container(width: 42, height: 4, decoration: BoxDecoration(color: colors.mutedFg.withValues(alpha: .45), borderRadius: BorderRadius.circular(8)))),
+              const SizedBox(height: 22),
+              DisplayText('How can we help?', fontSize: 23, weight: FontWeight.w700),
+              const SizedBox(height: 6),
+              Text('Quick answers for your Trenzy beta experience.', style: GlassTypography.body(color: colors.mutedFg)),
+              const SizedBox(height: 18),
+              _helpRow(context, Icons.person_outline, 'Profile & username', 'Edit your name, username and bio in Settings → Edit Profile. Friends can find you by username.'),
+              _helpRow(context, Icons.auto_awesome_outlined, 'Personalize your feed', 'Update your favourite categories, styles and discovery preferences any time in Settings.'),
+              _helpRow(context, Icons.favorite_border, 'Wishlist & Blend', 'Save products to your wishlist or create a Blend to decide with friends.'),
+              _helpRow(context, Icons.bug_report_outlined, 'Something not working?', 'Send us a short description and, if possible, the screen where it happened.'),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    _sendFeedback(context);
+                  },
+                  icon: const Icon(Icons.email_outlined),
+                  label: const Text('Contact Trenzy Support'),
+                  style: FilledButton.styleFrom(backgroundColor: colors.primary, foregroundColor: colors.background, padding: const EdgeInsets.symmetric(vertical: 14)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _helpRow(BuildContext context, IconData icon, String title, String detail) {
+    final colors = context.trenzyColors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(width: 38, height: 38, decoration: BoxDecoration(color: colors.primary.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: colors.primary, size: 20)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: GlassTypography.body(color: colors.foreground, weight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(detail, style: GlassTypography.body(color: colors.mutedFg, fontSize: 12, height: 1.4)),
+          ])),
+        ],
+      ),
+    );
+  }
+
+  void _showAbout(BuildContext context) {
+    final colors = context.trenzyColors;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.graphite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 26, 24, 30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 76, height: 76, decoration: BoxDecoration(gradient: GlassGradients.primary, borderRadius: BorderRadius.circular(24)), child: const Icon(Icons.checkroom_rounded, color: Colors.white, size: 38)),
+              const SizedBox(height: 16),
+              DisplayText('Trenzy', fontSize: 28, weight: FontWeight.w800),
+              const SizedBox(height: 5),
+              Text('Find your vibe. Build your style.', style: GlassTypography.body(color: colors.primary, weight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              Text('A fashion discovery space where your inspiration, wardrobe, AI styling and friends come together — so finding your next favourite look feels more personal and more fun.', textAlign: TextAlign.center, style: GlassTypography.body(color: colors.mutedFg, height: 1.5)),
+              const SizedBox(height: 18),
+              Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: colors.background.withValues(alpha: .55), borderRadius: BorderRadius.circular(14), border: Border.all(color: colors.glassBorder)), child: Column(children: [
+                Text('Version 1.0.0 • Controlled Beta', style: GlassTypography.body(color: colors.foreground, weight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text('Made for discovering style together.', style: GlassTypography.body(color: colors.mutedFg, fontSize: 12)),
+              ])),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _sendFeedback(BuildContext context) async {
     final uri = Uri(
       scheme: 'mailto',
@@ -350,7 +447,7 @@ class SettingsScreen extends ConsumerWidget {
                   _buildItem(
                     icon: Icons.person_outline,
                     title: 'Edit Profile',
-                    onTap: () => context.push(AppRoutes.userProfile),
+                    onTap: () => context.push(AppRoutes.editProfile),
                   ),
                   _buildItem(
                     icon: Icons.people_outline,
@@ -378,17 +475,17 @@ class SettingsScreen extends ConsumerWidget {
                   _buildItem(
                     icon: Icons.category_outlined,
                     title: 'Favorite Categories',
-                    onTap: () => context.go(AppRoutes.favoriteCategories),
+                    onTap: () => context.push('${AppRoutes.favoriteCategories}?source=settings'),
                   ),
                   _buildItem(
                     icon: Icons.style_outlined,
                     title: 'Preferred Styles',
-                    onTap: () => context.go(AppRoutes.preferredStyles),
+                    onTap: () => context.push('${AppRoutes.preferredStyles}?source=settings'),
                   ),
                   _buildItem(
                     icon: Icons.shopping_bag_outlined,
                     title: 'Discovery Preferences',
-                    onTap: () => context.go(AppRoutes.discoveryPreferences),
+                    onTap: () => context.push('${AppRoutes.discoveryPreferences}?source=settings'),
                   ),
                 ],
               ),
@@ -444,8 +541,7 @@ class SettingsScreen extends ConsumerWidget {
                   _buildItem(
                     icon: Icons.help_outline,
                     title: 'Help & Support',
-                    onTap: () =>
-                        _showSnackBar(context, 'Help & Support coming soon'),
+                    onTap: () => _showHelpAndSupport(context),
                   ),
                   _buildItem(
                     icon: Icons.info_outline,
@@ -459,20 +555,7 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    onTap: () => _showSnackBar(context, 'Trenzy v1.0.0-beta'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24),
-
-              // ── Developer section ─────────────────────────────────────
-              _buildSection(
-                title: 'Developer',
-                children: [
-                  _buildItem(
-                    icon: Icons.analytics_outlined,
-                    title: 'Analytics Dashboard',
-                    onTap: () => context.push(AppRoutes.analyticsDashboard),
+                    onTap: () => _showAbout(context),
                   ),
                 ],
               ),

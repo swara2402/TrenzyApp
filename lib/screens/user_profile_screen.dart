@@ -218,6 +218,23 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               child: Column(
                 children: [
                   _buildProfileHeader(userName, avatarUrl),
+                  if ((_profileData?['username'] as String? ?? '').isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        '@${_profileData!['username']}',
+                        style: const TextStyle(color: Color(0xFFE9C349), fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  if ((_profileData?['bio'] as String? ?? '').trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                      child: Text(
+                        _profileData!['bio'] as String,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFFA89F95), fontSize: 13, height: 1.4),
+                      ),
+                    ),
                   const SizedBox(height: 24),
                   _buildStats(),
                   const SizedBox(height: 24),

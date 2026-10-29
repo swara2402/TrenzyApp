@@ -13,8 +13,9 @@ import logging
 from datetime import date
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..db import get_session
@@ -39,6 +40,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 class UserUpdateRequest(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=120)
+    username: Optional[str] = Field(default=None, min_length=3, max_length=24, pattern=r"^[a-zA-Z0-9_.]+$")
     avatar_url: Optional[str] = Field(default=None, max_length=2048)
     bio: Optional[str] = Field(default=None, max_length=500)
 
@@ -94,6 +96,7 @@ def _user_payload(
     data: dict[str, Any] = {
         "id": user.id,
         "name": user.name,
+        "username": user.username,
         "avatarUrl": user.avatar_url or "",
         "bio": user.bio or "",
     }
@@ -149,7 +152,8 @@ def update_me(
     if not firebase_uid:
         raise HTTPException(status_code=401, detail="Missing uid claim")
 
-    if payload.name is None and payload.avatar_url is None and payload.bio is None:
+    if (payload.name is None and payload.username is None
+            and payload.avatar_url is None and payload.bio is None):
         raise HTTPException(status_code=400, detail="No fields to update")
 
     db_user = session.query(User).filter(User.firebase_uid == str(firebase_uid)).first()
@@ -157,7 +161,18 @@ def update_me(
         raise HTTPException(status_code=404, detail="User not found")
 
     if payload.name is not None:
-        db_user.name = payload.name
+        db_user.name = payload.name.strip()
+    if payload.username is not None:
+        normalized_username = payload.username.strip().lower().lstrip("@")
+        if not normalized_username or not all(ch.isalnum() or ch in "._" for ch in normalized_username):
+            raise HTTPException(status_code=422, detail="Username may only contain letters, numbers, dots, and underscores")
+        existing = session.query(User).filter(
+            func.lower(User.username) == normalized_username,
+            User.firebase_uid != str(firebase_uid),
+        ).first()
+        if existing:
+            raise HTTPException(status_code=409, detail="That username is already taken")
+        db_user.username = normalized_username
     if payload.avatar_url is not None:
         db_user.avatar_url = payload.avatar_url or None
     if payload.bio is not None:
@@ -246,6 +261,39 @@ def delete_account(
             logger.warning("Firebase user deletion handled: %s", e)
 
     return {"ok": True}
+
+
+@router.get("/search")
+def search_users_by_username(
+    query: str = Query(..., min_length=2, max_length=24),
+    limit: int = Query(20, ge=1, le=50),
+    user: dict = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Find users by their chosen username for the authenticated Find Friends flow."""
+    current_uid = str(user.get("uid") or user.get("firebase_uid") or "")
+    term = query.strip().lower().lstrip("@")
+    if len(term) < 2:
+        raise HTTPException(status_code=422, detail="Enter at least 2 username characters")
+    matches = (
+        session.query(User)
+        .filter(func.lower(User.username).like(f"%{term}%"))
+        .filter(User.firebase_uid != current_uid)
+        .order_by(User.username.asc())
+        .limit(limit)
+        .all()
+    )
+    return {"users": [
+        {
+            "id": item.id,
+            "firebaseUid": item.firebase_uid,
+            "name": item.name,
+            "username": item.username,
+            "avatarUrl": item.avatar_url or "",
+            "bio": item.bio or "",
+        }
+        for item in matches
+    ]}
 
 
 @router.get("/{user_id}")

@@ -22,13 +22,48 @@ def test_user_profile_update(client: TestClient, db_session: Session, auth_heade
 
     res = client.patch(
         "/api/users/me",
-        json={"name": "New Name", "bio": "Fashion lover"},
+        json={"name": "New Name", "username": "new_style_name", "bio": "Fashion lover"},
         headers=headers,
     )
     assert res.status_code == 200, res.text
     data = res.json()
     assert data["user"]["name"] == "New Name"
+    assert data["user"]["username"] == "new_style_name"
     assert data["user"]["bio"] == "Fashion lover"
+
+
+
+def test_username_search_returns_real_registered_users_and_excludes_self(
+    client: TestClient, db_session: Session, auth_headers
+):
+    """Username search returns DB-backed accounts, not mock/sample people."""
+    own = User(
+        firebase_uid="test-user-1",
+        email="search-owner@example.com",
+        name="Search Owner",
+        username="search_owner",
+        date_of_birth=date(1995, 1, 1),
+    )
+    other = User(
+        firebase_uid="test-user-2",
+        email="real-friend@example.com",
+        name="Real Friend",
+        username="real_friend_27",
+        date_of_birth=date(1995, 1, 1),
+    )
+    db_session.add_all([own, other])
+    db_session.commit()
+
+    response = client.get(
+        "/api/users/search?query=REAL_FRIEND",
+        headers=auth_headers,
+    )
+    assert response.status_code == 200, response.text
+    users = response.json()["users"]
+    assert len(users) == 1
+    assert users[0]["firebaseUid"] == "test-user-2"
+    assert users[0]["username"] == "real_friend_27"
+    assert all(item["firebaseUid"] != "test-user-1" for item in users)
 
 
 def test_user_account_deletion_with_financial_preservation(

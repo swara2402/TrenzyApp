@@ -132,9 +132,21 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<Map<String, dynamic>> updateProfile({required String name}) async {
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'name': name};
+    return {'name': name, 'username': username, 'bio': bio};
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> searchUsersByUsername(String query) async {
+    // Never present invented demo accounts as real Trenzy users. Username
+    // discovery requires the authenticated backend and its registered users.
+    await _delay(const Duration(milliseconds: 200));
+    return const [];
   }
 
   @override
