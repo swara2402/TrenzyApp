@@ -31,6 +31,7 @@ import '../screens/blend_chat_screen.dart';
 import '../screens/direct_chat_screen.dart';
 import '../screens/outfit_builder_screen.dart';
 import '../screens/persona_screen.dart';
+import '../screens/style_preferences_edit_screen.dart';
 import '../screens/ai_stylist_screen.dart';
 import '../screens/ai_style_dna_screen.dart';
 import '../screens/decision_screen.dart';
@@ -155,6 +156,7 @@ class AppRoutes {
   static const wardrobe = '/wardrobe';
   static const outfitBuilder = '/outfit-builder';
   static const persona = '/persona';
+  static const stylePreferences = '/style-preferences';
   static const aiStylist = '/ai-stylist';
   static const aiStyleDna = '/ai-style-dna';
   static const editClothing = '/wardrobe/edit-clothing';
@@ -682,6 +684,13 @@ GoRouter createRouter({
           OutfitBuilderScreen(
             initialOutfit: state.extra is Outfit ? state.extra as Outfit : null,
           ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.stylePreferences,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          context, state, const StylePreferencesEditScreen(),
         ),
       ),
       GoRoute(
