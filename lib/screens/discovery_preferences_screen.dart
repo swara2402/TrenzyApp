@@ -145,6 +145,7 @@ class _DiscoveryPreferencesScreenState
     final prefs = ref.read(userPreferencesProvider);
 
     try {
+      final source = GoRouterState.of(context).uri.queryParameters['source'];
       await ref
           .read(apiServiceProvider)
           .savePreferences(
@@ -159,9 +160,11 @@ class _DiscoveryPreferencesScreenState
             discoverPreferences: prefs.discoverPreferences,
             productInterests: prefs.productInterests,
             shoppingPriorities: prefs.shoppingPriorities,
-            onboardingStep: 4,
+            onboardingStep: source == 'settings' ? null : 4,
           );
-      if (mounted) context.go(AppRoutes.persona);
+      if (mounted) {
+        if (source == 'settings') { context.pop(); } else { context.go(AppRoutes.persona); }
+      }
     } catch (error) {
       // For intermediate onboarding steps, if save fails, don't navigate forward automatically
       // Instead, show error and let user retry - this prevents skipping steps without saving progress
@@ -201,7 +204,10 @@ class _DiscoveryPreferencesScreenState
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-          onPressed: () => context.go(AppRoutes.preferredStyles),
+          onPressed: () {
+            final source = GoRouterState.of(context).uri.queryParameters['source'];
+            if (source == 'settings') { context.pop(); } else { context.go(AppRoutes.preferredStyles); }
+          },
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(40),
