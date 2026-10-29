@@ -35,3 +35,21 @@ final searchQueryProvider = StateProvider<String>((ref) => '');
 final debouncedSearchQueryProvider = Provider.autoDispose<String>((ref) {
   return ref.watch(searchQueryProvider);
 });
+
+
+/// Loads catalog products by their actual category instead of searching for
+/// the category word as free text (which can hide valid items such as bottoms).
+final categorySearchProductsProvider = FutureProvider.autoDispose
+    .family<List<ProductModel>, String>((ref, category) async {
+  final uid = ref.watch(
+    auth_p.authProvider.select((a) => a.valueOrNull?.id),
+  );
+  if (uid == null) return const <ProductModel>[];
+  final api = ref.watch(apiServiceProvider);
+  final response = await api.getProducts(category: category, limit: 100);
+  final raw = response['products'] as List<dynamic>? ?? const [];
+  return raw
+      .whereType<Map>()
+      .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item)))
+      .toList();
+});
