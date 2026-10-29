@@ -143,18 +143,10 @@ class MockApiService implements ApiServiceBase {
 
   @override
   Future<List<Map<String, dynamic>>> searchUsersByUsername(String query) async {
+    // Never present invented demo accounts as real Trenzy users. Username
+    // discovery requires the authenticated backend and its registered users.
     await _delay(const Duration(milliseconds: 200));
-    return [
-      {
-        'firebaseUid': 'mock_friend_1',
-        'name': 'Style Friend',
-        'username': 'style_friend',
-        'avatarUrl': '',
-        'bio': 'Here for outfit inspiration',
-      },
-    ].where((user) =>
-      (user['username'] as String).toLowerCase().contains(query.toLowerCase().replaceFirst(RegExp(r'^@'), ''))
-    ).toList();
+    return const [];
   }
 
   @override
