@@ -60,8 +60,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           final existing = ref.read(userPreferencesProvider).preferredAesthetics;
           final updated = existing
               .where((value) => !value.startsWith('Audience: '))
-              .toList()
-            ..add('Audience: $_fashionFocus');
+              .toList();
+          // "Decide later" is an explicit neutral choice, not a style tag.
+          if (_fashionFocus != 'Personalize later') {
+            updated.add('Audience: $_fashionFocus');
+          }
           await ref.read(apiServiceProvider).savePreferences(
                 preferredAesthetics: updated,
               );
