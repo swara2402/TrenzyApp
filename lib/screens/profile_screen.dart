@@ -255,7 +255,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           SizedBox(height: 4),
           Text(
-            _handleFromName(user.name),
+            _handleFromName(user),
             style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 15),
           ),
           SizedBox(height: GlassSpacing.sm),
