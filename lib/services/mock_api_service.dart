@@ -132,9 +132,29 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
-  Future<Map<String, dynamic>> updateProfile({required String name}) async {
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  }) async {
     await _delay(const Duration(milliseconds: 200));
-    return {'name': name};
+    return {'name': name, 'username': username, 'bio': bio};
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> searchUsersByUsername(String query) async {
+    await _delay(const Duration(milliseconds: 200));
+    return [
+      {
+        'firebaseUid': 'mock_friend_1',
+        'name': 'Style Friend',
+        'username': 'style_friend',
+        'avatarUrl': '',
+        'bio': 'Here for outfit inspiration',
+      },
+    ].where((user) =>
+      (user['username'] as String).toLowerCase().contains(query.toLowerCase().replaceFirst(RegExp(r'^@'), ''))
+    ).toList();
   }
 
   @override
