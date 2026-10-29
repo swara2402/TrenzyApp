@@ -65,72 +65,130 @@ class _AiPersonaCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final personaAsync = ref.watch(personaProvider);
-    final personaName = personaAsync.valueOrNull?.name ?? 'Style Newcomer';
-    return GlassContainer(
-      color: context.trenzyColors.graphite,
-      radius: 16,
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => context.go(AppRoutes.persona),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: GlassGradients.primary,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: context.trenzyColors.primary.withValues(
-                          alpha: 0.25,
-                        ),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.psychology,
-                    color: context.trenzyColors.primaryFg,
-                    size: 22,
-                  ),
+    final prefs = ref.watch(userPreferencesProvider);
+    final personaName = personaAsync.valueOrNull?.name;
+    final chosenStyles = [
+      ...prefs.preferredStyles,
+      ...prefs.preferredAesthetics,
+    ].toSet().toList();
+    final summary = chosenStyles.isNotEmpty
+        ? chosenStyles.take(3).join(' · ')
+        : (prefs.preferredCategories.isNotEmpty
+            ? prefs.preferredCategories.take(3).join(' · ')
+            : 'Choose the styles that feel like you');
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: GlassContainer(
+        color: context.trenzyColors.graphite,
+        radius: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.push(AppRoutes.stylePreferences),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: context.trenzyColors.primary.withValues(alpha: 0.28),
                 ),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    context.trenzyColors.primary.withValues(alpha: 0.10),
+                    context.trenzyColors.graphite,
+                    context.trenzyColors.graphite,
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: GlassGradients.primary,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.trenzyColors.primary.withValues(alpha: 0.22),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.auto_awesome_rounded,
+                      color: context.trenzyColors.primaryFg,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'YOUR STYLE PERSONA',
+                          style: TextStyle(
+                            fontFamily: GlassTypography.bodyFont,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: context.trenzyColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          personaName?.isNotEmpty == true
+                              ? personaName!
+                              : 'Make your style yours',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: GlassTypography.bodyFont,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: context.trenzyColors.foreground,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          summary,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.35,
+                            color: context.trenzyColors.mutedFg,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(Icons.tune_rounded,
+                          color: context.trenzyColors.primary, size: 20),
+                      const SizedBox(height: 3),
                       Text(
-                        'Your AI Persona',
+                        'EDIT',
                         style: TextStyle(
-                          fontFamily: GlassTypography.bodyFont,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.0,
                           color: context.trenzyColors.primary,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        personaName,
-                        style: TextStyle(
-                          fontFamily: GlassTypography.bodyFont,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: context.trenzyColors.foreground,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ],
                   ),
-                ),
-                Icon(Icons.chevron_right, color: context.trenzyColors.mutedFg),
-              ],
+                ],
+              ),
             ),
           ),
         ),
