@@ -55,6 +55,36 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
     super.dispose();
   }
 
+  String _suggestThemeFromName(String name) {
+    final normalized = name.toLowerCase();
+    if (normalized.contains('wedding') || normalized.contains('bridal')) {
+      return 'Wedding style';
+    }
+    if (normalized.contains('trip') ||
+        normalized.contains('vacation') ||
+        normalized.contains('travel') ||
+        normalized.contains('goa')) {
+      return 'Travel and getaway looks';
+    }
+    if (normalized.contains('college') ||
+        normalized.contains('campus') ||
+        normalized.contains('uni')) {
+      return 'Campus style';
+    }
+    if (normalized.contains('party') ||
+        normalized.contains('birthday') ||
+        normalized.contains('night out')) {
+      return 'Party and night-out looks';
+    }
+    if (normalized.contains('winter') || normalized.contains('summer')) {
+      return 'Seasonal style';
+    }
+    if (normalized.contains('work') || normalized.contains('office')) {
+      return 'Workwear style';
+    }
+    return 'Personal style discovery';
+  }
+
   Future<void> _createBlend() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,14 +93,25 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
       return;
     }
 
+    final name = _nameController.text.trim();
     final selectedFriends = ref.read(selectedFriendsProvider);
     final blendNotifier = ref.read(blendNotifierProvider.notifier);
 
+    // Keep Blend creation lightweight: the name is the only required input.
+    // If the user skips the optional fields, provide useful defaults derived
+    // from the name so the new Blend is ready to use immediately.
+    final description = _descriptionController.text.trim().isNotEmpty
+        ? _descriptionController.text.trim()
+        : 'A shared space to discover, vote on, and save looks for $name.';
+    final theme = _themeController.text.trim().isNotEmpty
+        ? _themeController.text.trim()
+        : _suggestThemeFromName(name);
+
     try {
       final newBlend = await blendNotifier.createBlend(
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        theme: _themeController.text.trim(),
+        name: name,
+        description: description,
+        theme: theme,
       );
 
       if (newBlend != null && selectedFriends.isNotEmpty) {
