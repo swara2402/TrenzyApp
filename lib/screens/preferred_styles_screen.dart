@@ -5,6 +5,7 @@ import 'package:trenzy/providers/discover_providers.dart';
 import 'package:trenzy/providers/user_preferences_provider.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/router/app_router.dart';
+import 'package:trenzy/theme/glass_theme.dart';
 
 class PreferredStylesScreen extends ConsumerStatefulWidget {
   const PreferredStylesScreen({super.key});
@@ -15,13 +16,13 @@ class PreferredStylesScreen extends ConsumerStatefulWidget {
 }
 
 class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
-  static const Color _cream = Color(0xFFFFFAF6);
-  static const Color _rose = Color(0xFFD98F7B);
-  static const Color _roseDeep = Color(0xFFB96F5A);
-  static const Color _rosePale = Color(0xFFFFEEE7);
-  static const Color _ink = Color(0xFF35231F);
-  static const Color _muted = Color(0xFF8B746C);
-  static const Color _line = Color(0xFFF0DED5);
+  static const Color _cream = GlassColors.background;
+  static const Color _rose = GlassColors.primary;
+  static const Color _roseDeep = GlassColors.primaryDim;
+  static const Color _rosePale = GlassColors.glass;
+  static const Color _ink = GlassColors.foreground;
+  static const Color _muted = GlassColors.mutedFg;
+  static const Color _line = GlassColors.glassBorder;
   static const String _font = 'PlusJakartaSans';
 
   static const Map<String, String> _styleDescriptions = {
