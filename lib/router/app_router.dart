@@ -4,6 +4,7 @@ import 'package:animations/animations.dart';
 
 import '../screens/inspo_screen.dart';
 import '../screens/profile_screen.dart';
+import '../screens/create_post_screen.dart';
 import '../screens/closet_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/trends_screen.dart';
@@ -66,6 +67,7 @@ class AppRoutes {
   static const decision = '/decision';
   static const account = '/account';
   static const profile = '/profile';
+  static const createPost = '/create-post';
   static const inspo = '/inspo';
 
   static const login = '/login';
@@ -683,6 +685,12 @@ GoRouter createRouter({
             initialOutfit: state.extra is Outfit ? state.extra as Outfit : null,
           ),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.createPost,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            _buildPageWithTransition(context, state, const CreatePostScreen()),
       ),
       GoRoute(
         path: AppRoutes.persona,
