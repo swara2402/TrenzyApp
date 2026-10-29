@@ -36,8 +36,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     super.dispose();
   }
 
-  String _handleFromName(String name) {
-    return '@${name.toLowerCase().replaceAll(RegExp(r'\s+'), '_')}';
+  String _handleFromName(UserModel user) {
+    if (user.username.isNotEmpty) return '@${user.username}';
+    return '@${user.name.toLowerCase().replaceAll(RegExp(r'\s+'), '_')}';
   }
 
   @override
@@ -393,7 +394,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             child: GlowButton(
               label: 'Edit Profile',
               height: 46,
-              onTap: () => context.push(AppRoutes.settings),
+              onTap: () => context.push(AppRoutes.editProfile),
             ),
           ),
           SizedBox(width: GlassSpacing.sm),
@@ -432,7 +433,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       await SharePlus.instance.share(
         ShareParams(
           text:
-              'Check out ${user.name} (${_handleFromName(user.name)}) on Trenzy — '
+              'Check out ${user.name} (${_handleFromName(user)}) on Trenzy — '
               'the app where friends blend their style to decide what to buy together.',
           subject: '${user.name} on Trenzy',
         ),
