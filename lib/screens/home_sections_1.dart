@@ -115,7 +115,7 @@ class _AiPersonaCard extends ConsumerWidget {
     final personaAsync = ref.watch(personaProvider);
     final prefs = ref.watch(userPreferencesProvider);
     final personaName = personaAsync.valueOrNull?.name;
-    final chosenStyles = [
+    final chosenStyles = <String>[
       ...prefs.preferredStyles,
       ...prefs.preferredAesthetics,
     ].toSet().toList();
