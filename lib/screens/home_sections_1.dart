@@ -27,10 +27,34 @@ class _WelcomeHeaderState extends ConsumerState<_WelcomeHeader> {
   }
 
   String _greeting() {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    final now = DateTime.now();
+    final hour = now.hour;
+    // Keep the greeting playful and flirty without sounding identical every
+    // time the user opens Home. Rotate by date/hour for stable, local copy.
+    const morning = [
+      'Hey, sunshine ☀️',
+      'Morning, pretty thing ✨',
+      'Hey, sweetie 💋',
+      'Rise and slay, babe 💅',
+      'Well hello, cutie 🫶',
+    ];
+    const afternoon = [
+      'Hey, hottie 💋',
+      'Looking cute today? 😏',
+      'Hey, pretty thing ✨',
+      'What’s the vibe, babe? 💅',
+      'Hi, sweetie 🫶',
+    ];
+    const evening = [
+      'Hey, gorgeous 🌙',
+      'Well hello, heartbreaker 💋',
+      'Evening, hottie 😏',
+      'Hey, pretty thing ✨',
+      'Ready to serve a look, babe? 💅',
+    ];
+    final options = hour < 12 ? morning : hour < 17 ? afternoon : evening;
+    final index = (now.day + hour) % options.length;
+    return options[index];
   }
 
   @override
