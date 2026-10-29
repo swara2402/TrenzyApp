@@ -14,7 +14,8 @@ class UserApi {
       'username': username,
       'bio': bio,
     });
-    _client.invalidateCache('currentUser');
+    // A profile change affects the current-user payload and any cached profile views.
+    ApiClient.clearCache();
     // PATCH /users/me wraps the updated profile as {"user": {...}}.
     // Return the profile object expected by UserModel.fromJson.
     if (data is Map && data['user'] is Map) {
