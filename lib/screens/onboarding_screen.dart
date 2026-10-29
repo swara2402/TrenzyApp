@@ -20,28 +20,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Discover Your Style',
       description:
           'Trenzy uses AI to understand your unique fashion taste and recommend products you\'ll love.',
-      gradient: [Color(0xFFF2CA50), Color(0xFFE0B840)],
+      gradient: [GlassColors.primary, GlassColors.primaryDim],
     ),
     _OnboardingPageData(
       icon: Icons.groups_rounded,
       title: 'Shop Together',
       description:
           'Create Blends with friends. Swipe, vote, and find the perfect picks as a group.',
-      gradient: [Color(0xFF2ECC71), Color(0xFF27AE60)],
+      gradient: [GlassColors.primary, GlassColors.primaryDim],
     ),
     _OnboardingPageData(
       icon: Icons.psychology_rounded,
       title: 'Your AI Persona',
       description:
           'Get a personalized style persona that evolves with your choices and preferences.',
-      gradient: [Color(0xFF9B59B6), Color(0xFF8E44AD)],
+      gradient: [GlassColors.primary, GlassColors.primaryDim],
     ),
     _OnboardingPageData(
       icon: Icons.checkroom_rounded,
       title: 'Virtual Wardrobe',
       description:
           'Organize your closet, build outfits, and never wonder what to wear again.',
-      gradient: [Color(0xFFE74C3C), Color(0xFFC0392B)],
+      gradient: [GlassColors.primary, GlassColors.primaryDim],
     ),
   ];
 
@@ -98,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, index) {
                   final page = _pages[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -119,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                           child: Icon(page.icon, color: Colors.white, size: 52),
                         ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 32),
                         DisplayText(
                           page.title,
                           fontSize: 28,
@@ -143,7 +143,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             // Dots + Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: Column(
                 children: [
                   // Page indicators
