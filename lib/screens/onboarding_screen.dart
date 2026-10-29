@@ -1,47 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trenzy/providers/api_service_provider.dart';
+import 'package:trenzy/providers/user_preferences_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  String? _fashionFocus;
+  bool _isSavingFocus = false;
 
-  static final _pages = [
+  static const _rose = Color(0xFFD79D8A);
+  static const _roseLight = Color(0xFFE2A997);
+
+  static const _pages = [
     _OnboardingPageData(
       icon: Icons.auto_awesome_rounded,
       title: 'Discover Your Style',
-      description:
-          'Trenzy uses AI to understand your unique fashion taste and recommend products you\'ll love.',
-      gradient: [Color(0xFFF2CA50), Color(0xFFE0B840)],
+      description: 'Get fashion inspiration and product recommendations shaped around your taste.',
     ),
     _OnboardingPageData(
       icon: Icons.groups_rounded,
-      title: 'Shop Together',
-      description:
-          'Create Blends with friends. Swipe, vote, and find the perfect picks as a group.',
-      gradient: [Color(0xFF2ECC71), Color(0xFF27AE60)],
+      title: 'Style Together',
+      description: 'Create Blends with friends, share picks, and decide on looks together.',
     ),
     _OnboardingPageData(
       icon: Icons.psychology_rounded,
-      title: 'Your AI Persona',
-      description:
-          'Get a personalized style persona that evolves with your choices and preferences.',
-      gradient: [Color(0xFF9B59B6), Color(0xFF8E44AD)],
+      title: 'Meet Your AI Stylist',
+      description: 'Build a style persona that learns from the preferences you choose.',
     ),
     _OnboardingPageData(
       icon: Icons.checkroom_rounded,
-      title: 'Virtual Wardrobe',
-      description:
-          'Organize your closet, build outfits, and never wonder what to wear again.',
-      gradient: [Color(0xFFE74C3C), Color(0xFFC0392B)],
+      title: 'Make Your Wardrobe Work',
+      description: 'Organize your closet and find new ways to put outfits together.',
     ),
   ];
 
@@ -51,89 +51,133 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+  Future<void> _continue() async {
+    // The first page collects a fashion preference before the intro slides.
+    if (_currentPage == 0) {
+      if (_fashionFocus != null) {
+        setState(() => _isSavingFocus = true);
+        try {
+          final existing = ref.read(userPreferencesProvider).preferredAesthetics;
+          final updated = existing
+              .where((value) => !value.startsWith('Audience: '))
+              .toList()
+            ..add('Audience: $_fashionFocus');
+          await ref.read(apiServiceProvider).savePreferences(
+                preferredAesthetics: updated,
+              );
+          ref.read(userPreferencesProvider.notifier).setAesthetics(updated);
+        } catch (_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Could not save this preference. You can continue and change it later.'),
+              backgroundColor: context.trenzyColors.graphite,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } finally {
+          if (mounted) setState(() => _isSavingFocus = false);
+        }
+      }
+      if (!mounted) return;
       _pageController.nextPage(
-        duration: Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+
+    if (_currentPage < _pages.length) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 350),
         curve: Curves.easeOutCubic,
       );
     } else {
-      // Navigate to Question 1: Who do you shop for?
-      context.go('${AppRoutes.favoriteCategories}?source=onboarding');
+      _goToPreferences();
     }
+  }
+
+  void _goToPreferences() {
+    context.go('${AppRoutes.favoriteCategories}?source=onboarding');
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.trenzyColors;
+    final totalPages = _pages.length + 1;
+    final isFocusPage = _currentPage == 0;
+
     return Scaffold(
-      backgroundColor: context.trenzyColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, right: 16),
-                child: TextButton(
-                  onPressed: () => context.go(
-                    '${AppRoutes.favoriteCategories}?source=onboarding',
-                  ),
-                  child: Text(
-                    'Skip',
-                    style: GlassTypography.body(
-                      color: context.trenzyColors.mutedFg,
-                      fontSize: 14,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: Row(
+                children: [
+                  const Text(
+                    'Trenzy',
+                    style: TextStyle(
+                      fontFamily: GlassTypography.bodyFont,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.7,
+                      color: Color(0xFFFAF6F0),
                     ),
                   ),
-                ),
+                  const Text(
+                    '.',
+                    style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: _rose),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: _isSavingFocus ? null : _goToPreferences,
+                    child: Text(
+                      'Skip',
+                      style: GlassTypography.body(color: colors.mutedFg, fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
             ),
-            // Page view
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: totalPages,
+                physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
+                  if (index == 0) return _buildFashionFocus(context);
+                  final page = _pages[index - 1];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Icon with glow
                         Container(
-                          width: 120,
-                          height: 120,
+                          width: 112,
+                          height: 112,
                           decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [_roseLight, _rose]),
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(colors: page.gradient),
                             boxShadow: [
-                              BoxShadow(
-                                color: page.gradient[0].withValues(alpha: 0.3),
-                                blurRadius: 40,
-                                spreadRadius: -8,
-                              ),
+                              BoxShadow(color: _rose.withValues(alpha: 0.22), blurRadius: 34, spreadRadius: -6),
                             ],
                           ),
-                          child: Icon(page.icon, color: Colors.white, size: 52),
+                          child: Icon(page.icon, color: colors.primaryFg, size: 48),
                         ),
-                        SizedBox(height: 40),
-                        DisplayText(
+                        const SizedBox(height: 34),
+                        Text(
                           page.title,
-                          fontSize: 28,
-                          weight: FontWeight.w800,
+                          textAlign: TextAlign.center,
+                          style: GlassTypography.display(color: colors.foreground, fontSize: 29, weight: FontWeight.w800),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         Text(
                           page.description,
                           textAlign: TextAlign.center,
-                          style: GlassTypography.body(
-                            color: context.trenzyColors.mutedFg,
-                            fontSize: 15,
-                            height: 1.5,
-                          ),
+                          style: GlassTypography.body(color: colors.mutedFg, fontSize: 15, height: 1.6),
                         ),
                       ],
                     ),
@@ -141,40 +185,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
               ),
             ),
-            // Dots + Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: Column(
                 children: [
-                  // Page indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                      (index) => AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == index ? 24 : 8,
-                        height: 8,
+                    children: List.generate(totalPages, (index) {
+                      final active = _currentPage == index;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: active ? 22 : 7,
+                        height: 7,
                         decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? context.trenzyColors.primary
-                              : context.trenzyColors.fg20,
-                          borderRadius: BorderRadius.circular(4),
+                          color: active ? colors.primary : colors.fg20,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
-                  SizedBox(height: 32),
-                  // Next / Get Started button
+                  const SizedBox(height: 22),
                   SizedBox(
                     width: double.infinity,
+                    height: 54,
                     child: GlowButton(
-                      label: _currentPage == _pages.length - 1
-                          ? 'Get Started'
-                          : 'Next',
-                      height: 54,
-                      onTap: _nextPage,
+                      label: _isSavingFocus
+                          ? 'SAVING...'
+                          : (isFocusPage
+                              ? 'Personalize My Feed'
+                              : (_currentPage == totalPages - 1 ? 'Get Started' : 'Next')),
+                      onTap: _isSavingFocus ? null : _continue,
                     ),
                   ),
                 ],
@@ -185,18 +226,123 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+
+  Widget _buildFashionFocus(BuildContext context) {
+    final colors = context.trenzyColors;
+    final width = MediaQuery.sizeOf(context).width;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: _rose.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _rose.withValues(alpha: 0.25)),
+            ),
+            child: const Icon(Icons.tune_rounded, color: _rose, size: 25),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'What fashion should we focus on?',
+            style: GlassTypography.display(
+              color: colors.foreground,
+              fontSize: width < 370 ? 29 : 33,
+              weight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'We’ll use this as a starting point for your feed. You can explore everything and change your preferences anytime.',
+            style: GlassTypography.body(color: colors.mutedFg, fontSize: 14, height: 1.55),
+          ),
+          const SizedBox(height: 24),
+          _focusOption(context, value: 'Menswear', title: 'Men’s fashion', subtitle: 'Menswear, fits and outfit ideas', icon: Icons.checkroom_rounded),
+          const SizedBox(height: 12),
+          _focusOption(context, value: 'Womenswear', title: 'Women’s fashion', subtitle: 'Womenswear, looks and outfit ideas', icon: Icons.style_rounded),
+          const SizedBox(height: 12),
+          _focusOption(context, value: 'All fashion', title: 'Both / unisex', subtitle: 'Explore across fashion categories', icon: Icons.diversity_3_rounded),
+          const SizedBox(height: 12),
+          _focusOption(context, value: 'Personalize later', title: 'I’ll decide later', subtitle: 'Start broad and personalize as I go', icon: Icons.explore_rounded),
+        ],
+      ),
+    );
+  }
+
+  Widget _focusOption(
+    BuildContext context, {
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final colors = context.trenzyColors;
+    final selected = _fashionFocus == value;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => setState(() => _fashionFocus = value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: selected ? _rose.withValues(alpha: 0.14) : colors.glass,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: selected ? _rose : colors.glassBorder,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _rose.withValues(alpha: selected ? 0.22 : 0.10),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(icon, color: _roseLight, size: 23),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: GlassTypography.body(color: colors.foreground, fontSize: 15, weight: FontWeight.w700)),
+                      const SizedBox(height: 3),
+                      Text(subtitle, style: GlassTypography.body(color: colors.mutedFg, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Icon(
+                  selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                  color: selected ? _roseLight : colors.mutedFg,
+                  size: 21,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _OnboardingPageData {
   final IconData icon;
   final String title;
   final String description;
-  final List<Color> gradient;
 
   const _OnboardingPageData({
     required this.icon,
     required this.title,
     required this.description,
-    required this.gradient,
   });
 }
