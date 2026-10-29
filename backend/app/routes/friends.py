@@ -36,20 +36,24 @@ def _get_uid(decoded: dict[str, Any]) -> str:
     return firebase_uid
 
 
-def _friend_payload(f: Friend) -> dict[str, Any]:
+def _friend_payload(f: Friend, session: Session) -> dict[str, Any]:
+    profile = session.query(User).filter(User.firebase_uid == f.friend_firebase_uid).first()
     return {
         "id": f.id,
         "friendFirebaseUid": f.friend_firebase_uid,
         "friendName": f.friend_name,
+        "user": {"username": profile.username, "avatarUrl": profile.avatar_url or "", "bio": profile.bio or ""} if profile else None,
         "createdAt": f.created_at.isoformat() if f.created_at else None,
     }
 
 
-def _request_payload(req: FriendRequest) -> dict[str, Any]:
+def _request_payload(req: FriendRequest, session: Session) -> dict[str, Any]:
+    profile = session.query(User).filter(User.firebase_uid == req.from_firebase_uid).first()
     return {
         "id": req.id,
         "fromFirebaseUid": req.from_firebase_uid,
         "fromName": req.from_name,
+        "fromUser": {"username": profile.username, "avatarUrl": profile.avatar_url or "", "bio": profile.bio or ""} if profile else None,
         "toFirebaseUid": req.to_firebase_uid,
         "status": req.status,
         "createdAt": req.created_at.isoformat() if req.created_at else None,
@@ -217,7 +221,7 @@ def get_friend_requests(
         q = q.filter(FriendRequest.to_firebase_uid == uid)
 
     requests = q.order_by(FriendRequest.created_at.desc()).offset(offset).limit(limit).all()
-    return {"requests": [_request_payload(req) for req in requests], "box": box}
+    return {"requests": [_request_payload(req, session) for req in requests], "box": box}
 
 
 @router.post("/requests/{request_id}/accept")
@@ -282,7 +286,7 @@ def get_friends(
         .limit(limit)
         .all()
     )
-    return {"friends": [_friend_payload(f) for f in friends]}
+    return {"friends": [_friend_payload(f, session) for f in friends]}
 
 
 @router.delete("/{friend_id}")
