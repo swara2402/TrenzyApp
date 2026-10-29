@@ -126,6 +126,16 @@ class _StylePreferencesEditScreenState
         preferredCategories: _categoriesSelected,
         preferredColors: _colorsSelected,
       );
+
+      // Saving preference chips alone does not update the generated persona.
+      // Regenerate it from the just-saved choices so Home and personalization
+      // read the same current style identity.
+      await api.generatePersona(preferences: {
+        'preferred_styles': _styles,
+        'preferred_aesthetics': _aesthetics,
+        'preferred_categories': _categoriesSelected,
+        'preferred_colors': _colorsSelected,
+      });
       if (!mounted) return;
       ref.invalidate(personaProvider);
       ref.invalidate(serverPreferencesProvider);
