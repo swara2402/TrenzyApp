@@ -67,7 +67,7 @@ class _FavoriteCategoriesScreenState
           .read(apiServiceProvider)
           .savePreferences(
             preferredCategories: _selectedCategories,
-            onboardingStep: 2,
+            onboardingStep: GoRouterState.of(context).uri.queryParameters['source'] == 'settings' ? null : 2,
           );
       if (mounted) {
         final source = GoRouterState.of(context).uri.queryParameters['source'];
