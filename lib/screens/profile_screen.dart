@@ -182,6 +182,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           SizedBox(height: GlassSpacing.xl),
           _buildActionButtons(user),
+          SizedBox(height: GlassSpacing.md),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: GlassSpacing.lg),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push(AppRoutes.createPost),
+                icon: const Icon(Icons.add_a_photo_outlined),
+                label: const Text('Create a Post'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: context.trenzyColors.primary,
+                  side: BorderSide(
+                    color: context.trenzyColors.primary.withValues(alpha: 0.45),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(GlassRadius.button),
+                  ),
+                ),
+              ),
+            ),
+          ),
           SizedBox(height: GlassSpacing.xl),
           _buildStylePersonaCard(persona),
           SizedBox(height: GlassSpacing.xl),
