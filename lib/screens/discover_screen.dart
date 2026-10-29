@@ -1149,11 +1149,18 @@ class _TrendingSkeleton extends StatelessWidget {
   }
 }
 
-class _RecommendedSection extends ConsumerWidget {
+class _RecommendedSection extends ConsumerStatefulWidget {
   const _RecommendedSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RecommendedSection> createState() => _RecommendedSectionState();
+}
+
+class _RecommendedSectionState extends ConsumerState<_RecommendedSection> {
+  bool _showAll = false;
+
+  @override
+  Widget build(BuildContext context) {
     final recommendedAsync = ref.watch(discoverRecommendedProductsProvider);
 
     return Column(
@@ -1163,7 +1170,7 @@ class _RecommendedSection extends ConsumerWidget {
           title: 'For You',
           subtitle: 'AI-curated picks based on your style',
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         recommendedAsync.when(
           loading: () => _RecommendedSkeleton(),
           error: (e, _) => ErrorSection(
@@ -1176,19 +1183,21 @@ class _RecommendedSection extends ConsumerWidget {
             if (items.isEmpty) {
               return EmptySection(
                 title: 'No recommendations yet',
-                subtitle:
-                    'Complete your style profile to get personalized picks',
+                subtitle: 'Complete your style profile to get personalized picks',
                 icon: Icons.auto_awesome_rounded,
               );
             }
 
+            final visibleCount = _showAll
+                ? items.length
+                : (items.length > 6 ? 6 : items.length);
             return Column(
               children: [
                 GridView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: items.length > 6 ? 6 : items.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: visibleCount,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
@@ -1200,18 +1209,16 @@ class _RecommendedSection extends ConsumerWidget {
                       product: item.product,
                       heroTagSuffix: '_rec_$index',
                       variant: ProductCardVariant.standard,
-                      onTap: () {
-                        context.push(
-                          '${AppRoutes.productDetails}?productId=${item.product.id}',
-                        );
-                      },
+                      onTap: () => context.push(
+                        AppRoutes.productDetailsFor(item.product.id),
+                      ),
                     );
                   },
                 ),
                 if (items.length > 6) ...[
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TapScale(
-                    onTap: () => context.push(AppRoutes.search),
+                    onTap: () => setState(() => _showAll = !_showAll),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -1223,13 +1230,24 @@ class _RecommendedSection extends ConsumerWidget {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        'See More Recommendations',
-                        style: TextStyle(
-                          color: context.trenzyColors.primary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _showAll ? 'Show Fewer Recommendations' : 'See More Recommendations',
+                            style: TextStyle(
+                              color: context.trenzyColors.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            _showAll ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                            color: context.trenzyColors.primary,
+                            size: 18,
+                          ),
+                        ],
                       ),
                     ),
                   ),
