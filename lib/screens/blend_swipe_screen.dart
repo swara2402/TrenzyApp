@@ -423,13 +423,32 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
           icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
           onPressed: () => context.go(AppRoutes.blendHub),
         ),
-        title: Text(
-          'You $mySwipes \u00B7 Group $groupSwipes',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: context.trenzyColors.primary,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.group.name.isNotEmpty ? widget.group.name : 'Blend Swipe',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: context.trenzyColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'You $mySwipes · Group $groupSwipes votes',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: context.trenzyColors.primary,
+              ),
+            ),
+          ],
         ),
         actions: [
           if (widget.group.members.isNotEmpty)
@@ -476,46 +495,63 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                   _snapBack();
                 }
               },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (_isAnimating)
-              Opacity(
-                opacity: exitOpacity.clamp(0, 1),
-                child: Transform.translate(
-                  offset: Offset(
-                    _dragX + exitOffset.dx,
-                    _dragY + exitOffset.dy,
-                  ),
-                  child: Transform.rotate(
-                    angle: exitRotation,
-                    child: _ProductCard(product: product),
-                  ),
-                ),
-              ),
-            Opacity(
-              opacity: _isAnimating ? enterOpacity : 1.0,
-              child: Transform.scale(
-                scale: _isAnimating ? enterScale : 1.0,
-                child: _isAnimating && _currentIndex + 1 < _products.length
-                    ? Opacity(
-                        opacity: 0.3,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Fit the card between the app bar and action buttons on compact phones.
+            final cardWidth = (constraints.maxWidth - 32).clamp(0.0, 340.0);
+            final cardHeight = (constraints.maxHeight - 24).clamp(0.0, 460.0);
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                if (_isAnimating)
+                  Opacity(
+                    opacity: exitOpacity.clamp(0, 1),
+                    child: Transform.translate(
+                      offset: Offset(
+                        _dragX + exitOffset.dx,
+                        _dragY + exitOffset.dy,
+                      ),
+                      child: Transform.rotate(
+                        angle: exitRotation,
                         child: _ProductCard(
-                          product: _products[_currentIndex + 1],
+                          product: product,
+                          width: cardWidth,
+                          height: cardHeight,
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ),
-            if (!_isAnimating)
-              Transform.translate(
-                offset: Offset(_dragX, _dragY),
-                child: Transform.rotate(
-                  angle: _dragX / 500,
-                  child: _ProductCard(product: product),
+                      ),
+                    ),
+                  ),
+                Opacity(
+                  opacity: _isAnimating ? enterOpacity : 1.0,
+                  child: Transform.scale(
+                    scale: _isAnimating ? enterScale : 1.0,
+                    child: _isAnimating && _currentIndex + 1 < _products.length
+                        ? Opacity(
+                            opacity: 0.3,
+                            child: _ProductCard(
+                              product: _products[_currentIndex + 1],
+                              width: cardWidth,
+                              height: cardHeight,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 ),
-              ),
-          ],
+                if (!_isAnimating)
+                  Transform.translate(
+                    offset: Offset(_dragX, _dragY),
+                    child: Transform.rotate(
+                      angle: _dragX / 500,
+                      child: _ProductCard(
+                        product: product,
+                        width: cardWidth,
+                        height: cardHeight,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -551,15 +587,21 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
 }
 
 class _ProductCard extends StatelessWidget {
-  const _ProductCard({required this.product});
+  const _ProductCard({
+    required this.product,
+    required this.width,
+    required this.height,
+  });
 
   final ProductModel product;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
-      height: 420,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: context.trenzyColors.graphite,
         borderRadius: BorderRadius.circular(24),
