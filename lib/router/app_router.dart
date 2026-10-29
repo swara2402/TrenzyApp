@@ -43,6 +43,7 @@ import '../screens/join_blend_screen.dart';
 import '../screens/preferred_styles_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/user_profile_screen.dart';
+import '../screens/edit_profile_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/swipe_discovery_screen.dart';
 import '../screens/create_blend_screen.dart';
@@ -173,6 +174,7 @@ class AppRoutes {
   static const termsOfService = '/terms-of-service';
   static const privacyPolicy = '/privacy-policy';
   static const userProfile = '/user-profile';
+  static const editProfile = '/edit-profile';
   static String userProfileFor(String uid) => '$userProfile?uid=$uid';
   static const friends = '/friends';
   static String? guardRedirect({
@@ -778,6 +780,12 @@ GoRouter createRouter({
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) =>
             _buildPageWithTransition(context, state, PreferredStylesScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            _buildPageWithTransition(context, state, const EditProfileScreen()),
       ),
       GoRoute(
         path: AppRoutes.userProfile,
