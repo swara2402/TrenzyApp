@@ -225,6 +225,10 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
     else:
         user.name = user.name or name or _default_display_name(firebase_uid, email)
         user.email = email or user.email
+        # Replace legacy auto-generated usernames that are too long for the
+        # editable username field; preserve any username the user chose.
+        if user.username == f"user_{firebase_uid}" or len(user.username or "") > 24 and (user.username or "").startswith("user_"):
+            user.username = f"user_{firebase_uid[:12]}"
         session.commit()
 
     return {
