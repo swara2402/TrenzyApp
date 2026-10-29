@@ -117,9 +117,10 @@ class User(Base):
 def generate_username_before_insert(mapper, connection, target):
     """Automatically generate a unique username if one isn't provided."""
     if not target.username:
-        # Create a username from the full firebase_uid to ensure uniqueness
-        # Firebase UIDs are already unique, so this will always be unique
-        target.username = f"user_{target.firebase_uid[:12]}"
+        # A short deterministic hash avoids collisions from UIDs sharing a prefix.
+        import hashlib
+        uid_hash = hashlib.sha256(target.firebase_uid.encode("utf-8")).hexdigest()[:12]
+        target.username = f"user_{uid_hash}"
 
 
 class Product(Base):
