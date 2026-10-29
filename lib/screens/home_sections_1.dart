@@ -1,7 +1,30 @@
 part of 'home_screen.dart';
 
-class _WelcomeHeader extends ConsumerWidget {
+class _WelcomeHeader extends ConsumerStatefulWidget {
   const _WelcomeHeader();
+
+  @override
+  ConsumerState<_WelcomeHeader> createState() => _WelcomeHeaderState();
+}
+
+class _WelcomeHeaderState extends ConsumerState<_WelcomeHeader> {
+  Timer? _clockRefresh;
+
+  @override
+  void initState() {
+    super.initState();
+    // DateTime.now() is not reactive; refresh so the greeting changes while
+    // the Home screen stays open across morning/afternoon/evening.
+    _clockRefresh = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockRefresh?.cancel();
+    super.dispose();
+  }
 
   String _greeting() {
     final h = DateTime.now().hour;
@@ -11,7 +34,8 @@ class _WelcomeHeader extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final authAsync = ref.watch(authProvider);
     final rawName = authAsync.valueOrNull?.name;
     final userName = (rawName == null || rawName.trim().isEmpty)
