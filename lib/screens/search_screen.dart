@@ -8,8 +8,6 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/theme/glass_theme.dart';
 import 'package:trenzy/services/api_service.dart';
 import 'package:trenzy/providers/search_providers.dart';
-import 'package:trenzy/providers/api_service_provider.dart';
-import 'package:trenzy/models/product_model.dart';
 import 'package:trenzy/widgets/product_card.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:trenzy/widgets/section_states.dart';
