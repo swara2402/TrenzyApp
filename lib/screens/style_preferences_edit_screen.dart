@@ -52,22 +52,6 @@ class _StylePreferencesEditScreenState
     _colorsSelected = [...prefs.preferredColors];
   }
 
-  void _toggle(List<String> selected, String value, StateSetter setSheet) {
-    setSheet(() {
-      if (selected.contains(value)) {
-        selected.remove(value);
-      } else {
-        selected.add(value);
-      }
-    });
-    setState(() {});
-    final notifier = ref.read(userPreferencesProvider.notifier);
-    notifier.setStyles(List.of(_styles));
-    notifier.setAesthetics(List.of(_aesthetics));
-    notifier.setCategories(List.of(_categoriesSelected));
-    notifier.setColors(List.of(_colorsSelected));
-  }
-
   Widget _choiceSection(String title, String subtitle, List<String> options,
       List<String> selected, IconData icon) {
     final colors = context.trenzyColors;
