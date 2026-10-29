@@ -48,7 +48,12 @@ abstract class ApiServiceBase {
   Future<void> archiveProduct(String productId);
 
   // ---------- Profile ----------
-  Future<Map<String, dynamic>> updateProfile({required String name});
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  });
+  Future<List<Map<String, dynamic>>> searchUsersByUsername(String query);
   Future<Map<String, dynamic>> verifyAge(DateTime dateOfBirth);
 
   // ---------- Wishlist ----------
