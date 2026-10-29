@@ -211,6 +211,32 @@ def _diversify_results(products: list, limit: int) -> list:
     return diversified[:limit]
 
 
+def _audience_gender_values(prefs: UserPreference | None) -> list[str]:
+    """Return normalized catalog gender labels for an explicit onboarding audience.
+
+    The onboarding UI stores an Audience: ... tag in preferred_aesthetics.
+    Unknown/legacy values intentionally produce no gender filter.
+    """
+    aesthetics = prefs.preferred_aesthetics if prefs and prefs.preferred_aesthetics else []
+    tags = [str(value).strip().casefold() for value in aesthetics if value]
+    audience = next(
+        (tag.split(":", 1)[1].strip() for tag in tags if tag.startswith("audience:")),
+        "",
+    )
+    if audience in {"menswear", "men", "male", "mens", "man"}:
+        return [
+            "men", "mens", "men's", "menswear", "male", "man", "boys", "boy",
+            "unisex", "all", "all genders",
+        ]
+    if audience in {"womenswear", "women", "female", "womens", "woman"}:
+        return [
+            "women", "womens", "women's", "womenswear", "female", "woman", "girls", "girl",
+            "unisex", "all", "all genders",
+        ]
+    # "All fashion", "Personalize later", and legacy preferences remain unfiltered.
+    return []
+
+
 def _build_personalized_query(
     session: Session,
     uid: str,
@@ -228,6 +254,7 @@ def _build_personalized_query(
     prefs, persona = _safe_prefs_rec(session, uid)
     signal = _signal_vector(session, uid)
     swiped_ids = signal["exclude"]
+    audience_genders = _audience_gender_values(prefs)
 
     # Expand canonical color preferences into raw catalog values for SQL matching
     raw_colors = _all_raw_colors(session)
@@ -297,10 +324,12 @@ def _build_personalized_query(
         score = sum(parts)
         return q.order_by(score.desc()).limit(fetch_limit).all()
 
-    def _base_query():
+    def _base_query(apply_audience: bool = True):
         q = session.query(Product).filter(
             Product.is_archived.is_(False), _catalog_category_is_classified()
         )
+        if apply_audience and audience_genders:
+            q = q.filter(func.lower(func.trim(Product.gender)).in_(audience_genders))
         if swiped_ids:
             q = q.filter(Product.id.notin_(list(swiped_ids)))
         return q
@@ -366,6 +395,19 @@ def _build_personalized_query(
     if include_budget and prefs and prefs.budget_max:
         query = query.filter(Product.price <= prefs.budget_max)
     results = _score_and_fetch(query, fetch_limit)
+    if results:
+        return _diversify_results(results, limit) if diversify else results[:limit]
+
+    # Final safety net: some catalog rows have missing/inconsistent gender labels.
+    # Only relax the audience constraint after all preference-aware passes fail.
+    if audience_genders:
+        query = _base_query(apply_audience=False)
+        if include_budget and prefs and prefs.budget_max:
+            query = query.filter(Product.price <= prefs.budget_max)
+        results = _score_and_fetch(query, fetch_limit)
+        if not results and include_budget and prefs and prefs.budget_max:
+            query = _base_query(apply_audience=False)
+            results = _score_and_fetch(query, fetch_limit)
 
     return _diversify_results(results, limit) if diversify else results[:limit]
 
