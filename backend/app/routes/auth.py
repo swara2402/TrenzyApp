@@ -223,7 +223,7 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
         session.commit()
         session.refresh(user)
     else:
-        user.name = name or user.name or _default_display_name(firebase_uid, email)
+        user.name = user.name or name or _default_display_name(firebase_uid, email)
         user.email = email or user.email
         session.commit()
 
@@ -231,6 +231,7 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
         "id": user.id,
         "firebaseUid": user.firebase_uid,
         "name": user.name,
+        "username": user.username,
         "email": user.email,
         "avatarUrl": user.avatar_url or "",
         "ageVerified": user.date_of_birth is not None,
