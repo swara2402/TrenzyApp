@@ -470,30 +470,37 @@ class AuthNotifier extends AutoDisposeAsyncNotifier<UserModel?> {
     }
   }
 
-  Future<void> updateProfile({required String name}) async {
-    final current = state.value;
+  Future<void> updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  }) async {
+    final current = state.valueOrNull;
     if (current == null) {
       throw const ApiException('You must be signed in to update your profile.');
     }
 
-    try {
-      final updated = await _api.updateProfile(name: name.trim());
-      final synced = UserModel.fromJson(updated);
-      state = AsyncValue.data(
-        synced.copyWith(
-          id: current.id,
-          email: (synced.email.isNotEmpty == true)
-              ? synced.email
-              : current.email,
-        ),
-      );
-    } catch (e) {
-      // If backend is unavailable, update local state only.
-      state = AsyncValue.data(current.copyWith(name: name.trim()));
-    }
+    // Do not silently report success if the backend save fails. The backend
+    // profile is the source of truth for username search and public profiles.
+    final updated = await _api.updateProfile(
+      name: name.trim(),
+      username: username.trim().replaceFirst(RegExp(r'^@'), '').toLowerCase(),
+      bio: bio.trim(),
+    );
+    final synced = UserModel.fromJson(updated);
+    final next = synced.copyWith(
+      id: current.id,
+      firebaseUid: current.firebaseUid,
+      email: synced.email.isNotEmpty ? synced.email : current.email,
+      emailVerified: current.emailVerified,
+      ageVerified: current.ageVerified,
+      isMinor: current.isMinor,
+    );
+    state = AsyncValue.data(next);
 
     final firebaseUser = _auth.currentUser;
-    if (firebaseUser != null && name.trim().isNotEmpty) {
+    if (firebaseUser != null && name.trim().isNotEmpty &&
+        firebaseUser.displayName != name.trim()) {
       await firebaseUser.updateDisplayName(name.trim());
     }
   }
