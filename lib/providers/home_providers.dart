@@ -15,7 +15,11 @@ final todaysAiPicksProvider =
 
       final api = ref.watch(apiServiceProvider);
       try {
-        final res = await api.getRecommendedProducts(limit: 8);
+        // Do not leave the Home feed showing skeleton cards indefinitely when
+        // the recommendations endpoint is slow or the staging service is cold.
+        final res = await api
+            .getRecommendedProducts(limit: 8)
+            .timeout(const Duration(seconds: 12));
         final items = res['products'] as List<dynamic>? ?? [];
         return items.map((item) {
           final map = Map<String, dynamic>.from(item as Map);
@@ -26,6 +30,8 @@ final todaysAiPicksProvider =
           );
         }).toList();
       } catch (_) {
+        // _AiPicksSection renders its empty-state CTA on failure, so users
+        // can continue to Discover instead of being stuck on blank cards.
         return [];
       }
     });
