@@ -77,7 +77,14 @@ class _CreateBlendScreenState extends ConsumerState<CreateBlendScreen> {
         final inviterId = ref.read(authProvider).value?.id;
         if (inviterId == null) return;
 
-        final friendIds = selectedFriends.map((friend) => friend.id).toList();
+        // Blend invitations require the friend's Firebase UID, not the local database row ID.
+        final friendIds = selectedFriends
+            .map((friend) => friend.firebaseUid)
+            .whereType<String>()
+            .map((uid) => uid.trim())
+            .where((uid) => uid.isNotEmpty)
+            .toSet()
+            .toList();
         try {
           await Future.wait(
             friendIds.map(
