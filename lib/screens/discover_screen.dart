@@ -181,15 +181,25 @@ class DiscoverScreen extends ConsumerWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
+            return SafeArea(
+              top: false,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.82,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 16,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewPadding.bottom + 24,
+                    ),
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -350,7 +360,9 @@ class DiscoverScreen extends ConsumerWidget {
                         },
                       ),
                     ),
-                  ],
+                    ],
+                    ),
+                  ),
                 ),
               ),
             );
