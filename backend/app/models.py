@@ -119,7 +119,7 @@ def generate_username_before_insert(mapper, connection, target):
     if not target.username:
         # Create a username from the full firebase_uid to ensure uniqueness
         # Firebase UIDs are already unique, so this will always be unique
-        target.username = f"user_{target.firebase_uid}"
+        target.username = f"user_{target.firebase_uid[:12]}"
 
 
 class Product(Base):
