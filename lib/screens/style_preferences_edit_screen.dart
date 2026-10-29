@@ -18,11 +18,11 @@ class StylePreferencesEditScreen extends ConsumerStatefulWidget {
 
 class _StylePreferencesEditScreenState
     extends ConsumerState<StylePreferencesEditScreen> {
-  static const _styles = [
+  static const _styleOptions = [
     'Casual', 'Formal', 'Streetwear', 'Minimalist', 'Classic',
     'Bohemian', 'Sporty', 'Ethnic', 'Preppy', 'Grunge',
   ];
-  static const _aesthetics = [
+  static const _aestheticOptions = [
     'Old Money', 'Clean Girl', 'Quiet Luxury', 'Y2K', 'Coquette',
     'Minimalist', 'Street Style', 'Soft Girl', 'Dark Academia',
     'Cottagecore', 'Vintage', 'Athleisure',
@@ -186,9 +186,9 @@ class _StylePreferencesEditScreenState
           ),
           const SizedBox(height: 24),
           _choiceSection('Your styles', 'Everyday looks you gravitate towards',
-              _styles, _styles, Icons.checkroom_rounded),
+              _styleOptions, _styles, Icons.checkroom_rounded),
           _choiceSection('Aesthetics', 'The visual vibes you love',
-              _aesthetics, _aesthetics, Icons.auto_awesome_rounded),
+              _aestheticOptions, _aesthetics, Icons.auto_awesome_rounded),
           _choiceSection('Categories', 'What you want to shop for',
               _categories, _categoriesSelected, Icons.category_outlined),
           _choiceSection('Favourite colours', 'Colours you want to see more often',
