@@ -465,19 +465,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
               SizedBox(height: 24),
 
-              // ── Developer section ─────────────────────────────────────
-              _buildSection(
-                title: 'Developer',
-                children: [
-                  _buildItem(
-                    icon: Icons.analytics_outlined,
-                    title: 'Analytics Dashboard',
-                    onTap: () => context.push(AppRoutes.analyticsDashboard),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24),
-
               // ── Logout button ─────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
