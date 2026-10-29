@@ -15,13 +15,13 @@ class PreferredStylesScreen extends ConsumerStatefulWidget {
 }
 
 class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
-  static const Color _cream = Color(0xFFFFFAF6);
-  static const Color _rose = Color(0xFFD98F7B);
-  static const Color _roseDeep = Color(0xFFB96F5A);
-  static const Color _rosePale = Color(0xFFFFEEE7);
-  static const Color _ink = Color(0xFF35231F);
-  static const Color _muted = Color(0xFF8B746C);
-  static const Color _line = Color(0xFFF0DED5);
+  static const Color _cream = Color(0xFF120F0E);
+  static const Color _rose = Color(0xFFD79D8A);
+  static const Color _roseDeep = Color(0xFFB87F6F);
+  static const Color _rosePale = Color(0xFF251F1D);
+  static const Color _ink = Color(0xFFFAF6F0);
+  static const Color _muted = Color(0xFFA89F95);
+  static const Color _line = Color(0xFF342A27);
   static const String _font = 'PlusJakartaSans';
 
   static const Map<String, String> _styleDescriptions = {
