@@ -60,10 +60,18 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ref
-          .read(apiServiceProvider)
-          .savePreferences(preferredStyles: selectedStyles, onboardingStep: 3);
-      if (mounted) context.go(AppRoutes.discoveryPreferences);
+      final source = GoRouterState.of(context).uri.queryParameters['source'];
+      await ref.read(apiServiceProvider).savePreferences(
+        preferredStyles: selectedStyles,
+        onboardingStep: source == 'settings' ? null : 3,
+      );
+      if (mounted) {
+        if (source == 'settings') {
+          context.pop();
+        } else {
+          context.go(AppRoutes.discoveryPreferences);
+        }
+      }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -102,7 +110,10 @@ class _PreferredStylesScreenState extends ConsumerState<PreferredStylesScreen> {
         leading: IconButton(
           tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_rounded, color: _ink, size: 27),
-          onPressed: () => context.go(AppRoutes.favoriteCategories),
+          onPressed: () {
+            final source = GoRouterState.of(context).uri.queryParameters['source'];
+            if (source == 'settings') { context.pop(); } else { context.go(AppRoutes.favoriteCategories); }
+          },
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(45),
