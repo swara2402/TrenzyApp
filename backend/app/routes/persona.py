@@ -74,44 +74,54 @@ async def get_persona(
 
 
 def _match_persona_from_preferences(preferences: dict) -> int:
+    """Choose a stable persona using the user's actual style preferences."""
     budget = preferences.get("budget_max")
-    categories = preferences.get("preferred_categories", [])
+    categories = [str(x).strip().lower() for x in preferences.get("preferred_categories", [])]
+    styles = [str(x).strip().lower() for x in preferences.get("preferred_styles", [])]
+    aesthetics = [str(x).strip().lower() for x in preferences.get("preferred_aesthetics", [])]
+    interests = [str(x).strip().lower() for x in preferences.get("product_interests", [])]
+    all_preferences = styles + aesthetics + interests + categories
 
-    score = int(hashlib.md5(str(preferences).encode(), usedforsecurity=False).hexdigest(), 16)
-
-    # Budget influences persona selection: higher budgets lean toward luxury/designer personas
-    if budget is not None:
-        if budget >= 5000:
-            score += 1000  # Designer Boutique / Elite Bespoke range
-        elif budget >= 1000:
-            score += 500   # Modern Classic range
-    
-    # Map demographic categories to appropriate personas
-    # This fixes the category mismatch where onboarding saves demographic categories
-    # but the original code was checking for persona names in preferred_categories
-    demographic_persona_map = {
-        "Men's Fashion": ["Urban Minimalist", "Streetwear Icon", "Classic Elegance"],
-        "Women's Fashion": ["Bohemian Spirit", "Classic Elegance", "Avant-Garde Explorer"],
-        "Myself": ["Urban Minimalist", "Classic Elegance", "Eco-Conscious Curator"],
-        "Gifting": ["Classic Elegance", "Urban Minimalist"],
-        "Sustainable Fashion": ["Eco-Conscious Curator"],
-        "Streetwear": ["Streetwear Icon", "Avant-Garde Explorer"],
-        "Minimalist": ["Urban Minimalist", "Classic Elegance"],
-        "Luxury": ["Classic Elegance", "Avant-Garde Explorer"],
-        "Casual": ["Urban Minimalist", "Bohemian Spirit"],
-        "Formal": ["Classic Elegance"],
+    persona_terms = {
+        "Urban Minimalist": ["minimal", "clean girl", "quiet luxury", "neutral", "casual", "basics", "simple"],
+        "Avant-Garde Explorer": ["avant", "bold", "experimental", "y2k", "grunge", "dark academia", "edgy", "statement"],
+        "Bohemian Spirit": ["bohemian", "boho", "cottagecore", "soft girl", "coquette", "vintage", "earthy", "flowy"],
+        "Streetwear Icon": ["streetwear", "street style", "sporty", "athleisure", "urban", "oversized", "grunge", "y2k"],
+        "Classic Elegance": ["classic", "formal", "preppy", "old money", "luxury", "elegant", "tailored", "minimalist"],
+        "Eco-Conscious Curator": ["sustainable", "eco", "natural", "ethical", "earthy", "conscious"],
     }
-    
-    # Add scores based on demographic category matches
-    for category in categories:
-        if category in demographic_persona_map:
-            for persona_name in demographic_persona_map[category]:
-                for i, sp in enumerate(_STYLE_PERSONAS):
-                    if sp["name"] == persona_name:
-                        score += (len(_STYLE_PERSONAS) - i) * 10  # Higher score for earlier matches
+    category_terms = {
+        "men's fashion": ["Urban Minimalist", "Streetwear Icon", "Classic Elegance"],
+        "women's fashion": ["Bohemian Spirit", "Classic Elegance", "Avant-Garde Explorer"],
+        "myself": ["Urban Minimalist", "Classic Elegance", "Eco-Conscious Curator"],
+        "gifting": ["Classic Elegance", "Urban Minimalist"],
+        "sustainable fashion": ["Eco-Conscious Curator"],
+        "streetwear": ["Streetwear Icon", "Avant-Garde Explorer"],
+        "minimalist": ["Urban Minimalist", "Classic Elegance"],
+        "luxury": ["Classic Elegance", "Avant-Garde Explorer"],
+        "casual": ["Urban Minimalist", "Bohemian Spirit"],
+        "formal": ["Classic Elegance"],
+    }
 
-    return score % len(_STYLE_PERSONAS)
-
+    # Start with a small stable tie-breaker; preference matches dominate it.
+    raw = str(sorted((str(k), str(v)) for k, v in preferences.items()))
+    seed = int(hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest(), 16)
+    scores = []
+    for index, persona in enumerate(_STYLE_PERSONAS):
+        name = persona["name"]
+        terms = persona_terms.get(name, [])
+        score = sum(5 for value in all_preferences if any(term in value for term in terms))
+        score += sum(3 for category in categories
+                     if name in category_terms.get(category, []))
+        if budget is not None:
+            if budget >= 5000 and name == "Classic Elegance":
+                score += 2
+            elif budget >= 1000 and name in ("Classic Elegance", "Urban Minimalist"):
+                score += 1
+        # Stable tie-breaking, with no random persona changes between requests.
+        score = score * 100 + ((seed >> (index * 3)) & 7)
+        scores.append(score)
+    return max(range(len(scores)), key=lambda index: (scores[index], -index))
 
 @router.post("/generate")
 async def generate_persona(
@@ -122,7 +132,10 @@ async def generate_persona(
     auth_uid = _uid(user_data)
     
     try:
-        if preferences and preferences.get("preferred_categories"):
+        if preferences and any(preferences.get(key) for key in (
+            "preferred_categories", "preferred_styles", "preferred_aesthetics",
+            "product_interests", "preferred_colors", "preferred_brands",
+        )):
             idx = _match_persona_from_preferences(preferences)
         else:
             idx = random.randint(0, len(_STYLE_PERSONAS) - 1)
