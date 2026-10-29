@@ -18,6 +18,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabs;
   final _uidController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = const [];
+  bool _isSearching = false;
+  String? _searchError;
 
   @override
   void initState() {
@@ -32,22 +35,55 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     super.dispose();
   }
 
-  Future<void> _send() async {
-    final uid = _uidController.text.trim();
-    if (uid.isEmpty) return;
+  Future<void> _searchUsers() async {
+    final query = _uidController.text.trim().replaceFirst(RegExp(r'^@'), '');
+    if (query.length < 2) {
+      setState(() {
+        _searchResults = const [];
+        _searchError = 'Enter at least 2 characters from their username.';
+      });
+      return;
+    }
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+      _searchResults = const [];
+    });
+    try {
+      final results = await ref.read(apiServiceProvider).searchUsersByUsername(query);
+      if (!mounted) return;
+      setState(() {
+        _searchResults = results;
+        _searchError = results.isEmpty ? 'No users found. Check the username and try again.' : null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _searchError = 'Could not search right now. Please try again.';
+        _searchResults = const [];
+      });
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  Future<void> _sendTo(String uid) async {
+    if (uid.trim().isEmpty) return;
     try {
       await ref.read(friendsProvider.notifier).sendRequest(uid);
       if (mounted) {
-        _uidController.clear();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Friend request sent')));
+        setState(() {
+          _searchResults = _searchResults.where((u) => u['firebaseUid'] != uid).toList();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Friend request sent 💛')),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -116,7 +152,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           children: [
             _FriendsList(state: state),
             _RequestsList(state: state),
-            _FindList(state: state, controller: _uidController, onSend: _send),
+            _FindList(state: state, controller: _uidController, results: _searchResults, isSearching: _isSearching, searchError: _searchError, onSearch: _searchUsers, onSend: _sendTo),
           ],
         ),
       ),
@@ -165,7 +201,7 @@ class _FriendsList extends ConsumerWidget {
           ),
           title: Text(f.name ?? '', style: TextStyle(color: colors.foreground)),
           subtitle: Text(
-            f.firebaseUid ?? '',
+            f.user?.username != null && f.user!.username.isNotEmpty ? '@${f.user!.username}' : 'Trenzy friend',
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
           ),
           trailing: Row(
@@ -240,7 +276,7 @@ class _RequestsList extends ConsumerWidget {
             style: TextStyle(color: colors.foreground),
           ),
           subtitle: Text(
-            r.fromFirebaseUid ?? '',
+            r.fromUser?.username != null && r.fromUser!.username.isNotEmpty ? '@${r.fromUser!.username}' : 'Friend request',
             style: TextStyle(color: colors.mutedFg, fontSize: 12),
           ),
           trailing: Row(
@@ -270,12 +306,20 @@ class _FindList extends ConsumerWidget {
   const _FindList({
     required this.state,
     required this.controller,
+    required this.results,
+    required this.isSearching,
+    required this.searchError,
+    required this.onSearch,
     required this.onSend,
   });
 
   final FriendsState state;
   final TextEditingController controller;
-  final VoidCallback onSend;
+  final List<Map<String, dynamic>> results;
+  final bool isSearching;
+  final String? searchError;
+  final VoidCallback onSearch;
+  final ValueChanged<String> onSend;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -287,11 +331,11 @@ class _FindList extends ConsumerWidget {
           controller: controller,
           style: TextStyle(color: colors.foreground),
           decoration: InputDecoration(
-            hintText: 'Firebase UID to add',
+            hintText: 'Find by username (e.g. @yourname)',
             hintStyle: TextStyle(color: colors.mutedFg),
             suffixIcon: IconButton(
               icon: Icon(Icons.send, color: colors.primary),
-              onPressed: onSend,
+              onPressed: onSearch,
             ),
             filled: true,
             fillColor: colors.graphite,
@@ -300,9 +344,45 @@ class _FindList extends ConsumerWidget {
               borderSide: BorderSide.none,
             ),
           ),
-          onSubmitted: (_) => onSend(),
+          onSubmitted: (_) => onSearch(),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
+        if (isSearching)
+          Center(child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: CircularProgressIndicator(color: colors.primary),
+          )),
+        if (searchError != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(searchError!, style: TextStyle(color: colors.mutedFg)),
+          ),
+        ...results.map((user) {
+          final uid = user['firebaseUid']?.toString() ?? '';
+          final username = user['username']?.toString() ?? '';
+          final name = user['name']?.toString() ?? 'Trenzy user';
+          final avatar = user['avatarUrl']?.toString() ?? '';
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              tileColor: colors.graphite,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              leading: CircleAvatar(
+                backgroundColor: colors.primary.withValues(alpha: .16),
+                backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+                child: avatar.isEmpty ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: TextStyle(color: colors.primary)) : null,
+              ),
+              title: Text(name, style: TextStyle(color: colors.foreground, fontWeight: FontWeight.w700)),
+              subtitle: Text('@$username', style: TextStyle(color: colors.mutedFg)),
+              trailing: FilledButton(
+                onPressed: uid.isEmpty ? null : () => onSend(uid),
+                style: FilledButton.styleFrom(backgroundColor: colors.primary, foregroundColor: colors.background),
+                child: const Text('Add'),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
         Text(
           'Suggested',
           style: TextStyle(
