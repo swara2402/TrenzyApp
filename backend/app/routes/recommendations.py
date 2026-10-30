@@ -627,13 +627,23 @@ def recommend_products(
     category: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    verify_firebase_token(request)
-    query = session.query(Product).filter(
-        Product.is_archived.is_(False), _catalog_category_is_classified()
+    try:
+        decoded = verify_firebase_token(request)
+        uid = decoded.get("uid")
+        if not uid:
+            raise HTTPException(status_code=401, detail="Missing uid claim")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("recommend_products auth error: %s", exc)
+        raise HTTPException(status_code=401, detail="Authentication failed")
+
+    # Home's daily picks must use the same preference + active-persona +
+    # behavior ranking as Discover, rather than a generic highest-rated list.
+    products = _build_personalized_query(
+        session, uid, limit=limit, include_budget=True, diversify=True
     )
-    if category:
-        query = query.filter(Product.category == category)
-    products = query.order_by(Product.rating.desc().nullslast()).limit(limit).all()
+    prefs, _ = _safe_prefs_rec(session, uid)
     return {
         "products": [
             {
@@ -644,6 +654,8 @@ def recommend_products(
                 "price": p.price,
                 "rating": p.rating,
                 "category": p.category,
+                "tags": p.tags,
+                "reason": _reason_for_item(prefs, p),
             }
             for p in products
         ]
