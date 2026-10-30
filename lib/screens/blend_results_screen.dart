@@ -20,9 +20,24 @@ Future<void> _saveToWishlist(
   ProductModel product,
 ) async {
   HapticFeedback.mediumImpact();
-  await ref.read(wishlistProvider.notifier).toggle(product.id);
-  if (context.mounted) {
-    GlassToast.success(context, 'Saved to wishlist');
+  final wasSaved =
+      ref.read(wishlistProvider).valueOrNull?.contains(product.id) ?? false;
+  try {
+    await ref.read(wishlistProvider.notifier).toggle(product.id);
+    if (context.mounted) {
+      GlassToast.success(
+        context,
+        wasSaved ? 'Removed from wishlist' : 'Saved to wishlist',
+      );
+    }
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not update your wishlist. Please try again.'),
+        ),
+      );
+    }
   }
 }
 
