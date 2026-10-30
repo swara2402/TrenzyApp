@@ -53,6 +53,7 @@ class _JustDroppedSection extends ConsumerWidget {
                   title: 'Fresh from the catalog',
                   heroTag: '_just_dropped_loading_fallback',
                   startIndex: 16,
+                  onRetry: () => ref.invalidate(feedProvider),
                 );
               }
               return SizedBox(
