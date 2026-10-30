@@ -28,9 +28,9 @@ class WishlistNotifier extends AutoDisposeAsyncNotifier<WishlistState> {
           (raw['productIds'] as List?)?.map((e) => e.toString()).toSet() ??
           const <String>{};
       return WishlistState(productIds: ids, isLoaded: true);
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Wishlist fetch failed: $e');
-      return const WishlistState(productIds: {}, isLoaded: true);
+      Error.throwWithStackTrace(e, stackTrace);
     }
   }
 
