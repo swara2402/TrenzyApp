@@ -52,7 +52,16 @@ class BlendApi {
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
-  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId) async {\n    final data = await _client.get('/blends/$groupId/matching-suggestions');\n    if (data is List) return data;\n    if (data is Map<String, dynamic> && data['suggestions'] is List) {\n      return data['suggestions'] as List<dynamic>;\n    }\n    return [];\n  }\n\n  Future<Map<String, dynamic>> getBlendResults(String groupId) async {
+  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId) async {
+    final data = await _client.get('/blends/$groupId/matching-suggestions');
+    if (data is List) return data;
+    if (data is Map<String, dynamic> && data['suggestions'] is List) {
+      return data['suggestions'] as List<dynamic>;
+    }
+    return [];
+  }
+
+  Future<Map<String, dynamic>> getBlendResults(String groupId) async {
     final data = await _client.get('/blends/$groupId/results');
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
