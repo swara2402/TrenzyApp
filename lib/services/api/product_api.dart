@@ -129,7 +129,21 @@ class ProductApi {
       '/search',
       queryParams: {'q': query, 'limit': limit.toString()},
     );
-    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+    final result = data is Map<String, dynamic>
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
+
+    // Unified search is intentionally broad for people and blends, while the
+    // product endpoint searches the catalog's indexed name/category/attribute
+    // fields. Use the catalog search for product cards so a query such as
+    // "oversized blazer" cannot be replaced by unrelated generic results.
+    try {
+      final productResults = await searchProducts(query: query);
+      result['products'] = productResults.take(limit).toList();
+    } catch (_) {
+      result.putIfAbsent('products', () => <dynamic>[]);
+    }
+    return result;
   }
 
   Future<List<dynamic>> getSuggestions(String query) async {
