@@ -150,6 +150,7 @@ abstract class ApiServiceBase {
   Future<Map<String, dynamic>> aiStylistChat({
     required String message,
     int? conversationId,
+    String persona = 'everyday',
   });
   Future<Map<String, dynamic>> aiStylistOutfit(String prompt);
   Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20});
