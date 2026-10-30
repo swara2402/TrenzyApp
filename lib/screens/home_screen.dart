@@ -31,6 +31,63 @@ part 'home_sections_4.dart';
 part 'home_sections_6.dart';
 part 'home_sections_7.dart';
 
+Widget _homeCatalogFallback(
+  BuildContext context,
+  List<ProductModel> catalog, {
+  required String title,
+  required String heroTag,
+  required int startIndex,
+  required VoidCallback onRetry,
+}) {
+  final items = catalog.skip(startIndex).take(8).toList();
+  if (items.isEmpty) {
+    return ErrorSection(
+      title: title,
+      message: 'Catalog picks are unavailable right now.',
+      compact: true,
+      onRetry: onRetry,
+    );
+  }
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: context.trenzyColors.foreground,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      const SizedBox(height: 10),
+      SizedBox(
+        height: 220,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: items.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => SizedBox(
+            width: 150,
+            child: ProductCard(
+              product: items[index],
+              compact: true,
+              variant: ProductCardVariant.compact,
+              heroTagSuffix: '${heroTag}_$index',
+              onTap: () => context.push(
+                AppRoutes.productDetailsFor(items[index].id),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
