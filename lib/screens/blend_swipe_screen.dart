@@ -415,10 +415,13 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                                   );
                                   if (sheetContext.mounted) Navigator.pop(sheetContext);
                                   if (mounted) {
+                                    // The sheet is dismissed above; this State context is guarded by mounted.
+                                    // ignore: use_build_context_synchronously
                                     GlassToast.info(context, 'Added to your Blend deck!');
                                   }
                                 } catch (_) {
                                   if (mounted) {
+                                    // ignore: use_build_context_synchronously
                                     GlassToast.error(context, 'Could not add this pick. Try again.');
                                   }
                                 }
