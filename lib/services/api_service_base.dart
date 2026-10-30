@@ -110,7 +110,8 @@ abstract class ApiServiceBase {
   });
   Future<Map<String, dynamic>> joinBlend({required String groupId});
   Future<void> leaveBlend(String groupId);
-  Future<Map<String, dynamic>> getBlendGroup(String groupId);\n  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId);
+  Future<Map<String, dynamic>> getBlendGroup(String groupId);
+  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId);
   Future<Map<String, dynamic>> getBlendResults(String groupId);
   Future<void> recordBlendSwipe({
     required String groupId,
