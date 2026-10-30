@@ -32,6 +32,36 @@ class ProductCard extends ConsumerStatefulWidget {
 }
 
 class _ProductCardState extends ConsumerState<ProductCard> {
+  bool _wishlistBusy = false;
+
+  Future<void> _toggleWishlist() async {
+    if (_wishlistBusy) return;
+    final isSaved = ref.read(wishlistProvider).valueOrNull?.contains(widget.product.id) ?? false;
+    setState(() => _wishlistBusy = true);
+    HapticFeedback.mediumImpact();
+    try {
+      await ref.read(wishlistProvider.notifier).toggle(widget.product.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isSaved ? 'Removed from wishlist' : 'Saved to wishlist'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not update your wishlist. Please try again.'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _wishlistBusy = false);
+    }
+  }
   bool _isWishlisted(String productId) => ref.watch(
     wishlistProvider.select((w) => w.valueOrNull?.contains(productId) ?? false),
   );
@@ -46,6 +76,16 @@ class _ProductCardState extends ConsumerState<ProductCard> {
       case ProductCardVariant.standard:
         return _buildStandard();
     }
+  }
+
+  String _priceLabel() {
+    if (widget.customPriceText != null) return widget.customPriceText!;
+    if (!widget.product.hasPrice) return 'Price unavailable';
+    final price = widget.product.displayPrice;
+    final value = price == price.roundToDouble()
+        ? price.toStringAsFixed(0)
+        : price.toStringAsFixed(2);
+    return '₹$value';
   }
 
   Widget _buildStandard() {
@@ -123,27 +163,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         left: 8,
                         right: 8,
                         child: TapScale(
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            final isSaved = ref.read(wishlistProvider).valueOrNull?.contains(widget.product.id) ?? false;
-                            ref
-                                .read(wishlistProvider.notifier)
-                                .toggle(widget.product.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isSaved
-                                      ? 'Removed from wishlist'
-                                      : 'Saved to wishlist',
-                                ),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: isSaved
-                                    ? context.trenzyColors.graphite
-                                    : context.trenzyColors.emerald,
-                              ),
-                            );
-                          },
+                          onTap: _wishlistBusy ? null : _toggleWishlist,
                           child: Container(
                             height: 32,
                             decoration: BoxDecoration(
@@ -207,19 +227,18 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                             fontSize: 14,
                             weight: FontWeight.w700,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          widget.customPriceText ??
-                              '${widget.product.effectivePrice}',
+                          _priceLabel(),
                           style: GlassTypography.body(
                             fontSize: 14,
                             weight: FontWeight.w800,
                             color: context.trenzyColors.primary,
                           ),
                         ),
-                        ...[
+                        if (widget.product.rating > 0) ...[
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -379,12 +398,12 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 2),
           Text(
-            widget.customPriceText ?? '${widget.product.effectivePrice}',
+            _priceLabel(),
             style: TextStyle(
               color: context.trenzyColors.primary,
               fontSize: 13,

@@ -336,6 +336,64 @@ def search_products(
     stmt = stmt.limit(limit)
     rows = session.execute(stmt).all()
     products = [row[0] for row in rows]
+
+    # PostgreSQL's strict AND tsquery can return nothing for natural-language
+    # searches where one token is absent from the indexed fields. Retry with
+    # token-wise matching across the same catalog identity fields, requiring
+    # every meaningful token to match somewhere. This is broader than exact
+    # phrase matching without returning unrelated "popular" products.
+    if not products and tsquery_str:
+        tokens = [
+            token for token in re.findall(r"[a-zA-Z0-9]+", normalized_query)
+            if len(token) > 1
+        ][:8]
+        if tokens:
+            fallback = (
+                select(Product)
+                .select_from(Product)
+                .outerjoin(Brand, Product.brand_id == Brand.id)
+                .where(
+                    Product.is_archived.is_(False),
+                    _catalog_category_is_classified(),
+                    *[
+                        or_(
+                            Product.name.ilike(f"%{_escape_like(token)}%", escape="\\"),
+                            Brand.name.ilike(f"%{_escape_like(token)}%", escape="\\"),
+                            _canonical_category_expr().ilike(f"%{_escape_like(token)}%", escape="\\"),
+                            Product.subcategory.ilike(f"%{_escape_like(token)}%", escape="\\"),
+                            Product.article_type.ilike(f"%{_escape_like(token)}%", escape="\\"),
+                            Product.color.ilike(f"%{_escape_like(token)}%", escape="\\"),
+                        )
+                        for token in tokens
+                    ],
+                )
+            )
+            if category:
+                fallback = fallback.where(
+                    _canonical_category_expr().ilike(f"%{_escape_like(category)}%", escape="\\")
+                )
+            if subcategory:
+                fallback = fallback.where(
+                    Product.subcategory.ilike(f"%{_escape_like(subcategory)}%", escape="\\")
+                )
+            if gender:
+                fallback = fallback.where(Product.gender.ilike(gender, escape="\\"))
+            if color:
+                fallback = fallback.where(Product.color.ilike(f"%{_escape_like(color)}%", escape="\\"))
+            if season:
+                fallback = fallback.where(Product.season.ilike(f"%{_escape_like(season)}%", escape="\\"))
+            if brand:
+                fallback = fallback.where(Brand.name.ilike(f"%{_escape_like(brand)}%", escape="\\"))
+            if min_price is not None:
+                fallback = fallback.where(Product.price >= min_price)
+            if max_price is not None:
+                fallback = fallback.where(Product.price <= max_price)
+            products = list(
+                session.execute(
+                    fallback.order_by(Product.rating.desc().nullslast()).limit(limit)
+                ).scalars().unique().all()
+            )
+
     return {"products": [_product_payload(p) for p in products]}
 
 

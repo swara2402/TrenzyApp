@@ -6,6 +6,7 @@ class _JustDroppedSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feedAsync = ref.watch(feedProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     final prefs = ref.watch(userPreferencesProvider);
 
     return Padding(
@@ -43,20 +44,38 @@ class _JustDroppedSection extends ConsumerWidget {
           ),
           SizedBox(height: 16),
           feedAsync.when(
-            loading: () => SizedBox(
-              height: 190,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: 3,
-                separatorBuilder: (_, _) => SizedBox(width: 12),
-                itemBuilder: (_, _) =>
-                    LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
-              ),
-            ),
-            error: (_, _) => ErrorSection(
-              title: 'Couldn\u2019t load new drops',
-              message: 'Fresh drops are unavailable right now.',
-              compact: true,
+            loading: () {
+              final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+              if (catalog.isNotEmpty) {
+                return _homeCatalogFallback(
+                  context,
+                  catalog,
+                  title: 'Fresh from the catalog',
+                  heroTag: '_just_dropped_loading_fallback',
+                  startIndex: 16,
+                  onRetry: () => ref.invalidate(feedProvider),
+                );
+              }
+              return SizedBox(
+                height: 190,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 3,
+                  separatorBuilder: (_, _) => SizedBox(width: 12),
+                  itemBuilder: (_, _) => LoadingSkeletonShimmer(
+                    height: 190,
+                    width: 130,
+                    radius: 16,
+                  ),
+                ),
+              );
+            },
+            error: (_, _) => _homeCatalogFallback(
+              context,
+              catalogAsync.valueOrNull ?? const <ProductModel>[],
+              title: 'Fresh from the catalog',
+              heroTag: '_just_dropped_error_fallback',
+              startIndex: 16,
               onRetry: () => ref.invalidate(feedProvider),
             ),
             data: (feed) {
@@ -65,9 +84,34 @@ class _JustDroppedSection extends ConsumerWidget {
                   .expand((s) => s.products)
                   .toList();
               if (justDropped.isEmpty) {
-                return EmptySection(
-                  title: 'No new drops yet',
-                  subtitle: 'Check back soon for latest arrivals.',
+                final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+                if (catalog.isEmpty) {
+                  return EmptySection(
+                    title: 'No new drops yet',
+                    subtitle: 'Explore the latest catalog picks instead.',
+                    actionLabel: 'Explore',
+                    onAction: () => context.go(AppRoutes.discover),
+                  );
+                }
+                return SizedBox(
+                  height: 220,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: catalog.skip(16).take(8).length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: catalog[index + 16],
+                        compact: true,
+                        variant: ProductCardVariant.compact,
+                        heroTagSuffix: '_just_dropped_fallback_$index',
+                        onTap: () => context.push(
+                          AppRoutes.productDetailsFor(catalog[index + 16].id),
+                        ),
+                      ),
+                    ),
+                  ),
                 );
               }
               return SizedBox(

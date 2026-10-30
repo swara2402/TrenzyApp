@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/wardrobe_model.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
+import 'user_preferences_provider.dart';
 
 class WardrobeState {
   final List<WardrobeItem> items;
@@ -56,7 +57,9 @@ class WardrobeNotifier extends AutoDisposeAsyncNotifier<WardrobeState> {
     final total = (pagination['total'] is num)
         ? (pagination['total'] as num).toInt()
         : items.length;
-    final hasMore = pagination['hasMore'] == true || (items.length < total);
+    final hasMore = pagination['hasMore'] is bool
+        ? pagination['hasMore'] as bool
+        : items.length < total;
 
     return WardrobeState(
       items: items,
@@ -88,24 +91,34 @@ class WardrobeNotifier extends AutoDisposeAsyncNotifier<WardrobeState> {
       final newItems = rawList
           .map((e) => WardrobeItem.fromJson(e as Map<String, dynamic>))
           .toList();
-      final updatedItems = [...currentState.items, ...newItems];
+      // Merge against the latest state (not the pre-request snapshot) and
+      // deduplicate by server ID so overlapping pages cannot duplicate cards.
+      final latestState = state.value ?? currentState;
+      final seenIds = latestState.items.map((item) => item.id).toSet();
+      final uniqueNewItems = newItems
+          .where((item) => item.id.isNotEmpty && seenIds.add(item.id))
+          .toList();
+      final updatedItems = [...latestState.items, ...uniqueNewItems];
       final total = (pagination['total'] is num)
           ? (pagination['total'] as num).toInt()
           : updatedItems.length;
-      final hasMore =
-          pagination['hasMore'] == true || (updatedItems.length < total);
+      final hasMore = pagination['hasMore'] is bool
+          ? pagination['hasMore'] as bool
+          : updatedItems.length < total;
 
       state = AsyncData(
-        currentState.copyWith(
+        latestState.copyWith(
           items: updatedItems,
-          offset: nextOffset,
+          offset: updatedItems.length,
           total: total,
-          hasMore: hasMore,
+          hasMore: hasMore && uniqueNewItems.isNotEmpty,
           isLoadingMore: false,
         ),
       );
     } catch (e) {
-      state = AsyncData(currentState.copyWith(isLoadingMore: false));
+      final latestState = state.value ?? currentState;
+      state = AsyncData(latestState.copyWith(isLoadingMore: false));
+      rethrow;
     }
   }
 
@@ -359,6 +372,9 @@ final wardrobeRecommendationsProvider =
       );
       if (uid == null) return null;
 
+      // Wardrobe gap suggestions and outfit ideas must refresh after style edits.
+      ref.watch(userPreferencesProvider);
+
       final api = ref.read(apiServiceProvider);
       final data = await api.getWardrobeRecommendations(limit: 5);
       return WardrobeRecommendationsResponse.fromJson(data);
@@ -367,6 +383,9 @@ final wardrobeRecommendationsProvider =
 final personaProvider = FutureProvider.autoDispose<StylePersona?>((ref) async {
   final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
   if (uid == null) return null;
+
+  // Keep the persona card in sync when preferences are edited in Settings.
+  ref.watch(userPreferencesProvider);
 
   final api = ref.read(apiServiceProvider);
   final data = await api.getPersona();

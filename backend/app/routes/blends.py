@@ -113,6 +113,9 @@ class BlendSwipeRequest(BaseModel):
     productId: str
     swipeType: str  # "like", "love", "dislike"
 
+class BlendDeckProductRequest(BaseModel):
+    productId: str = Field(min_length=1, max_length=100)
+
 
 SCORE_MAP = {"like": 1, "love": 2, "dislike": -1}
 
@@ -147,15 +150,21 @@ def _stable_deck(session, group: Blend) -> list[dict[str, Any]]:
     products, which is what makes group agreement scores meaningful.
     """
     deck_ids: list[str] | None = None
+    selected_deck = False
     if group.deck_json:
         try:
             parsed = json.loads(group.deck_json)
-            if isinstance(parsed, list) and all(isinstance(x, str) for x in parsed):
-                deck_ids = parsed[: _BLEND_DECK_SIZE]
+            if isinstance(parsed, dict) and parsed.get("selected") is True:
+                selected_deck = True
+                ids = parsed.get("ids", [])
+                if isinstance(ids, list) and all(isinstance(x, str) for x in ids):
+                    deck_ids = ids[:_BLEND_DECK_SIZE]
+            elif isinstance(parsed, list) and all(isinstance(x, str) for x in parsed):
+                deck_ids = parsed[:_BLEND_DECK_SIZE]
         except (ValueError, TypeError):
             deck_ids = None
 
-    if deck_ids:
+    if deck_ids is not None:
         products = (
             session.query(Product)
             .filter(Product.id.in_(deck_ids), Product.is_archived.is_(False))
@@ -165,7 +174,9 @@ def _stable_deck(session, group: Blend) -> list[dict[str, Any]]:
         ordered = [by_id[pid] for pid in deck_ids if pid in by_id]
         if len(ordered) == len(deck_ids):
             return [_product_payload(p) for p in ordered]
-        # A product was archived/unseeded — regenerate the deck below.
+        if selected_deck:
+            # Keep the selected-only deck; never silently replace it with random products.
+            return [_product_payload(p) for p in ordered]
 
     products = (
         session.query(Product)
@@ -409,6 +420,51 @@ def get_group(group_id: str, request: Request, session: Session = Depends(get_se
     
     members = session.query(BlendMember).filter(BlendMember.blend_id == group_id).all()
     return _group_payload(group, members, session)
+
+
+@router.post("/{group_id}/deck")
+def add_product_to_blend_deck(
+    group_id: str,
+    payload: BlendDeckProductRequest,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Add an explicitly selected product to the shared swipe deck."""
+    decoded = verify_firebase_token(request)
+    firebase_uid = _get_uid(decoded)
+    if not require_blend_member_sync(firebase_uid, group_id, session):
+        raise_forbidden("Not a member of this blend")
+
+    product = (
+        session.query(Product)
+        .filter(Product.id == payload.productId, Product.is_archived.is_(False))
+        .first()
+    )
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    group = session.query(Blend).filter(Blend.id == group_id).first()
+    if not group:
+        raise_not_found("Blend group not found")
+
+    selected_ids: list[str] = []
+    if group.deck_json:
+        try:
+            current = json.loads(group.deck_json)
+            if isinstance(current, dict) and current.get("selected") is True:
+                ids = current.get("ids", [])
+                if isinstance(ids, list):
+                    selected_ids = [item for item in ids if isinstance(item, str)]
+        except (ValueError, TypeError):
+            selected_ids = []
+
+    if payload.productId not in selected_ids:
+        selected_ids.append(payload.productId)
+    selected_ids = selected_ids[-_BLEND_DECK_SIZE:]
+    group.deck_json = json.dumps({"selected": True, "ids": selected_ids})
+    session.add(group)
+    session.commit()
+    return {"success": True, "productIds": selected_ids}
 
 
 @router.delete("/{group_id}/leave")

@@ -305,6 +305,26 @@ def _build_personalized_query(
             return None
         return case((or_(*conds), 1.0), else_=0.0)
 
+    def _persona_boost_expr():
+        """Rank active-persona matches even when strict filtering is relaxed."""
+        keywords = [
+            keyword for keyword in (persona.keywords or [])
+            if isinstance(keyword, str) and keyword.strip()
+        ] if persona else []
+        if not keywords:
+            return None
+        conditions = [
+            or_(
+                json_array_contains(Product.tags, keyword),
+                json_array_contains(Product.style_tags, keyword),
+                Product.style.ilike(f"%{keyword}%"),
+                Product.category.ilike(f"%{keyword}%"),
+                Product.subcategory.ilike(f"%{keyword}%"),
+            )
+            for keyword in keywords
+        ]
+        return case((or_(*conditions), 1.0), else_=0.0)
+
     def _score_and_fetch(q, fetch_limit):
         try:
             priority_expr = priority_score_expr(prefs.shopping_priorities if prefs else [])
@@ -313,6 +333,7 @@ def _build_personalized_query(
             priority_expr = None
         style_boost = _style_boost_expr()
         behavior_boost = _behavior_boost_expr()
+        persona_boost = _persona_boost_expr()
 
         parts = [func.coalesce(Product.rating, 3.0) / 5.0 * 0.4]
         if priority_expr is not None:
@@ -321,6 +342,8 @@ def _build_personalized_query(
             parts.append(style_boost * 0.15)
         if behavior_boost is not None:
             parts.append(behavior_boost * 0.2)
+        if persona_boost is not None:
+            parts.append(persona_boost * 0.2)
         score = sum(parts)
         return q.order_by(score.desc()).limit(fetch_limit).all()
 
@@ -627,13 +650,23 @@ def recommend_products(
     category: str | None = None,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    verify_firebase_token(request)
-    query = session.query(Product).filter(
-        Product.is_archived.is_(False), _catalog_category_is_classified()
+    try:
+        decoded = verify_firebase_token(request)
+        uid = decoded.get("uid")
+        if not uid:
+            raise HTTPException(status_code=401, detail="Missing uid claim")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("recommend_products auth error: %s", exc)
+        raise HTTPException(status_code=401, detail="Authentication failed")
+
+    # Home's daily picks must use the same preference + active-persona +
+    # behavior ranking as Discover, rather than a generic highest-rated list.
+    products = _build_personalized_query(
+        session, uid, limit=limit, include_budget=True, diversify=True
     )
-    if category:
-        query = query.filter(Product.category == category)
-    products = query.order_by(Product.rating.desc().nullslast()).limit(limit).all()
+    prefs, _ = _safe_prefs_rec(session, uid)
     return {
         "products": [
             {
@@ -644,6 +677,8 @@ def recommend_products(
                 "price": p.price,
                 "rating": p.rating,
                 "category": p.category,
+                "tags": p.tags,
+                "reason": _reason_for_item(prefs, p),
             }
             for p in products
         ]

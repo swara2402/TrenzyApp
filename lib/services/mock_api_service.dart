@@ -598,11 +598,12 @@ class MockApiService implements ApiServiceBase {
   Future<Map<String, dynamic>> aiStylistChat({
     required String message,
     int? conversationId,
+    String persona = 'everyday',
   }) async {
     await _delay(const Duration(milliseconds: 100));
     return {
       'conversation_id': conversationId ?? 1,
-      'message': 'Mock stylist response',
+      'message': 'Mock $persona stylist response',
       'mentioned_products': [],
     };
   }

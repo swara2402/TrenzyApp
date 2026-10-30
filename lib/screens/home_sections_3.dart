@@ -24,42 +24,92 @@ class _AiPicksSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final picksAsync = ref.watch(todaysAiPicksProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     return picksAsync.when(
-      loading: () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionHeader(context, 'For You', Icons.auto_awesome_rounded),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              height: 240,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 4,
-                itemBuilder: (_, _) => Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(width: 130, child: ProductCardSkeleton()),
+      loading: () {
+        final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+        if (catalog.isNotEmpty) {
+          return _homeCatalogFallback(
+            context,
+            catalog,
+            title: 'Fresh picks for you',
+            heroTag: '_for_you_loading_fallback',
+            startIndex: 0,
+            onRetry: () => ref.invalidate(todaysAiPicksProvider),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionHeader(context, 'For You', Icons.auto_awesome_rounded),
+              SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 240,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 4,
+                  itemBuilder: (_, _) => Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: SizedBox(width: 130, child: ProductCardSkeleton()),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      error: (error, _) => ErrorSection(
-        title: 'AI picks are playing hard to get',
-        message: friendlyError(error),
+            ],
+          ),
+        );
+      },
+      error: (error, _) => _homeCatalogFallback(
+        context,
+        catalogAsync.valueOrNull ?? const <ProductModel>[],
+        title: 'Fresh picks to explore',
+        heroTag: '_home_error_fallback',
+        startIndex: 0,
         onRetry: () => ref.invalidate(todaysAiPicksProvider),
       ),
       data: (picks) {
         if (picks.isEmpty) {
-          return EmptySection(
-            title: 'We\u2019re still learning your style',
-            subtitle:
-                'Explore a few items and we\u2019ll start recommending pieces just for you.',
-            actionLabel: 'Explore',
-            onAction: () => context.go(AppRoutes.discover),
+          final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+          if (catalog.isEmpty) {
+            return EmptySection(
+              title: 'We\u2019re still learning your style',
+              subtitle:
+                  'Explore a few items and we\u2019ll start recommending pieces just for you.',
+              actionLabel: 'Explore',
+              onAction: () => context.go(AppRoutes.discover),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionHeader(context, 'Fresh picks to explore', Icons.auto_awesome_rounded),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 300,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: catalog.take(8).length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: catalog[index],
+                        compact: true,
+                        variant: ProductCardVariant.compact,
+                        heroTagSuffix: '_home_fallback_$index',
+                        onTap: () => context.push(
+                          AppRoutes.productDetailsFor(catalog[index].id),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
         return Padding(

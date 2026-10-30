@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/models/product_model.dart';
+import 'package:trenzy/models/api_exception.dart';
 import 'package:trenzy/providers/products_provider.dart';
 import 'package:trenzy/providers/wishlist_provider.dart';
 import 'package:trenzy/providers/blend_provider.dart';
@@ -468,11 +469,22 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('Added to wardrobe')));
       }
-    } catch (e) {
+    } on ApiException catch (e) {
+      if (mounted) {
+        final message = e.statusCode == 409
+            ? 'This item is already in your wardrobe'
+            : 'Could not add to wardrobe. Please try again.';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Could not add to wardrobe')));
+        ).showSnackBar(
+          const SnackBar(content: Text('Could not add to wardrobe. Please try again.')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isAddingToWardrobe = false);

@@ -5,6 +5,23 @@ import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
 import 'wishlist_provider.dart';
 
+List<ProductModel> _deduplicateProducts(Iterable<ProductModel> products) {
+  final seenIds = <String>{};
+  final seenImages = <String>{};
+  final seenNames = <String>{};
+  final result = <ProductModel>[];
+  for (final product in products) {
+    final id = product.id.trim();
+    final image = product.effectiveImageUrl.trim().toLowerCase();
+    final nameKey = '${product.brand.trim().toLowerCase()}|${product.name.trim().toLowerCase()}';
+    if (id.isEmpty || !seenIds.add(id)) continue;
+    if (image.isNotEmpty && !seenImages.add(image)) continue;
+    if (image.isEmpty && !seenNames.add(nameKey)) continue;
+    result.add(product);
+  }
+  return result;
+}
+
 class ProductLoadException implements Exception {
   const ProductLoadException(this.message);
   final String message;
@@ -36,11 +53,11 @@ final productsProvider = FutureProvider.autoDispose
         final result = await api.getProducts(category: filters.category);
         final products = result['products'] as List<dynamic>? ?? [];
 
-        return products
-            .map(
-              (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
-            )
-            .toList();
+        return _deduplicateProducts(
+          products.map(
+            (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          ),
+        );
       } catch (_) {
         throw const ProductLoadException(
           'Unable to load products right now. Please try again.',
@@ -144,11 +161,11 @@ final productSearchProvider = FutureProvider.autoDispose
         sort: params.sort,
       );
 
-      return products
-          .map(
-            (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
-          .toList();
+      return _deduplicateProducts(
+        products.map(
+          (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
+        ),
+      );
     });
 
 final wishlistProductsProvider = FutureProvider.autoDispose<List<ProductModel>>(
@@ -157,23 +174,27 @@ final wishlistProductsProvider = FutureProvider.autoDispose<List<ProductModel>>(
 
     if (uid == null) return const <ProductModel>[];
 
-    try {
-      final wishlistState = await ref.watch(wishlistProvider.future);
-      final productIds = wishlistState.productIds;
+    final wishlistState = await ref.watch(wishlistProvider.future);
+    final productIds = wishlistState.productIds;
 
-      if (productIds.isEmpty) return [];
+    if (productIds.isEmpty) return [];
 
-      final api = ref.watch(apiServiceProvider);
-      final result = await api.getBatchProducts(productIds.toList());
-      final products = result['products'] as List<dynamic>? ?? [];
-      return products
-          .map(
-            (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
-          .toList();
-    } catch (_) {
-      return const <ProductModel>[];
-    }
+    final api = ref.watch(apiServiceProvider);
+    final result = await api.getBatchProducts(productIds.toList());
+    final products = result['products'] as List<dynamic>? ?? [];
+    final parsedProducts = products
+        .whereType<Map>()
+        .map((raw) => ProductModel.fromJson(Map<String, dynamic>.from(raw)))
+        .toList();
+    final byId = <String, ProductModel>{
+      for (final product in parsedProducts) product.id: product,
+    };
+    // Preserve the user's saved order; batch endpoints need not return rows
+    // in the same order as the requested IDs.
+    return productIds
+        .map((id) => byId[id])
+        .whereType<ProductModel>()
+        .toList();
   },
 );
 

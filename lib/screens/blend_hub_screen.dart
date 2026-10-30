@@ -127,6 +127,10 @@ class BlendHubScreen extends ConsumerWidget {
           height: 380,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(
+              horizontal: ((MediaQuery.sizeOf(context).width - 300) / 2)
+                  .clamp(20.0, double.infinity),
+            ),
             itemCount: blends.length,
             itemBuilder: (context, index) {
               final blend = blends[index];

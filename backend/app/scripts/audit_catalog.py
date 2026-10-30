@@ -11,6 +11,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+from app.catalog_categories import canonical_category
+
 
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "data" / "products.json"
 
@@ -22,14 +24,13 @@ def _has_valid_price(product: dict) -> bool:
         return False
 
 
-def audit_catalog(path: Path = CATALOG_PATH) -> dict[str, int]:
+def audit_catalog(path: Path = CATALOG_PATH) -> int:
     """Return catalog quality counts and fail on missing required fields."""
     products = json.loads(path.read_text(encoding="utf-8"))
     ids = [product.get("id") for product in products]
     image_urls = [product.get("image_url") for product in products]
     duplicate_ids = sum(count > 1 for count in Counter(ids).values())
     active_products = [product for product in products if not product.get("is_archived", False)]
-    unknown = {"", "unknown", "uncategorized", "none", "null"}
     unclassified = [
         product for product in active_products
         if not canonical_category(product.get("subcategory"))

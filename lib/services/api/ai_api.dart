@@ -43,10 +43,11 @@ class AiApi {
   Future<Map<String, dynamic>> stylistChat({
     required String message,
     int? conversationId,
+    String persona = 'everyday',
   }) async {
     final data = await _client.post(
       '/ai/stylist/chat',
-      body: {'message': message, 'conversation_id': conversationId},
+      body: {'message': message, 'conversation_id': conversationId, 'persona': persona},
     );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }

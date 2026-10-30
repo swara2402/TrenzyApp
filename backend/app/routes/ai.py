@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from ..db import get_session as get_db
 from ..auth_deps import get_current_db_user, get_current_user
 from ..models import User, Product
-from ..ai.models_ai import UserStyleProfile, InteractionEvent
+from ..ai.models_ai import UserStyleProfile, InteractionEvent, AIConversation
 from ..ai.recommendation.rule_based_recommender import RuleBasedRecommender
 from ..ai.personalization.event_pipeline import EventPipeline
 from ..ai.blends.blend_preference_aggregator import BlendPreferenceAggregator
@@ -172,8 +172,9 @@ class OutfitResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     """Chat request."""
-    message: str
-    conversation_id: Optional[int] = None
+    message: str = Field(..., min_length=1, max_length=2000)
+    conversation_id: Optional[int] = Field(default=None, gt=0)
+    persona: str = Field(default="everyday", pattern="^(everyday|minimalist|streetwear|trendsetter)$")
 
 
 class ChatResponse(BaseModel):
@@ -437,11 +438,26 @@ async def stylist_chat(
     - Recommendation engine
     - Outfit builder
     """
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=422, detail="Message cannot be empty")
+
+    # Conversation IDs are user-scoped. Reject stale/foreign IDs explicitly
+    # instead of allowing the stylist service to dereference a missing row.
+    if request.conversation_id is not None:
+        conversation = db.query(AIConversation).filter(
+            AIConversation.id == request.conversation_id,
+            AIConversation.user_id == current_user.id,
+        ).first()
+        if conversation is None:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
     response = get_stylist_agent().chat(
         db=db,
         user_id=current_user.id,
-        message=request.message,
+        message=message,
         conversation_id=request.conversation_id,
+        persona=request.persona,
     )
 
     return ChatResponse(

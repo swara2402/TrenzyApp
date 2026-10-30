@@ -25,6 +25,7 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPreferencesProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     final userCategories = prefs.preferredCategories;
     final categoriesParam = userCategories.isNotEmpty
         ? userCategories.join(',')
@@ -88,21 +89,47 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
         ),
         SizedBox(height: 12),
         trendsAsync.when(
-          loading: () => SizedBox(
-            height: 190,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 3,
-              separatorBuilder: (_, _) => SizedBox(width: 12),
-              itemBuilder: (_, _) =>
-                  LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
-            ),
-          ),
-          error: (err, _) => ErrorSection(
-            title: 'Couldn\u2019t load trending',
-            message: friendlyError(err),
-            compact: true,
+          loading: () {
+            final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+            if (catalog.isNotEmpty) {
+              return _homeCatalogFallback(
+                context,
+                catalog,
+                title: 'Trending styles to explore',
+                heroTag: '_trending_loading_fallback',
+                startIndex: 8,
+                onRetry: () => ref.invalidate(
+                  trendingProductsProvider(
+                    TrendingParams(
+                      categories: categoriesParam,
+                      timeframe: 'daily',
+                      limit: 10,
+                    ),
+                  ),
+                ),
+              );
+            }
+            return SizedBox(
+              height: 190,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: 3,
+                separatorBuilder: (_, _) => SizedBox(width: 12),
+                itemBuilder: (_, _) => LoadingSkeletonShimmer(
+                  height: 190,
+                  width: 130,
+                  radius: 16,
+                ),
+              ),
+            );
+          },
+          error: (err, _) => _homeCatalogFallback(
+            context,
+            catalogAsync.valueOrNull ?? const <ProductModel>[],
+            title: 'Trending styles to explore',
+            heroTag: '_trending_error_fallback',
+            startIndex: 8,
             onRetry: () => ref.invalidate(
               trendingProductsProvider(
                 TrendingParams(
@@ -115,9 +142,35 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
           ),
           data: (trends) {
             if (trends.isEmpty) {
-              return EmptySection(
-                title: 'Nothing trending yet',
-                subtitle: 'Check back soon for the latest styles.',
+              final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+              if (catalog.isEmpty) {
+                return EmptySection(
+                  title: 'Nothing trending yet',
+                  subtitle: 'Explore fresh picks while trends are updating.',
+                  actionLabel: 'Explore',
+                  onAction: () => context.go(AppRoutes.discover),
+                );
+              }
+              return SizedBox(
+                height: 220,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: catalog.skip(8).take(8).length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) => SizedBox(
+                    width: 150,
+                    child: ProductCard(
+                      product: catalog[index + 8],
+                      compact: true,
+                      variant: ProductCardVariant.compact,
+                      heroTagSuffix: '_trending_fallback_$index',
+                      onTap: () => context.push(
+                        AppRoutes.productDetailsFor(catalog[index + 8].id),
+                      ),
+                    ),
+                  ),
+                ),
               );
             }
             return SizedBox(

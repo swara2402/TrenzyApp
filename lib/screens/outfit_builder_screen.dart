@@ -10,6 +10,7 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/theme/trenzy_colors.dart';
 import '../services/api_service.dart';
+import '../widgets/section_states.dart';
 
 class OutfitBuilderScreen extends ConsumerStatefulWidget {
   final Outfit? initialOutfit;
@@ -24,6 +25,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   final List<_ItemData> _canvasItems = [];
   final _nameController = TextEditingController();
   bool _isSaving = false;
+  String _selectedCategory = 'All Items';
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 item.brand.isEmpty ? 'Unknown' : item.brand,
                 item.name,
                 ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
+                item.category,
               ),
             );
           }
@@ -48,10 +51,31 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     }
   }
 
+  bool _matchesSelectedCategory(String? rawCategory) {
+    if (_selectedCategory == 'All Items') return true;
+    final value = (rawCategory ?? '').trim().toLowerCase();
+    if (value.isEmpty) return false;
+
+    const categoryTerms = <String, List<String>>{
+      'Tops': ['top', 'shirt', 't-shirt', 'tee', 'blouse', 'sweater', 'sweatshirt', 'hoodie', 'polo', 'jersey', 'knit', 'crewneck'],
+      'Bottoms': ['bottom', 'jean', 'trouser', 'pant', 'chino', 'short', 'cargo', 'skirt', 'legging', 'jogger'],
+      'Dresses': ['dress', 'gown', 'lehenga', 'one-piece', 'jumpsuit'],
+      'Outerwear': ['outerwear', 'jacket', 'coat', 'blazer', 'windbreaker', 'varsity', 'overshirt', 'cardigan', 'parka'],
+      'Footwear': ['footwear', 'shoe', 'sneaker', 'trainer', 'boot', 'sandal', 'loafer', 'derby', 'heel', 'flat'],
+      'Accessories': ['accessory', 'accessories', 'bag', 'cap', 'hat', 'belt', 'watch', 'wallet', 'sunglasses', 'jewelry', 'jewellery'],
+    };
+    final terms = categoryTerms[_selectedCategory] ?? [_selectedCategory.toLowerCase()];
+    return terms.any(value.contains);
+  }
+
   void _addItemToCanvas(_ItemData item) {
-    setState(() {
-      _canvasItems.add(item);
-    });
+    if (_canvasItems.any((existing) => existing.id == item.id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.name} is already on your outfit')),
+      );
+      return;
+    }
+    setState(() => _canvasItems.add(item));
   }
 
   void _removeItemFromCanvas(int index) {
@@ -363,8 +387,32 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     );
   }
 
+  Color _personaColor(String raw) {
+    final value = raw.trim().toLowerCase().replaceAll('#', '');
+    final hex = int.tryParse(value.length == 6 ? 'FF$value' : value, radix: 16);
+    if (hex != null) return Color(hex);
+    const named = <String, Color>{
+      'black': Colors.black,
+      'white': Colors.white,
+      'ivory': Color(0xFFFFF8E7),
+      'cream': Color(0xFFFFF1D6),
+      'beige': Color(0xFFD8C3A5),
+      'brown': Color(0xFF795548),
+      'navy': Color(0xFF172A4A),
+      'blue': Colors.blue,
+      'green': Colors.green,
+      'olive': Color(0xFF808000),
+      'pink': Colors.pink,
+      'red': Colors.red,
+      'grey': Colors.grey,
+      'gray': Colors.grey,
+    };
+    return named[value] ?? context.trenzyColors.mutedFg;
+  }
+
   Widget _buildLookIdentityCard() {
     final colors = context.trenzyColors;
+    final personaAsync = ref.watch(personaProvider);
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -389,6 +437,65 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+              personaAsync.when(
+                data: (persona) {
+                  if (persona == null || persona.name.trim().isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return SizedBox(
+                    width: 192,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            persona.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colors.foreground,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (persona.description.trim().isNotEmpty)
+                            Text(
+                              persona.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colors.mutedFg,
+                                fontSize: 10,
+                              ),
+                            ),
+                          if (persona.colorPalette.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 7),
+                              child: Wrap(
+                                spacing: 5,
+                                runSpacing: 5,
+                                children: persona.colorPalette.take(4).map((color) {
+                                  return Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: BoxDecoration(
+                                      color: _personaColor(color),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: colors.fg15),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
               SizedBox(
                 width: 192,
                 child: TextField(
@@ -460,11 +567,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: categories.map((category) {
-          bool isActive = category == 'All Items';
+          final isActive = category == _selectedCategory;
           return Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => setState(() => _selectedCategory = category),
               style: ElevatedButton.styleFrom(
                 foregroundColor: isActive
                     ? context.trenzyColors.primaryFg
@@ -501,17 +608,59 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
 
     return wardrobeAsync.when(
       data: (state) {
-        final items = state.items;
-        if (items.isEmpty) {
+        final allItems = state.items;
+        if (allItems.isEmpty) {
           return _buildEmptyWardrobe();
         }
-        final itemDataList = items
+        final itemDataList = allItems
             .map((w) {
               final parsedId = int.tryParse(w.id) ?? 0;
-              return _ItemData(parsedId, w.brand, w.name, w.effectiveImageUrl);
+              return _ItemData(
+                parsedId,
+                w.brand.isEmpty ? 'Unknown' : w.brand,
+                w.name,
+                w.effectiveImageUrl,
+                w.category,
+              );
             })
             .where((item) => item.id > 0)
+            .where((item) => _matchesSelectedCategory(item.category))
             .toList();
+
+        if (itemDataList.isEmpty) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.checkroom_outlined,
+                      size: 42,
+                      color: context.trenzyColors.mutedFg,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No ${_selectedCategory.toLowerCase()} in your wardrobe yet',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: context.trenzyColors.foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add an item or choose another category.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: context.trenzyColors.mutedFg),
+                    ),
+                  ],
+                ),
+              ),
+              _buildAddItemCard(),
+            ],
+          );
+        }
 
         return GridView.builder(
           shrinkWrap: true,
@@ -561,7 +710,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       loading: () => Center(
         child: CircularProgressIndicator(color: context.trenzyColors.primary),
       ),
-      error: (_, e) => _buildEmptyWardrobe(),
+      error: (error, _) => ErrorSection(
+        title: 'Could not load your wardrobe',
+        message: friendlyError(error),
+        onRetry: () => ref.invalidate(wardrobeProvider),
+      ),
     );
   }
 
@@ -688,8 +841,9 @@ class _ItemData {
   final String brand;
   final String name;
   final String imageUrl;
+  final String? category;
 
-  _ItemData(this.id, this.brand, this.name, this.imageUrl);
+  _ItemData(this.id, this.brand, this.name, this.imageUrl, [this.category]);
 }
 
 class _ItemCard extends StatelessWidget {
