@@ -130,17 +130,17 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: catalog.take(8).length,
+                  itemCount: catalog.skip(8).take(8).length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) => SizedBox(
                     width: 150,
                     child: ProductCard(
-                      product: catalog[index],
+                      product: catalog[index + 8],
                       compact: true,
                       variant: ProductCardVariant.compact,
                       heroTagSuffix: '_trending_fallback_$index',
                       onTap: () => context.push(
-                        AppRoutes.productDetailsFor(catalog[index].id),
+                        AppRoutes.productDetailsFor(catalog[index + 8].id),
                       ),
                     ),
                   ),
