@@ -25,6 +25,7 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPreferencesProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     final userCategories = prefs.preferredCategories;
     final categoriesParam = userCategories.isNotEmpty
         ? userCategories.join(',')
@@ -115,9 +116,35 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
           ),
           data: (trends) {
             if (trends.isEmpty) {
-              return EmptySection(
-                title: 'Nothing trending yet',
-                subtitle: 'Check back soon for the latest styles.',
+              final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+              if (catalog.isEmpty) {
+                return EmptySection(
+                  title: 'Nothing trending yet',
+                  subtitle: 'Explore fresh picks while trends are updating.',
+                  actionLabel: 'Explore',
+                  onAction: () => context.go(AppRoutes.discover),
+                );
+              }
+              return SizedBox(
+                height: 220,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: catalog.take(8).length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) => SizedBox(
+                    width: 150,
+                    child: ProductCard(
+                      product: catalog[index],
+                      compact: true,
+                      variant: ProductCardVariant.compact,
+                      heroTagSuffix: '_trending_fallback_$index',
+                      onTap: () => context.push(
+                        AppRoutes.productDetailsFor(catalog[index].id),
+                      ),
+                    ),
+                  ),
+                ),
               );
             }
             return SizedBox(
