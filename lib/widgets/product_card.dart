@@ -31,7 +31,37 @@ class ProductCard extends ConsumerStatefulWidget {
   ConsumerState<ProductCard> createState() => _ProductCardState();
 }
 
-class _ProductCardState extends ConsumerState<ProductCard> {\n  bool _wishlistBusy = false;\n\n  Future<void> _toggleWishlist() async {\n    if (_wishlistBusy) return;\n    final isSaved = ref.read(wishlistProvider).valueOrNull?.contains(widget.product.id) ?? false;\n    setState(() => _wishlistBusy = true);\n    HapticFeedback.mediumImpact();\n    try {\n      await ref.read(wishlistProvider.notifier).toggle(widget.product.id);\n      if (!mounted) return;\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(\n          content: Text(isSaved ? 'Removed from wishlist' : 'Saved to wishlist'),\n          duration: const Duration(seconds: 2),\n          behavior: SnackBarBehavior.floating,\n        ),\n      );\n    } catch (_) {\n      if (!mounted) return;\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(\n          content: Text('Could not update your wishlist. Please try again.'),\n          duration: Duration(seconds: 2),\n          behavior: SnackBarBehavior.floating,\n        ),\n      );\n    } finally {\n      if (mounted) setState(() => _wishlistBusy = false);\n    }\n  }
+class _ProductCardState extends ConsumerState<ProductCard> {
+  bool _wishlistBusy = false;
+
+  Future<void> _toggleWishlist() async {
+    if (_wishlistBusy) return;
+    final isSaved = ref.read(wishlistProvider).valueOrNull?.contains(widget.product.id) ?? false;
+    setState(() => _wishlistBusy = true);
+    HapticFeedback.mediumImpact();
+    try {
+      await ref.read(wishlistProvider.notifier).toggle(widget.product.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isSaved ? 'Removed from wishlist' : 'Saved to wishlist'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not update your wishlist. Please try again.'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _wishlistBusy = false);
+    }
+  }
   bool _isWishlisted(String productId) => ref.watch(
     wishlistProvider.select((w) => w.valueOrNull?.contains(productId) ?? false),
   );
