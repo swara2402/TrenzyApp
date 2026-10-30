@@ -56,7 +56,9 @@ class WardrobeNotifier extends AutoDisposeAsyncNotifier<WardrobeState> {
     final total = (pagination['total'] is num)
         ? (pagination['total'] as num).toInt()
         : items.length;
-    final hasMore = pagination['hasMore'] == true || (items.length < total);
+    final hasMore = pagination['hasMore'] is bool
+        ? pagination['hasMore'] as bool
+        : items.length < total;
 
     return WardrobeState(
       items: items,
@@ -88,24 +90,34 @@ class WardrobeNotifier extends AutoDisposeAsyncNotifier<WardrobeState> {
       final newItems = rawList
           .map((e) => WardrobeItem.fromJson(e as Map<String, dynamic>))
           .toList();
-      final updatedItems = [...currentState.items, ...newItems];
+      // Merge against the latest state (not the pre-request snapshot) and
+      // deduplicate by server ID so overlapping pages cannot duplicate cards.
+      final latestState = state.value ?? currentState;
+      final seenIds = latestState.items.map((item) => item.id).toSet();
+      final uniqueNewItems = newItems
+          .where((item) => item.id.isNotEmpty && seenIds.add(item.id))
+          .toList();
+      final updatedItems = [...latestState.items, ...uniqueNewItems];
       final total = (pagination['total'] is num)
           ? (pagination['total'] as num).toInt()
           : updatedItems.length;
-      final hasMore =
-          pagination['hasMore'] == true || (updatedItems.length < total);
+      final hasMore = pagination['hasMore'] is bool
+          ? pagination['hasMore'] as bool
+          : updatedItems.length < total;
 
       state = AsyncData(
-        currentState.copyWith(
+        latestState.copyWith(
           items: updatedItems,
-          offset: nextOffset,
+          offset: updatedItems.length,
           total: total,
-          hasMore: hasMore,
+          hasMore: hasMore && uniqueNewItems.isNotEmpty,
           isLoadingMore: false,
         ),
       );
     } catch (e) {
-      state = AsyncData(currentState.copyWith(isLoadingMore: false));
+      final latestState = state.value ?? currentState;
+      state = AsyncData(latestState.copyWith(isLoadingMore: false));
+      rethrow;
     }
   }
 
