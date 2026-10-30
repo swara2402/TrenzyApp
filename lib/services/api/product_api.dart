@@ -139,7 +139,15 @@ class ProductApi {
     // "oversized blazer" cannot be replaced by unrelated generic results.
     try {
       final productResults = await searchProducts(query: query);
-      result['products'] = productResults.take(limit).toList();
+      final seenProductIds = <String>{};
+      result['products'] = productResults
+          .whereType<Map>()
+          .where((product) {
+            final id = product['id']?.toString() ?? '';
+            return id.isNotEmpty && seenProductIds.add(id);
+          })
+          .take(limit)
+          .toList();
     } catch (_) {
       result.putIfAbsent('products', () => <dynamic>[]);
     }
