@@ -48,6 +48,16 @@ class _ProductCardState extends ConsumerState<ProductCard> {
     }
   }
 
+  String _priceLabel() {
+    if (widget.customPriceText != null) return widget.customPriceText!;
+    if (!widget.product.hasPrice) return 'Price unavailable';
+    final price = widget.product.displayPrice;
+    final value = price == price.roundToDouble()
+        ? price.toStringAsFixed(0)
+        : price.toStringAsFixed(2);
+    return '₹$value';
+  }
+
   Widget _buildStandard() {
     final isDark = context.isDark;
 
@@ -207,19 +217,18 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                             fontSize: 14,
                             weight: FontWeight.w700,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          widget.customPriceText ??
-                              '${widget.product.effectivePrice}',
+                          _priceLabel(),
                           style: GlassTypography.body(
                             fontSize: 14,
                             weight: FontWeight.w800,
                             color: context.trenzyColors.primary,
                           ),
                         ),
-                        ...[
+                        if (widget.product.rating > 0) ...[
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -379,12 +388,12 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 2),
           Text(
-            widget.customPriceText ?? '${widget.product.effectivePrice}',
+            _priceLabel(),
             style: TextStyle(
               color: context.trenzyColors.primary,
               fontSize: 13,
