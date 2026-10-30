@@ -174,6 +174,7 @@ class DiscoverScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: context.trenzyColors.graphite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -235,37 +236,30 @@ class DiscoverScreen extends ConsumerWidget {
                       ),
                     ),
                     SizedBox(height: 8),
-                    SizedBox(
-                      height: 36,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children:
-                            [
-                              'All',
-                              'Dresses',
-                              'Footwear',
-                              'Tops',
-                              'Bottoms',
-                              'Outerwear',
-                              'Accessories',
-                            ].map((cat) {
-                              final selected =
-                                  selectedCategory == cat ||
-                                  (cat == 'All' && selectedCategory == null);
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: GlassTag(
-                                  text: cat,
-                                  selected: selected,
-                                  onTap: () => setSheetState(
-                                    () => selectedCategory = cat == 'All'
-                                        ? null
-                                        : cat,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        'All',
+                        'Dresses',
+                        'Footwear',
+                        'Tops',
+                        'Bottoms',
+                        'Outerwear',
+                        'Accessories',
+                      ].map((cat) {
+                        final selected =
+                            selectedCategory == cat ||
+                            (cat == 'All' && selectedCategory == null);
+                        return GlassTag(
+                          text: cat,
+                          selected: selected,
+                          onTap: () => setSheetState(
+                            () => selectedCategory =
+                                cat == 'All' ? null : cat,
+                          ),
+                        );
+                      }).toList(),
                     ),
                     SizedBox(height: 20),
                     Text(
@@ -300,28 +294,22 @@ class DiscoverScreen extends ConsumerWidget {
                       ),
                     ),
                     SizedBox(height: 8),
-                    SizedBox(
-                      height: 36,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children:
-                            const [
-                              ('relevance', 'RELEVANCE'),
-                              ('price_asc', 'PRICE: LOW TO HIGH'),
-                              ('price_desc', 'PRICE: HIGH TO LOW'),
-                              ('rating', 'RATING'),
-                            ].map((option) {
-                              final s = option.$1;
-                              return Padding(
-                                padding: EdgeInsets.only(right: 8),
-                                child: GlassTag(
-                                  text: option.$2,
-                                  selected: sortBy == s,
-                                  onTap: () => setSheetState(() => sortBy = s),
-                                ),
-                              );
-                            }).toList(),
-                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: const [
+                        ('relevance', 'RELEVANCE'),
+                        ('price_asc', 'PRICE: LOW TO HIGH'),
+                        ('price_desc', 'PRICE: HIGH TO LOW'),
+                        ('rating', 'RATING'),
+                      ].map((option) {
+                        final s = option.$1;
+                        return GlassTag(
+                          text: option.$2,
+                          selected: sortBy == s,
+                          onTap: () => setSheetState(() => sortBy = s),
+                        );
+                      }).toList(),
                     ),
                     SizedBox(height: 24),
                     SizedBox(
