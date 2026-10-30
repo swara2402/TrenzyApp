@@ -21,6 +21,14 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
   final _messages = <Map<String, dynamic>>[];
   int? _conversationId;
   bool _loading = false;
+  String _selectedPersona = 'everyday';
+
+  static const _personas = <String, String>{
+    'everyday': 'Everyday',
+    'minimalist': 'Minimalist',
+    'streetwear': 'Streetwear',
+    'trendsetter': 'Trendsetter',
+  };
 
   final List<String> _quickPrompts = const [
     'Casual weekend look',
@@ -67,7 +75,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     try {
       final result = await ref
           .read(apiServiceProvider)
-          .aiStylistChat(message: text, conversationId: _conversationId);
+          .aiStylistChat(message: text, conversationId: _conversationId, persona: _selectedPersona);
       _conversationId = (result['conversation_id'] as num?)?.toInt();
 
       final responseText = (result['message'] ?? result['reply'] ?? result['response'])
@@ -154,6 +162,25 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
       ),
       body: Column(
         children: [
+          // Select a distinct stylist persona before chatting.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+            child: Row(
+              children: _personas.entries.map((entry) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(entry.value),
+                  selected: _selectedPersona == entry.key,
+                  onSelected: _loading ? null : (_) => setState(() => _selectedPersona = entry.key),
+                  selectedColor: c.primary.withValues(alpha: 0.22),
+                  labelStyle: GlassTypography.meta(fontSize: 11, color: _selectedPersona == entry.key ? c.primary : c.mutedFg),
+                  side: BorderSide(color: _selectedPersona == entry.key ? c.primary : c.glassBorder),
+                ),
+              )).toList(),
+            ),
+          ),
+
           // Quick prompts bar
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
