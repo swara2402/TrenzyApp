@@ -216,37 +216,31 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     }
   }
 
-  void _recordSwipe(String productId, String type) {
+  Future<void> _recordSwipe(String productId, String type) async {
+    // Do not advance the card until the vote is persisted. Otherwise a
+    // transient network failure silently loses a member's Blend vote.
+    await ref.read(apiServiceProvider).recordBlendSwipe(
+      groupId: widget.groupId,
+      productId: productId,
+      swipeType: type,
+    );
     _swipeHistory[productId] = type;
-    _sendSwipeToServer(productId, type);
     trackBlendSwipe(ref, widget.groupId, productId, type);
-  }
-
-  void _sendSwipeToServer(String productId, String type) {
-    final api = ref.read(apiServiceProvider);
-    api
-        .recordBlendSwipe(
-          groupId: widget.groupId,
-          productId: productId,
-          swipeType: type,
-        )
-        .catchError((e) {
-          debugPrint('[BlendSwipe] Failed to record swipe: $e');
-        });
   }
 
   bool get _allSwiped => _currentIndex >= _products.length;
 
-  void _swipeAway(String type) {
-    if (_isAnimating) return;
-    _isAnimating = true;
+  Future<void> _swipeAway(String type) async {
+    if (_isAnimating || _allSwiped) return;
+    setState(() => _isAnimating = true);
 
     final product = _products[_currentIndex];
-    _recordSwipe(product.id, type);
-    HapticFeedback.mediumImpact();
-
-    _swipeAnimator.reset();
-    _swipeAnimator.forward().whenComplete(() {
+    try {
+      await _recordSwipe(product.id, type);
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      _swipeAnimator.reset();
+      await _swipeAnimator.forward();
       if (!mounted) return;
       setState(() {
         _currentIndex++;
@@ -256,29 +250,42 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
       });
       _enterController.reset();
       _enterController.forward();
-    });
+    } catch (error) {
+      debugPrint('[BlendSwipe] Failed to record swipe: $error');
+      if (!mounted) return;
+      setState(() {
+        _dragX = 0;
+        _dragY = 0;
+        _isAnimating = false;
+      });
+      GlassToast.error(context, 'Your vote wasn’t saved. Please try again.');
+    }
   }
 
-  void _undoLastSwipe() {
+  Future<void> _undoLastSwipe() async {
     if (_currentIndex <= 0 || _isAnimating) return;
-    HapticFeedback.lightImpact();
     final undoneProduct = _products[_currentIndex - 1];
-    // Undo is now server-backed: remove the swipe vote so results and
-    // other members' views reflect the correction, not just this device.
-    final api = ref.read(apiServiceProvider);
-    api
-        .undoBlendSwipe(groupId: widget.groupId, productId: undoneProduct.id)
-        .catchError((e) {
-          debugPrint('[BlendSwipe] Failed to undo swipe: $e');
-        });
-    setState(() {
-      _currentIndex--;
-      if (_currentIndex < _products.length) {
-        _swipeHistory.remove(_products[_currentIndex].id);
-      }
-      _dragX = 0;
-      _dragY = 0;
-    });
+    setState(() => _isAnimating = true);
+    try {
+      await ref.read(apiServiceProvider).undoBlendSwipe(
+        groupId: widget.groupId,
+        productId: undoneProduct.id,
+      );
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      setState(() {
+        _currentIndex--;
+        _swipeHistory.remove(undoneProduct.id);
+        _dragX = 0;
+        _dragY = 0;
+        _isAnimating = false;
+      });
+    } catch (error) {
+      debugPrint('[BlendSwipe] Failed to undo swipe: $error');
+      if (!mounted) return;
+      setState(() => _isAnimating = false);
+      GlassToast.error(context, 'Couldn’t undo that vote. Please try again.');
+    }
   }
 
   void _snapBack() {
