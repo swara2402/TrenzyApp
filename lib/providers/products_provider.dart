@@ -166,14 +166,18 @@ final wishlistProductsProvider = FutureProvider.autoDispose<List<ProductModel>>(
       final api = ref.watch(apiServiceProvider);
       final result = await api.getBatchProducts(productIds.toList());
       final products = result['products'] as List<dynamic>? ?? [];
-      return products
-          .map(
-            (e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
+      final byId = <String, ProductModel>{
+        for (final raw in products)
+          if (raw is Map)
+            ProductModel.fromJson(Map<String, dynamic>.from(raw)).id:
+                ProductModel.fromJson(Map<String, dynamic>.from(raw)),
+      };
+      // Preserve the user's saved order; batch endpoints need not return rows
+      // in the same order as the requested IDs.
+      return productIds
+          .map((id) => byId[id])
+          .whereType<ProductModel>()
           .toList();
-    } catch (_) {
-      return const <ProductModel>[];
-    }
   },
 );
 
