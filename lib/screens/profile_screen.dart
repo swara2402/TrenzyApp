@@ -691,28 +691,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       loading: () =>
           Center(child: LoadingSkeletonShimmer(height: 200, radius: 12)),
       error: (e, _) => Center(
-        child: Text(
-          'Could not load wardrobe',
-          style: TextStyle(color: context.trenzyColors.mutedFg),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 36,
+                color: context.trenzyColors.mutedFg,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Could not load your wardrobe',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: context.trenzyColors.mutedFg),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => ref.invalidate(wardrobeProvider),
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Try again'),
+              ),
+            ],
+          ),
         ),
       ),
       data: (items) {
         if (items.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.checkroom_outlined,
-                  size: 40,
-                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.4),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Wardrobe is empty',
-                  style: TextStyle(color: context.trenzyColors.mutedFg),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.checkroom_outlined,
+                    size: 44,
+                    color: context.trenzyColors.mutedFg.withValues(alpha: 0.55),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Your wardrobe starts here',
+                    style: TextStyle(
+                      color: context.trenzyColors.foreground,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Save pieces you love and build outfits from your collection.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: context.trenzyColors.mutedFg),
+                  ),
+                  const SizedBox(height: 14),
+                  FilledButton.icon(
+                    onPressed: () => context.push(AppRoutes.wardrobe),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Open my wardrobe'),
+                  ),
+                ],
+              ),
             ),
           );
         }
