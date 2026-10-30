@@ -44,16 +44,31 @@ class _JustDroppedSection extends ConsumerWidget {
           ),
           SizedBox(height: 16),
           feedAsync.when(
-            loading: () => SizedBox(
-              height: 190,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: 3,
-                separatorBuilder: (_, _) => SizedBox(width: 12),
-                itemBuilder: (_, _) =>
-                    LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
-              ),
-            ),
+            loading: () {
+              final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+              if (catalog.isNotEmpty) {
+                return _homeCatalogFallback(
+                  context,
+                  catalog,
+                  title: 'Fresh from the catalog',
+                  heroTag: '_just_dropped_loading_fallback',
+                  startIndex: 16,
+                );
+              }
+              return SizedBox(
+                height: 190,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 3,
+                  separatorBuilder: (_, _) => SizedBox(width: 12),
+                  itemBuilder: (_, _) => LoadingSkeletonShimmer(
+                    height: 190,
+                    width: 130,
+                    radius: 16,
+                  ),
+                ),
+              );
+            },
             error: (_, _) => _homeCatalogFallback(
               context,
               catalogAsync.valueOrNull ?? const <ProductModel>[],
