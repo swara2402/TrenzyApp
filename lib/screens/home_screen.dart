@@ -14,6 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/glass_theme.dart';
 import '../providers/user_preferences_provider.dart';
 import '../models/blend_model.dart';
+import '../models/product_model.dart';
 
 import '../services/api_service.dart';
 
