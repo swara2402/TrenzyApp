@@ -10,6 +10,7 @@ import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/theme/trenzy_colors.dart';
 import '../services/api_service.dart';
+import '../widgets/section_states.dart';
 
 class OutfitBuilderScreen extends ConsumerStatefulWidget {
   final Outfit? initialOutfit;
