@@ -98,6 +98,15 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
                 title: 'Trending styles to explore',
                 heroTag: '_trending_loading_fallback',
                 startIndex: 8,
+                onRetry: () => ref.invalidate(
+                  trendingProductsProvider(
+                    TrendingParams(
+                      categories: categoriesParam,
+                      timeframe: 'daily',
+                      limit: 10,
+                    ),
+                  ),
+                ),
               );
             }
             return SizedBox(
