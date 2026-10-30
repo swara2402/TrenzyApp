@@ -272,6 +272,44 @@ async def save_preferences(
         if payload.onboarding_step is not None:
             prefs.onboarding_step = max(0, min(payload.onboarding_step, 5))
 
+        # Keep the user's active style persona in sync with saved preferences.
+        # This makes persona selection affect every recommendation surface without
+        # requiring a separate, easy-to-miss "generate persona" action.
+        preference_snapshot = {
+            "preferred_categories": prefs.preferred_categories or [],
+            "preferred_styles": prefs.preferred_styles or [],
+            "preferred_aesthetics": prefs.preferred_aesthetics or [],
+            "preferred_colors": prefs.preferred_colors or [],
+            "preferred_brands": prefs.preferred_brands or [],
+            "budget_max": prefs.budget_max,
+        }
+        has_style_input = any(
+            preference_snapshot[key]
+            for key in (
+                "preferred_categories",
+                "preferred_styles",
+                "preferred_aesthetics",
+                "preferred_colors",
+                "preferred_brands",
+            )
+        )
+        if has_style_input:
+            persona_data = _STYLE_PERSONAS[
+                _match_persona_from_preferences(preference_snapshot)
+            ]
+            active_persona = session.execute(
+                select(StylePersona).where(
+                    StylePersona.user_firebase_uid == auth_uid
+                )
+            ).scalar_one_or_none()
+            if active_persona is None:
+                active_persona = StylePersona(user_firebase_uid=auth_uid)
+                session.add(active_persona)
+            active_persona.name = persona_data["name"]
+            active_persona.description = persona_data["description"]
+            active_persona.keywords = persona_data["keywords"]
+            active_persona.vibe = persona_data["vibe"]
+
         session.commit()
     except Exception as exc:
         session.rollback()
