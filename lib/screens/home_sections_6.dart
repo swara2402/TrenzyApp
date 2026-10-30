@@ -54,10 +54,12 @@ class _JustDroppedSection extends ConsumerWidget {
                     LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
               ),
             ),
-            error: (_, _) => ErrorSection(
-              title: 'Couldn\u2019t load new drops',
-              message: 'Fresh drops are unavailable right now.',
-              compact: true,
+            error: (_, _) => _homeCatalogFallback(
+              context,
+              catalogAsync.valueOrNull ?? const <ProductModel>[],
+              title: 'Fresh from the catalog',
+              heroTag: '_just_dropped_error_fallback',
+              startIndex: 16,
               onRetry: () => ref.invalidate(feedProvider),
             ),
             data: (feed) {
