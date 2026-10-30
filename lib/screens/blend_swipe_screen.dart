@@ -739,10 +739,12 @@ class _ProductCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        product.effectivePrice.toString(),
+                        product.hasPrice
+                            ? '₹${product.displayPrice == product.displayPrice.roundToDouble() ? product.displayPrice.toStringAsFixed(0) : product.displayPrice.toStringAsFixed(2)}'
+                            : 'Price unavailable',
                         style: TextStyle(
                           color: colors.primary,
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
