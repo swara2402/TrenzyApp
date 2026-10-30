@@ -134,6 +134,7 @@ If you don't know something, be honest and ask for more details to better assist
         user_id: int,
         message: str,
         conversation_id: Optional[int] = None,
+        persona: str = "everyday",
     ) -> Dict[str, Any]:
         """Process a chat message from the user.
 
@@ -179,7 +180,7 @@ If you don't know something, be honest and ask for more details to better assist
         # Use the local catalog-backed response path for reliable beta replies.
         # Remote model calls can stall when an optional provider is unavailable;
         # the launch configuration requires the stylist to work without them.
-        assistant_message = self._fallback_response(message, relevant_products)
+        assistant_message = self._fallback_response(message, relevant_products, persona=persona)
 
         # Save assistant message
         assistant_msg = AIMessage(
@@ -309,17 +310,24 @@ If you don't know something, be honest and ask for more details to better assist
         Returns:
             Fashion advice response
         """
+        persona_styles = {
+            "everyday": ("Your friendly everyday stylist", "balanced, wearable outfits"),
+            "minimalist": ("Your clean-girl minimalist stylist", "clean lines, versatile basics, and neutral palettes"),
+            "streetwear": ("Your streetwear stylist", "relaxed fits, sneaker-led looks, and statement layers"),
+            "trendsetter": ("Your trend-forward stylist", "fresh silhouettes, playful details, and standout pieces"),
+        }
+        persona_name, persona_focus = persona_styles.get(persona, persona_styles["everyday"])
         msg_lower = message.strip().lower()
 
         # Handle casual greetings warmly
         greetings = ["hey", "heyyy", "heyy", "hi", "hello", "hola", "yo", "sup", "good morning", "good evening"]
         if any(msg_lower == g for g in greetings) or msg_lower.startswith("hey") or msg_lower.startswith("hi"):
-            return "Hey there! I'm your Trenzy AI Stylist. I can help you build outfits, find recommendations for any occasion, or discover pieces from our collection. What are you looking to wear today?"
+            return f"Hey there! I'm {persona_name}. I focus on {persona_focus}. Tell me the occasion and I'll help you put a look together. 💗"
 
         if not relevant_products:
-            return f"I'd love to help you style for '{message}'! Try asking about casual outfits, footwear, office wear, or party looks, and I'll pull top recommendations for you."
+            return f"I'd love to help you style '{message}' with {persona_focus}. Try adding the occasion, colours, or budget and I'll narrow it down for you."
 
-        response = f"Based on your style preference for '{message}', here are some top picks:\n\n"
+        response = f"As {persona_name}, I'd style '{message}' around {persona_focus}. Here are some catalog picks:\n\n"
         for product in relevant_products[:3]:
             response += f"• {product.name} — ₹{product.price:.0f}\n"
         response += "\nLet me know if you'd like outfit combinations with these!"
