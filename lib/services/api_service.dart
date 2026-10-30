@@ -394,7 +394,7 @@ class ApiService implements ApiServiceBase {
       _blendApi.getBlendGroup(groupId);
 
   @override
-  Future<Map<String, dynamic>> getBlendResults(String groupId) =>
+  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId) =>\n      _blendApi.getBlendMatchingSuggestions(groupId);\n\n  @override\n  Future<Map<String, dynamic>> getBlendResults(String groupId) =>
       _blendApi.getBlendResults(groupId);
 
   @override
