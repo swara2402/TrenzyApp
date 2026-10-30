@@ -305,6 +305,26 @@ def _build_personalized_query(
             return None
         return case((or_(*conds), 1.0), else_=0.0)
 
+    def _persona_boost_expr():
+        """Rank active-persona matches even when strict filtering is relaxed."""
+        keywords = [
+            keyword for keyword in (persona.keywords or [])
+            if isinstance(keyword, str) and keyword.strip()
+        ] if persona else []
+        if not keywords:
+            return None
+        conditions = [
+            or_(
+                json_array_contains(Product.tags, keyword),
+                json_array_contains(Product.style_tags, keyword),
+                Product.style.ilike(f"%{keyword}%"),
+                Product.category.ilike(f"%{keyword}%"),
+                Product.subcategory.ilike(f"%{keyword}%"),
+            )
+            for keyword in keywords
+        ]
+        return case((or_(*conditions), 1.0), else_=0.0)
+
     def _score_and_fetch(q, fetch_limit):
         try:
             priority_expr = priority_score_expr(prefs.shopping_priorities if prefs else [])
@@ -313,6 +333,7 @@ def _build_personalized_query(
             priority_expr = None
         style_boost = _style_boost_expr()
         behavior_boost = _behavior_boost_expr()
+        persona_boost = _persona_boost_expr()
 
         parts = [func.coalesce(Product.rating, 3.0) / 5.0 * 0.4]
         if priority_expr is not None:
@@ -321,6 +342,8 @@ def _build_personalized_query(
             parts.append(style_boost * 0.15)
         if behavior_boost is not None:
             parts.append(behavior_boost * 0.2)
+        if persona_boost is not None:
+            parts.append(persona_boost * 0.2)
         score = sum(parts)
         return q.order_by(score.desc()).limit(fetch_limit).all()
 
