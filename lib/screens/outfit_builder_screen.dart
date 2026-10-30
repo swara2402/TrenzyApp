@@ -51,6 +51,23 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     }
   }
 
+  bool _matchesSelectedCategory(String? rawCategory) {
+    if (_selectedCategory == 'All Items') return true;
+    final value = (rawCategory ?? '').trim().toLowerCase();
+    if (value.isEmpty) return false;
+
+    const categoryTerms = <String, List<String>>{
+      'Tops': ['top', 'shirt', 't-shirt', 'tee', 'blouse', 'sweater', 'sweatshirt', 'hoodie', 'polo', 'jersey', 'knit', 'crewneck'],
+      'Bottoms': ['bottom', 'jean', 'trouser', 'pant', 'chino', 'short', 'cargo', 'skirt', 'legging', 'jogger'],
+      'Dresses': ['dress', 'gown', 'lehenga', 'one-piece', 'jumpsuit'],
+      'Outerwear': ['outerwear', 'jacket', 'coat', 'blazer', 'windbreaker', 'varsity', 'overshirt', 'cardigan', 'parka'],
+      'Footwear': ['footwear', 'shoe', 'sneaker', 'trainer', 'boot', 'sandal', 'loafer', 'derby', 'heel', 'flat'],
+      'Accessories': ['accessory', 'accessories', 'bag', 'cap', 'hat', 'belt', 'watch', 'wallet', 'sunglasses', 'jewelry', 'jewellery'],
+    };
+    final terms = categoryTerms[_selectedCategory] ?? [_selectedCategory.toLowerCase()];
+    return terms.any(value.contains);
+  }
+
   void _addItemToCanvas(_ItemData item) {
     if (_canvasItems.any((existing) => existing.id == item.id)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -515,12 +532,52 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
         final itemDataList = allItems
             .map((w) {
               final parsedId = int.tryParse(w.id) ?? 0;
-              return _ItemData(parsedId, w.brand, w.name, w.effectiveImageUrl, w.category);
+              return _ItemData(
+                parsedId,
+                w.brand.isEmpty ? 'Unknown' : w.brand,
+                w.name,
+                w.effectiveImageUrl,
+                w.category,
+              );
             })
             .where((item) => item.id > 0)
-            .where((item) => _selectedCategory == 'All Items' ||
-                (item.category ?? '').toLowerCase().contains(_selectedCategory.toLowerCase().replaceAll(' items', '')))
+            .where((item) => _matchesSelectedCategory(item.category))
             .toList();
+
+        if (itemDataList.isEmpty) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.checkroom_outlined,
+                      size: 42,
+                      color: context.trenzyColors.mutedFg,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No ${_selectedCategory.toLowerCase()} in your wardrobe yet',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: context.trenzyColors.foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add an item or choose another category.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: context.trenzyColors.mutedFg),
+                    ),
+                  ],
+                ),
+              ),
+              _buildAddItemCard(),
+            ],
+          );
+        }
 
         return GridView.builder(
           shrinkWrap: true,
