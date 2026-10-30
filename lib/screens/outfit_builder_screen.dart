@@ -24,6 +24,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   final List<_ItemData> _canvasItems = [];
   final _nameController = TextEditingController();
   bool _isSaving = false;
+  String _selectedCategory = 'All Items';
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 item.brand.isEmpty ? 'Unknown' : item.brand,
                 item.name,
                 ApiService.resolveImageUrl(item.imageUrl) ?? item.imageUrl,
+                item.category,
               ),
             );
           }
@@ -49,9 +51,13 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   }
 
   void _addItemToCanvas(_ItemData item) {
-    setState(() {
-      _canvasItems.add(item);
-    });
+    if (_canvasItems.any((existing) => existing.id == item.id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.name} is already on your outfit')),
+      );
+      return;
+    }
+    setState(() => _canvasItems.add(item));
   }
 
   void _removeItemFromCanvas(int index) {
@@ -460,11 +466,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: categories.map((category) {
-          bool isActive = category == 'All Items';
+          final isActive = category == _selectedCategory;
           return Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => setState(() => _selectedCategory = category),
               style: ElevatedButton.styleFrom(
                 foregroundColor: isActive
                     ? context.trenzyColors.primaryFg
@@ -501,16 +507,18 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
 
     return wardrobeAsync.when(
       data: (state) {
-        final items = state.items;
-        if (items.isEmpty) {
+        final allItems = state.items;
+        if (allItems.isEmpty) {
           return _buildEmptyWardrobe();
         }
-        final itemDataList = items
+        final itemDataList = allItems
             .map((w) {
               final parsedId = int.tryParse(w.id) ?? 0;
-              return _ItemData(parsedId, w.brand, w.name, w.effectiveImageUrl);
+              return _ItemData(parsedId, w.brand, w.name, w.effectiveImageUrl, w.category);
             })
             .where((item) => item.id > 0)
+            .where((item) => _selectedCategory == 'All Items' ||
+                (item.category ?? '').toLowerCase().contains(_selectedCategory.toLowerCase().replaceAll(' items', '')))
             .toList();
 
         return GridView.builder(
@@ -561,7 +569,11 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
       loading: () => Center(
         child: CircularProgressIndicator(color: context.trenzyColors.primary),
       ),
-      error: (_, e) => _buildEmptyWardrobe(),
+      error: (error, _) => ErrorSection(
+        title: 'Could not load your wardrobe',
+        message: friendlyError(error),
+        onRetry: () => ref.invalidate(wardrobeProvider),
+      ),
     );
   }
 
@@ -688,8 +700,9 @@ class _ItemData {
   final String brand;
   final String name;
   final String imageUrl;
+  final String? category;
 
-  _ItemData(this.id, this.brand, this.name, this.imageUrl);
+  _ItemData(this.id, this.brand, this.name, this.imageUrl, [this.category]);
 }
 
 class _ItemCard extends StatelessWidget {
