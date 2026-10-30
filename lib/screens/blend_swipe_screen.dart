@@ -415,7 +415,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
                                   );
                                   if (sheetContext.mounted) Navigator.pop(sheetContext);
                                   if (mounted) {
-                                    GlassToast.success(context, 'Added to your Blend deck!');
+                                    GlassToast.info(context, 'Added to your Blend deck!');
                                   }
                                 } catch (_) {
                                   if (mounted) {
