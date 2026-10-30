@@ -191,7 +191,8 @@ If you don't know something, be honest and ask for more details to better assist
         db.add(assistant_msg)
 
         # Update conversation
-        conversation.message_count += 1
+        # One user message and one assistant message were persisted.
+        conversation.message_count = (conversation.message_count or 0) + 2
         conversation.updated_at = func.now()
 
         db.commit()
