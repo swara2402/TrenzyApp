@@ -295,6 +295,152 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     });
   }
 
+  Future<void> _showAiMatches() async {
+    final suggestionsFuture = ref
+        .read(apiServiceProvider)
+        .getBlendMatchingSuggestions(widget.groupId);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.trenzyColors.graphite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(sheetContext).height * 0.72,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: context.trenzyColors.primary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DisplayText('AI picks for your Blend', fontSize: 20),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Chosen from the group’s combined style, colours and budget.',
+                  style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 12),
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: FutureBuilder<List<dynamic>>(
+                    future: suggestionsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Could not load matching picks. Please try again.',
+                            style: TextStyle(color: context.trenzyColors.mutedFg),
+                          ),
+                        );
+                      }
+                      final items = snapshot.data ?? const <dynamic>[];
+                      if (items.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'We need a little more style activity to find group matches.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: context.trenzyColors.mutedFg),
+                          ),
+                        );
+                      }
+                      return ListView.separated(
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => Divider(
+                          color: context.trenzyColors.glassBorder,
+                        ),
+                        itemBuilder: (context, index) {
+                          final product = ProductModel.fromJson(
+                            Map<String, dynamic>.from(items[index] as Map),
+                          );
+                          final raw = Map<String, dynamic>.from(items[index] as Map);
+                          final match = raw['matchScore']?.toString() ?? '—';
+                          final reason = raw['matchReason']?.toString() ?? 'Shared style match';
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SizedBox(
+                                width: 58,
+                                height: 68,
+                                child: CachedNetworkImage(
+                                  imageUrl: product.effectiveImageUrl,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, _, _) => Icon(
+                                    Icons.checkroom,
+                                    color: context.trenzyColors.mutedFg,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: context.trenzyColors.foreground,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '$match% match · $reason',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 11),
+                            ),
+                            trailing: IconButton(
+                              tooltip: 'Add to Blend',
+                              icon: Icon(Icons.add_circle_outline, color: context.trenzyColors.primary),
+                              onPressed: () async {
+                                try {
+                                  await ref.read(apiServiceProvider).addToSharedWishlist(
+                                    widget.groupId,
+                                    productId: product.id,
+                                    productName: product.name,
+                                    productPrice: product.price,
+                                    productImage: product.imageUrl,
+                                    productBrand: product.brand,
+                                    productCategory: product.category,
+                                    notes: 'AI suggested group match',
+                                  );
+                                  if (sheetContext.mounted) Navigator.pop(sheetContext);
+                                  if (mounted) {
+                                    // The sheet is dismissed above; this State context is guarded by mounted.
+                                    // ignore: use_build_context_synchronously
+                                    GlassToast.info(context, 'Added to your Blend deck!');
+                                  }
+                                } catch (_) {
+                                  if (mounted) {
+                                    // ignore: use_build_context_synchronously
+                                    GlassToast.error(context, 'Could not add this pick. Try again.');
+                                  }
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_products.isEmpty) {
@@ -458,6 +604,11 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'AI matching picks',
+            icon: Icon(Icons.auto_awesome, color: context.trenzyColors.primary),
+            onPressed: _showAiMatches,
+          ),
           if (widget.group.members.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),

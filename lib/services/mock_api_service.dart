@@ -483,6 +483,12 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<List<dynamic>> getBlendMatchingSuggestions(String groupId) async {
+    await _delay(const Duration(milliseconds: 250));
+    return [];
+  }
+
+  @override
   Future<Map<String, dynamic>> getBlendGroup(String groupId) async {
     await _delay(const Duration(milliseconds: 250));
     return {};

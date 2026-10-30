@@ -54,7 +54,7 @@ from ..auth_helpers import (
     raise_forbidden,
     raise_not_found,
 )
-from ..models import Blend, BlendInvitation, BlendMember, BlendSwipe, Product, Friend
+from ..models import Blend, BlendInvitation, BlendMember, BlendSwipe, Product, Friend, UserPreference, StylePersona
 from .products import _product_payload
 
 router = APIRouter(prefix="/api/blends", tags=["blends"])
@@ -420,6 +420,146 @@ def get_group(group_id: str, request: Request, session: Session = Depends(get_se
     
     members = session.query(BlendMember).filter(BlendMember.blend_id == group_id).all()
     return _group_payload(group, members, session)
+
+
+@router.get("/{group_id}/matching-suggestions")
+def get_blend_matching_suggestions(
+    group_id: str,
+    request: Request,
+    limit: int = 12,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Recommend catalog products using the combined preferences of Blend members.
+
+    This is a deterministic, explainable recommendation scorer; it does not
+    require an external LLM or paid AI provider. Each member contributes an
+    equal-weight preference profile so one person's taste cannot dominate.
+    """
+    decoded = verify_firebase_token(request)
+    firebase_uid = _get_uid(decoded)
+    if not require_blend_member_sync(firebase_uid, group_id, session):
+        raise_forbidden("Not a member of this blend")
+
+    members = session.query(BlendMember).filter(
+        BlendMember.blend_id == group_id
+    ).all()
+    member_uids = [m.user_firebase_uid for m in members if m.user_firebase_uid]
+    if not member_uids:
+        return {"suggestions": [], "message": "Add members to build a shared style profile."}
+
+    prefs_rows = session.query(UserPreference).filter(
+        UserPreference.user_firebase_uid.in_(member_uids)
+    ).all()
+    prefs_by_uid = {p.user_firebase_uid: p for p in prefs_rows}
+    persona_rows = session.query(StylePersona).filter(
+        StylePersona.user_firebase_uid.in_(member_uids)
+    ).all()
+    personas_by_uid = {p.user_firebase_uid: p for p in persona_rows}
+
+    def values(value: Any) -> set[str]:
+        if not isinstance(value, (list, tuple, set)):
+            return set()
+        return {str(v).strip().lower() for v in value if v is not None and str(v).strip()}
+
+    profiles = []
+    for uid in member_uids:
+        pref = prefs_by_uid.get(uid)
+        persona = personas_by_uid.get(uid)
+        profiles.append({
+            "categories": values(getattr(pref, "preferred_categories", None)),
+            "styles": values(getattr(pref, "preferred_styles", None)),
+            "aesthetics": values(getattr(pref, "preferred_aesthetics", None)),
+            "colors": values(getattr(pref, "preferred_colors", None)),
+            "occasions": values(getattr(pref, "preferred_occasions", None)),
+            "brands": values(getattr(pref, "preferred_brands", None)),
+            "budget": getattr(pref, "budget_max", None),
+            "keywords": values(getattr(persona, "keywords", None)),
+            "persona": str(getattr(persona, "name", "") or "").lower(),
+        })
+
+    swipes = session.query(BlendSwipe.product_id, BlendSwipe.score).filter(
+        BlendSwipe.blend_id == group_id
+    ).all()
+    excluded_ids = {pid for pid, _ in swipes if pid}
+    deck_ids: set[str] = set()
+    group = session.query(Blend).filter(Blend.id == group_id).first()
+    if group and group.deck_json:
+        try:
+            parsed = json.loads(group.deck_json)
+            ids = parsed.get("ids", []) if isinstance(parsed, dict) else parsed
+            if isinstance(ids, list):
+                deck_ids = {str(pid) for pid in ids}
+        except (ValueError, TypeError):
+            pass
+    excluded_ids.update(deck_ids)
+
+    candidates = session.query(Product).filter(
+        Product.is_archived.is_(False)
+    ).order_by(Product.rating.desc()).limit(1500).all()
+
+    ranked: list[tuple[float, Product, str]] = []
+    for product in candidates:
+        if product.id in excluded_ids:
+            continue
+        category = str(product.category or "").lower()
+        style = str(product.style or "").lower()
+        color = str(product.color or product.display_color or "").lower()
+        occasion = str(product.occasion or product.usage or "").lower()
+        brand = str(product.brand or "").lower()
+        tags = values(product.tags)
+        member_scores = []
+        matched_signals: set[str] = set()
+        for profile in profiles:
+            score = 0.0
+            possible = 0.0
+            checks = [
+                (profile["categories"], category, 2.0, "category"),
+                (profile["styles"], style, 3.0, "style"),
+                (profile["aesthetics"], style, 2.0, "aesthetic"),
+                (profile["colors"], color, 2.0, "colour"),
+                (profile["occasions"], occasion, 1.5, "occasion"),
+                (profile["brands"], brand, 1.0, "brand"),
+            ]
+            for preferred, actual, weight, label in checks:
+                if preferred:
+                    possible += weight
+                    if actual and any(v in actual or actual in v for v in preferred):
+                        score += weight
+                        matched_signals.add(label)
+            if profile["keywords"]:
+                possible += 2.0
+                if any(k in " ".join([style, category, occasion, brand, *tags]) for k in profile["keywords"]):
+                    score += 2.0
+                    matched_signals.add("persona")
+            budget = profile["budget"]
+            if budget and product.price is not None:
+                possible += 1.5
+                if float(product.price) <= float(budget):
+                    score += 1.5
+                    matched_signals.add("budget")
+            member_scores.append(score / possible if possible else 0.0)
+        # Equal member weighting; rating is only a small tie-breaker.
+        collective = sum(member_scores) / len(member_scores)
+        rating_bonus = min(max(float(product.rating or 0), 0.0), 5.0) / 50.0
+        total = collective * 0.9 + rating_bonus
+        if total > 0:
+            reason = "Matches shared " + ", ".join(sorted(matched_signals)[:3]) if matched_signals else "Popular catalog pick"
+            ranked.append((total, product, reason))
+
+    ranked.sort(key=lambda item: item[0], reverse=True)
+    suggestions = []
+    for score, product, reason in ranked[:max(1, min(limit, 30))]:
+        item = _product_payload(product)
+        item["matchScore"] = round(min(score * 100, 100))
+        item["matchReason"] = reason
+        item["reason"] = reason
+        suggestions.append(item)
+
+    return {
+        "suggestions": suggestions,
+        "memberCount": len(member_uids),
+        "basedOn": ["member preferences", "style personas", "budget", "catalog attributes"],
+    }
 
 
 @router.post("/{group_id}/deck")
