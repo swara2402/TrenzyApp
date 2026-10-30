@@ -4,6 +4,7 @@ import '../models/wardrobe_model.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
 import 'discover_providers.dart';
+import 'user_preferences_provider.dart';
 import 'wardrobe_provider.dart';
 
 final todaysAiPicksProvider =
