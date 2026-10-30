@@ -24,6 +24,7 @@ class _AiPicksSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final picksAsync = ref.watch(todaysAiPicksProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     return picksAsync.when(
       loading: () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -54,12 +55,45 @@ class _AiPicksSection extends ConsumerWidget {
       ),
       data: (picks) {
         if (picks.isEmpty) {
-          return EmptySection(
-            title: 'We\u2019re still learning your style',
-            subtitle:
-                'Explore a few items and we\u2019ll start recommending pieces just for you.',
-            actionLabel: 'Explore',
-            onAction: () => context.go(AppRoutes.discover),
+          final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+          if (catalog.isEmpty) {
+            return EmptySection(
+              title: 'We\u2019re still learning your style',
+              subtitle:
+                  'Explore a few items and we\u2019ll start recommending pieces just for you.',
+              actionLabel: 'Explore',
+              onAction: () => context.go(AppRoutes.discover),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionHeader(context, 'Fresh picks to explore', Icons.auto_awesome_rounded),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 300,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: catalog.take(8).length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: catalog[index],
+                        compact: true,
+                        variant: ProductCardVariant.compact,
+                        heroTagSuffix: '_home_fallback_$index',
+                        onTap: () => context.push(
+                          AppRoutes.productDetailsFor(catalog[index].id),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
         return Padding(
