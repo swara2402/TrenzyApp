@@ -35,6 +35,7 @@ class _AiPicksSection extends ConsumerWidget {
             title: 'Fresh picks for you',
             heroTag: '_for_you_loading_fallback',
             startIndex: 0,
+            onRetry: () => ref.invalidate(todaysAiPicksProvider),
           );
         }
         return Padding(
