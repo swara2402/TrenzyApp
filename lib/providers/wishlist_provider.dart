@@ -55,9 +55,10 @@ class WishlistNotifier extends AutoDisposeAsyncNotifier<WishlistState> {
       } else {
         await api.addWishlistItem(productId);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Wishlist sync failed: $e');
       state = AsyncValue.data(current);
+      Error.throwWithStackTrace(e, stackTrace);
     }
   }
 
