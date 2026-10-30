@@ -13,6 +13,9 @@ final todaysAiPicksProvider =
       );
       if (uid == null) return [];
 
+      // Recompute Home picks whenever onboarding or settings preferences change.
+      ref.watch(userPreferencesProvider);
+
       final api = ref.watch(apiServiceProvider);
       try {
         final res = await api.getRecommendedProducts(limit: 8);
