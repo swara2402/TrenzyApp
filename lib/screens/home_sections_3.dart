@@ -48,9 +48,12 @@ class _AiPicksSection extends ConsumerWidget {
           ],
         ),
       ),
-      error: (error, _) => ErrorSection(
-        title: 'AI picks are playing hard to get',
-        message: friendlyError(error),
+      error: (error, _) => _homeCatalogFallback(
+        context,
+        catalogAsync.valueOrNull ?? const <ProductModel>[],
+        title: 'Fresh picks to explore',
+        heroTag: '_home_error_fallback',
+        startIndex: 0,
         onRetry: () => ref.invalidate(todaysAiPicksProvider),
       ),
       data: (picks) {
