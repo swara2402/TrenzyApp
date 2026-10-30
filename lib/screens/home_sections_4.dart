@@ -89,17 +89,32 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
         ),
         SizedBox(height: 12),
         trendsAsync.when(
-          loading: () => SizedBox(
-            height: 190,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 3,
-              separatorBuilder: (_, _) => SizedBox(width: 12),
-              itemBuilder: (_, _) =>
-                  LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
-            ),
-          ),
+          loading: () {
+            final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+            if (catalog.isNotEmpty) {
+              return _homeCatalogFallback(
+                context,
+                catalog,
+                title: 'Trending styles to explore',
+                heroTag: '_trending_loading_fallback',
+                startIndex: 8,
+              );
+            }
+            return SizedBox(
+              height: 190,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: 3,
+                separatorBuilder: (_, _) => SizedBox(width: 12),
+                itemBuilder: (_, _) => LoadingSkeletonShimmer(
+                  height: 190,
+                  width: 130,
+                  radius: 16,
+                ),
+              ),
+            );
+          },
           error: (err, _) => _homeCatalogFallback(
             context,
             catalogAsync.valueOrNull ?? const <ProductModel>[],
