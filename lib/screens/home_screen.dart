@@ -5,6 +5,7 @@ import '../router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/home_providers.dart';
+import '../providers/products_provider.dart';
 import '../providers/feed_provider.dart';
 import '../providers/trends_provider.dart';
 import '../providers/blend_provider.dart';
