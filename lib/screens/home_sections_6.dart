@@ -79,17 +79,17 @@ class _JustDroppedSection extends ConsumerWidget {
                   height: 220,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: catalog.take(8).length,
+                    itemCount: catalog.skip(16).take(8).length,
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, index) => SizedBox(
                       width: 150,
                       child: ProductCard(
-                        product: catalog[index],
+                        product: catalog[index + 16],
                         compact: true,
                         variant: ProductCardVariant.compact,
                         heroTagSuffix: '_just_dropped_fallback_$index',
                         onTap: () => context.push(
-                          AppRoutes.productDetailsFor(catalog[index].id),
+                          AppRoutes.productDetailsFor(catalog[index + 16].id),
                         ),
                       ),
                     ),
