@@ -637,13 +637,19 @@ class _SearchResults extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final category = initialFilters['category'];
     if (category != null && category.trim().isNotEmpty) {
-      final categoryAsync = ref.watch(categorySearchProductsProvider(category));
+      final filters = CategorySearchParams(
+        category: category.trim(),
+        sort: initialFilters['sort'],
+        minPrice: double.tryParse(initialFilters['min_price'] ?? ''),
+        maxPrice: double.tryParse(initialFilters['max_price'] ?? ''),
+      );
+      final categoryAsync = ref.watch(categorySearchProductsProvider(filters));
       return categoryAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorSection(
           title: 'Could not load this category',
           message: 'Please try again in a moment.',
-          onRetry: () => ref.invalidate(categorySearchProductsProvider(category)),
+          onRetry: () => ref.invalidate(categorySearchProductsProvider(filters)),
         ),
         data: (products) {
           if (products.isEmpty) {
