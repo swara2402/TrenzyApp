@@ -387,8 +387,32 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     );
   }
 
+  Color _personaColor(String raw) {
+    final value = raw.trim().toLowerCase().replaceAll('#', '');
+    final hex = int.tryParse(value.length == 6 ? 'FF$value' : value, radix: 16);
+    if (hex != null) return Color(hex);
+    const named = <String, Color>{
+      'black': Colors.black,
+      'white': Colors.white,
+      'ivory': Color(0xFFFFF8E7),
+      'cream': Color(0xFFFFF1D6),
+      'beige': Color(0xFFD8C3A5),
+      'brown': Color(0xFF795548),
+      'navy': Color(0xFF172A4A),
+      'blue': Colors.blue,
+      'green': Colors.green,
+      'olive': Color(0xFF808000),
+      'pink': Colors.pink,
+      'red': Colors.red,
+      'grey': Colors.grey,
+      'gray': Colors.grey,
+    };
+    return named[value] ?? context.trenzyColors.mutedFg;
+  }
+
   Widget _buildLookIdentityCard() {
     final colors = context.trenzyColors;
+    final personaAsync = ref.watch(personaProvider);
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -413,6 +437,65 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+              personaAsync.when(
+                data: (persona) {
+                  if (persona == null || persona.name.trim().isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return SizedBox(
+                    width: 192,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            persona.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colors.foreground,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (persona.description.trim().isNotEmpty)
+                            Text(
+                              persona.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colors.mutedFg,
+                                fontSize: 10,
+                              ),
+                            ),
+                          if (persona.colorPalette.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 7),
+                              child: Wrap(
+                                spacing: 5,
+                                runSpacing: 5,
+                                children: persona.colorPalette.take(4).map((color) {
+                                  return Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: BoxDecoration(
+                                      color: _personaColor(color),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: colors.fg15),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
               SizedBox(
                 width: 192,
                 child: TextField(
