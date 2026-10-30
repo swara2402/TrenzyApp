@@ -174,6 +174,7 @@ class ChatRequest(BaseModel):
     """Chat request."""
     message: str = Field(..., min_length=1, max_length=2000)
     conversation_id: Optional[int] = Field(default=None, gt=0)
+    persona: str = Field(default="everyday", pattern="^(everyday|minimalist|streetwear|trendsetter)$")
 
 
 class ChatResponse(BaseModel):
@@ -456,6 +457,7 @@ async def stylist_chat(
         user_id=current_user.id,
         message=message,
         conversation_id=request.conversation_id,
+        persona=request.persona,
     )
 
     return ChatResponse(
