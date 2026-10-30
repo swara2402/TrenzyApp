@@ -6,6 +6,7 @@ class _JustDroppedSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feedAsync = ref.watch(feedProvider);
+    final catalogAsync = ref.watch(productsProvider((category: null)));
     final prefs = ref.watch(userPreferencesProvider);
 
     return Padding(
@@ -65,9 +66,34 @@ class _JustDroppedSection extends ConsumerWidget {
                   .expand((s) => s.products)
                   .toList();
               if (justDropped.isEmpty) {
-                return EmptySection(
-                  title: 'No new drops yet',
-                  subtitle: 'Check back soon for latest arrivals.',
+                final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+                if (catalog.isEmpty) {
+                  return EmptySection(
+                    title: 'No new drops yet',
+                    subtitle: 'Explore the latest catalog picks instead.',
+                    actionLabel: 'Explore',
+                    onAction: () => context.go(AppRoutes.discover),
+                  );
+                }
+                return SizedBox(
+                  height: 220,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: catalog.take(8).length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: catalog[index],
+                        compact: true,
+                        variant: ProductCardVariant.compact,
+                        heroTagSuffix: '_just_dropped_fallback_$index',
+                        onTap: () => context.push(
+                          AppRoutes.productDetailsFor(catalog[index].id),
+                        ),
+                      ),
+                    ),
+                  ),
                 );
               }
               return SizedBox(
