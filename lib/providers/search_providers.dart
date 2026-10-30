@@ -40,17 +40,59 @@ final debouncedSearchQueryProvider = Provider.autoDispose<String>((ref) {
 
 /// Loads catalog products by their actual category instead of searching for
 /// the category word as free text (which can hide valid items such as bottoms).
+class CategorySearchParams {
+  const CategorySearchParams({
+    required this.category,
+    this.sort,
+    this.minPrice,
+    this.maxPrice,
+  });
+
+  final String category;
+  final String? sort;
+  final double? minPrice;
+  final double? maxPrice;
+
+  @override
+  bool operator ==(Object other) =>
+      other is CategorySearchParams &&
+      category == other.category &&
+      sort == other.sort &&
+      minPrice == other.minPrice &&
+      maxPrice == other.maxPrice;
+
+  @override
+  int get hashCode => Object.hash(category, sort, minPrice, maxPrice);
+}
+
 final categorySearchProductsProvider = FutureProvider.autoDispose
-    .family<List<ProductModel>, String>((ref, category) async {
+    .family<List<ProductModel>, CategorySearchParams>((ref, filters) async {
   final uid = ref.watch(
     auth_p.authProvider.select((a) => a.valueOrNull?.id),
   );
   if (uid == null) return const <ProductModel>[];
   final api = ref.watch(apiServiceProvider);
-  final response = await api.getProducts(category: category, limit: 100);
+  final response = await api.getProducts(category: filters.category, limit: 100);
   final raw = response['products'] as List<dynamic>? ?? const [];
-  return raw
+  final products = raw
       .whereType<Map>()
       .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item)))
+      .where((product) =>
+          (filters.minPrice == null || product.displayPrice >= filters.minPrice!) &&
+          (filters.maxPrice == null || product.displayPrice <= filters.maxPrice!))
       .toList();
+
+  // Sort the actual returned catalog items, not the text-search relevance score.
+  switch (filters.sort) {
+    case 'price_asc':
+      products.sort((a, b) => a.displayPrice.compareTo(b.displayPrice));
+      break;
+    case 'price_desc':
+      products.sort((a, b) => b.displayPrice.compareTo(a.displayPrice));
+      break;
+    case 'rating':
+      products.sort((a, b) => b.rating.compareTo(a.rating));
+      break;
+  }
+  return products;
 });
