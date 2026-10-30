@@ -31,7 +31,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 import re
 
-from sqlalchemy import and_, func, literal_column, or_, select
+from sqlalchemy import func, literal_column, or_, select
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
