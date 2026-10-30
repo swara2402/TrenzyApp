@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/wardrobe_model.dart';
 import 'api_service_provider.dart';
 import 'auth_provider.dart' as auth_p;
+import 'user_preferences_provider.dart';
 
 class WardrobeState {
   final List<WardrobeItem> items;
@@ -371,6 +372,9 @@ final wardrobeRecommendationsProvider =
       );
       if (uid == null) return null;
 
+      // Wardrobe gap suggestions and outfit ideas must refresh after style edits.
+      ref.watch(userPreferencesProvider);
+
       final api = ref.read(apiServiceProvider);
       final data = await api.getWardrobeRecommendations(limit: 5);
       return WardrobeRecommendationsResponse.fromJson(data);
@@ -379,6 +383,9 @@ final wardrobeRecommendationsProvider =
 final personaProvider = FutureProvider.autoDispose<StylePersona?>((ref) async {
   final uid = ref.watch(auth_p.authProvider.select((a) => a.valueOrNull?.id));
   if (uid == null) return null;
+
+  // Keep the persona card in sync when preferences are edited in Settings.
+  ref.watch(userPreferencesProvider);
 
   final api = ref.read(apiServiceProvider);
   final data = await api.getPersona();
