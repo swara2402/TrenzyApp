@@ -300,6 +300,7 @@ If you don't know something, be honest and ask for more details to better assist
         self,
         message: str,
         relevant_products: List[Product],
+        persona: str = "everyday",
     ) -> str:
         """Generate friendly fashion response based on query and catalog.
 
