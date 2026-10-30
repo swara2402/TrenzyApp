@@ -100,10 +100,12 @@ class _TrendingSectionState extends ConsumerState<_TrendingSection> {
                   LoadingSkeletonShimmer(height: 190, width: 130, radius: 16),
             ),
           ),
-          error: (err, _) => ErrorSection(
-            title: 'Couldn\u2019t load trending',
-            message: friendlyError(err),
-            compact: true,
+          error: (err, _) => _homeCatalogFallback(
+            context,
+            catalogAsync.valueOrNull ?? const <ProductModel>[],
+            title: 'Trending styles to explore',
+            heroTag: '_trending_error_fallback',
+            startIndex: 8,
             onRetry: () => ref.invalidate(
               trendingProductsProvider(
                 TrendingParams(
