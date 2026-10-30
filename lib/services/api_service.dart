@@ -831,7 +831,8 @@ class ApiService implements ApiServiceBase {
   Future<Map<String, dynamic>> aiStylistChat({
     required String message,
     int? conversationId,
-  }) => _aiApi.stylistChat(message: message, conversationId: conversationId);
+    String persona = 'everyday',
+  }) => _aiApi.stylistChat(message: message, conversationId: conversationId, persona: persona);
   @override
   Future<Map<String, dynamic>> aiStylistOutfit(String prompt) =>
       _aiApi.stylistOutfit(prompt);
