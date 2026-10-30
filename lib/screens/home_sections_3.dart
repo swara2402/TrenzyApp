@@ -26,28 +26,40 @@ class _AiPicksSection extends ConsumerWidget {
     final picksAsync = ref.watch(todaysAiPicksProvider);
     final catalogAsync = ref.watch(productsProvider((category: null)));
     return picksAsync.when(
-      loading: () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionHeader(context, 'For You', Icons.auto_awesome_rounded),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              height: 240,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 4,
-                itemBuilder: (_, _) => Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(width: 130, child: ProductCardSkeleton()),
+      loading: () {
+        final catalog = catalogAsync.valueOrNull ?? const <ProductModel>[];
+        if (catalog.isNotEmpty) {
+          return _homeCatalogFallback(
+            context,
+            catalog,
+            title: 'Fresh picks for you',
+            heroTag: '_for_you_loading_fallback',
+            startIndex: 0,
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionHeader(context, 'For You', Icons.auto_awesome_rounded),
+              SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 240,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 4,
+                  itemBuilder: (_, _) => Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: SizedBox(width: 130, child: ProductCardSkeleton()),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
       error: (error, _) => _homeCatalogFallback(
         context,
         catalogAsync.valueOrNull ?? const <ProductModel>[],
