@@ -63,8 +63,9 @@ jobs:
           )
 
           def escape(value):
-              return (value.replace("\\\\", "\\\\\\\\")
-                           .replace("\\", "\\\\")
+              return (value.replace("\\", "\\\\")
+                           .replace("\n", "\\n")
+                           .replace("\r", "\\r")
                            .replace(":", "\\:")
                            .replace("=", "\\=")
                            .replace("#", "\\#")
@@ -72,10 +73,10 @@ jobs:
                            .replace(" ", "\\ "))
 
           properties = (
-              "storeFile=upload-keystore.jks\\n"
-              f"storePassword={escape(os.environ['KEYSTORE_PASSWORD'])}\\n"
-              f"keyAlias={escape(os.environ['KEY_ALIAS'])}\\n"
-              f"keyPassword={escape(os.environ['KEY_PASSWORD'])}\\n"
+              "storeFile=upload-keystore.jks\n"
+              f"storePassword={escape(os.environ['KEYSTORE_PASSWORD'])}\n"
+              f"keyAlias={escape(os.environ['KEY_ALIAS'])}\n"
+              f"keyPassword={escape(os.environ['KEY_PASSWORD'])}\n"
           )
           (android / "key.properties").write_text(properties, encoding="utf-8")
           PY
