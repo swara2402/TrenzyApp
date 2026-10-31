@@ -564,65 +564,64 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // ── Glass header ────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Row(
+            // Keep the swipe header geometry aligned with Blend Swipe.
+            AppBar(
+              backgroundColor: context.trenzyColors.background,
+              leading: GlassBackButton(onTap: () => context.pop()),
+              leadingWidth: 56,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              toolbarHeight: 72,
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  GlassBackButton(onTap: () => context.pop()),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'SWIPE DISCOVERY',
-                          style: TextStyle(
-                            fontFamily: GlassTypography.bodyFont,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.6,
-                            color: context.trenzyColors.primary,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Find your next favorite',
-                          style: TextStyle(
-                            fontFamily: GlassTypography.bodyFont,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: context.trenzyColors.foreground,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'SWIPE DISCOVERY',
+                    style: TextStyle(
+                      fontFamily: GlassTypography.bodyFont,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.6,
+                      color: context.trenzyColors.primary,
                     ),
                   ),
-                  // Counter badge
-                  if (_products.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.trenzyColors.glass,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: context.trenzyColors.glassBorder,
+                  const SizedBox(height: 3),
+                  Text(
+                    'Find your next favorite',
+                    style: TextStyle(
+                      fontFamily: GlassTypography.bodyFont,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: context.trenzyColors.foreground,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (_products.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: context.trenzyColors.glass,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: context.trenzyColors.glassBorder),
                         ),
-                      ),
-                      child: Text(
-                        '${_currentIndex + 1}/${_products.length}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: context.trenzyColors.mutedFg,
+                        child: Text(
+                          '${_currentIndex + 1}/${_products.length}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: context.trenzyColors.mutedFg,
+                          ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
 
             // ── Card stack ──────────────────────────────────────────────
@@ -660,12 +659,16 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                       },
                     );
                   }
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Stack(
-                          children: [
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cardWidth = min(constraints.maxWidth - 24, 340.0);
+                      final cardHeight = min(constraints.maxHeight, 460.0);
+                      return Center(
+                        child: SizedBox(
+                          width: cardWidth,
+                          height: cardHeight,
+                          child: Stack(
+                            children: [
                             ...List.generate(
                               min(_products.length - _currentIndex, 4),
                               (i) => _buildCard(_currentIndex + i),
@@ -748,10 +751,11 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                                   ),
                                 ),
                               ),
-                          ],
-                        );
-                      },
-                    ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
