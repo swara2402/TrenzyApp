@@ -20,6 +20,7 @@ from ..models import (
     ActivityEvent,
     Blend,
     BlendMember,
+    BlendMessage,
     BlendSwipe,
     Product,
 )
@@ -435,6 +436,22 @@ def add_to_shared_wishlist(
         notes=payload.notes,
     )
     session.add(item)
+    session.flush()
+
+    # Persist a product attachment in the Blend chat as well as the shared
+    # wishlist. Members can see who suggested it when they open the chat.
+    session.add(BlendMessage(
+        blend_id=blend_id,
+        sender_firebase_uid=firebase_uid,
+        sender_name=decoded_name,
+        content=f"added {payload.productName or 'a product'} to the Blend",
+        attached_product_id=payload.productId,
+        attached_product_title=payload.productName,
+        attached_product_image=payload.productImage,
+        attached_product_price=(
+            str(payload.productPrice) if payload.productPrice is not None else None
+        ),
+    ))
     session.commit()
     session.refresh(item)
 
