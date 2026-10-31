@@ -459,10 +459,8 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
           elevation: 0,
           scrolledUnderElevation: 0,
           toolbarHeight: 72,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-            onPressed: () => context.go(AppRoutes.blendHub),
-          ),
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -499,10 +497,8 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
           elevation: 0,
           scrolledUnderElevation: 0,
           toolbarHeight: 72,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-            onPressed: () => context.go(AppRoutes.blendHub),
-          ),
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -608,10 +604,10 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
       backgroundColor: context.trenzyColors.background,
       appBar: AppBar(
         backgroundColor: context.trenzyColors.background,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${widget.groupId}'),
+        leading: GlassBackButton(
+          onTap: () => context.go('${AppRoutes.blendDashboard}?groupId=${widget.groupId}'),
         ),
+        leadingWidth: 56,
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 72,
