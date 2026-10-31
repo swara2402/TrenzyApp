@@ -574,7 +574,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
         backgroundColor: context.trenzyColors.background,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-          onPressed: () => context.go(AppRoutes.blendHub),
+          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${widget.groupId}'),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
