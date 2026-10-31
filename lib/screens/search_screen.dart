@@ -140,9 +140,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _showSearchFilters() {
     String? selectedCategory = _initialFilters['category'];
-    String sortBy = _initialFilters['sort'] ?? 'relevance';
+    String sortBy = _initialFilters['sort'] == 'rating'
+        ? 'rating_desc'
+        : (_initialFilters['sort'] ?? 'relevance');
     final currentMin = double.tryParse(_initialFilters['min_price'] ?? '') ?? 0;
     final currentMax = double.tryParse(_initialFilters['max_price'] ?? '') ?? 10000;
+    final availableCategories = ref.read(categoriesProvider).valueOrNull ??
+        const <String>['Dresses', 'Footwear', 'Tops', 'Bottoms', 'Outerwear', 'Accessories'];
     RangeValues priceRange = RangeValues(
       currentMin.clamp(0, 10000).toDouble(),
       currentMax.clamp(currentMin.clamp(0, 10000), 10000).toDouble(),
@@ -190,7 +194,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8, runSpacing: 8,
-                    children: ['All', 'Dresses', 'Footwear', 'Tops', 'Bottoms', 'Outerwear', 'Accessories'].map((category) {
+                    children: ['All', ...availableCategories.where((category) => category.toLowerCase() != 'all')].map((category) {
                       final selected = category == 'All'
                           ? selectedCategory == null
                           : selectedCategory == category;
