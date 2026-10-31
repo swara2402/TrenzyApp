@@ -140,12 +140,22 @@ class SharedWishlistItem {
   final String? id;
   final ProductModel? product;
   final UserModel? addedBy;
+  final String? addedByNameValue;
+  final String? addedByUid;
   final DateTime? addedAt;
   final bool? isFavorite;
   final String? notes;
   final String? productUrl;
   final bool? isLoaded;
+  final int likeCount;
+  final int loveCount;
+  final int dislikeCount;
+  final int totalVotes;
+  final double? ratingAverage;
+  final String? myVote;
+  final String? productIdValue;
 
+  String get productId => productIdValue ?? product?.id ?? '';
   String get productName => product?.name ?? '';
   String get productImage => product?.imageUrl ?? '';
   String get productBrand => product?.brand ?? '';
@@ -158,48 +168,89 @@ class SharedWishlistItem {
 
   bool get hasProductPrice => product?.hasPrice ?? false;
   String get addedByName =>
-      addedBy?.name ?? addedBy?.displayName ?? 'Anonymous';
+      (addedByNameValue?.trim().isNotEmpty ?? false)
+          ? addedByNameValue!
+          : (addedBy?.name ?? addedBy?.displayName ?? 'A blend member');
   DateTime? get createdAt => addedAt;
 
   SharedWishlistItem({
     this.id,
     this.product,
     this.addedBy,
+    this.addedByNameValue,
+    this.addedByUid,
     this.addedAt,
     this.isFavorite,
     this.notes,
     this.productUrl,
     this.isLoaded,
+    this.likeCount = 0,
+    this.loveCount = 0,
+    this.dislikeCount = 0,
+    this.totalVotes = 0,
+    this.ratingAverage,
+    this.myVote,
+    this.productIdValue,
   });
 
   factory SharedWishlistItem.fromJson(Map<String, dynamic> json) {
+    final nestedProduct = json['product'];
+    final productJson = nestedProduct is Map
+        ? Map<String, dynamic>.from(nestedProduct)
+        : <String, dynamic>{
+            'id': json['productId'],
+            'name': json['productName'],
+            'imageUrl': json['productImage'],
+            'price': json['productPrice'],
+            'brand': json['productBrand'],
+            'category': json['productCategory'],
+          };
+    final addedByJson = json['addedBy'];
     return SharedWishlistItem(
       id: json['id']?.toString(),
-      product: json['product'] != null
-          ? ProductModel.fromJson(json['product'] as Map<String, dynamic>)
+      productIdValue: json['productId']?.toString(),
+      product: productJson['id'] != null || productJson['name'] != null
+          ? ProductModel.fromJson(productJson)
           : null,
-      addedBy: json['addedBy'] != null
-          ? UserModel.fromJson(json['addedBy'] as Map<String, dynamic>)
+      addedBy: addedByJson is Map
+          ? UserModel.fromJson(Map<String, dynamic>.from(addedByJson))
           : null,
-      addedAt: json['addedAt'] != null
-          ? DateTime.parse(json['addedAt'] as String)
+      addedByNameValue: json['addedByName']?.toString(),
+      addedByUid: json['addedByUid']?.toString(),
+      addedAt: (json['addedAt'] ?? json['createdAt']) != null
+          ? DateTime.tryParse((json['addedAt'] ?? json['createdAt']).toString())
           : null,
       isFavorite: json['isFavorite'] as bool?,
       notes: json['notes'] as String?,
-      productUrl: json['productUrl'] as String?,
+      productUrl: (json['productUrl'] ?? json['purchaseLink']) as String?,
       isLoaded: json['isLoaded'] as bool?,
+      likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+      loveCount: (json['loveCount'] as num?)?.toInt() ?? 0,
+      dislikeCount: (json['dislikeCount'] as num?)?.toInt() ?? 0,
+      totalVotes: (json['totalVotes'] as num?)?.toInt() ?? 0,
+      ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
+      myVote: json['myVote']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'productId': productId,
     'product': product?.toJson(),
     'addedBy': addedBy?.toJson(),
+    'addedByName': addedByName,
+    'addedByUid': addedByUid,
     'addedAt': addedAt?.toIso8601String(),
     'isFavorite': isFavorite,
     'notes': notes,
     'productUrl': productUrl,
     'isLoaded': isLoaded,
+    'likeCount': likeCount,
+    'loveCount': loveCount,
+    'dislikeCount': dislikeCount,
+    'totalVotes': totalVotes,
+    'ratingAverage': ratingAverage,
+    'myVote': myVote,
   };
 }
 
