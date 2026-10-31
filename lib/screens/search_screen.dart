@@ -111,15 +111,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _onTextChanged() {
     _debounceTimer?.cancel();
-    final text = _controller.text;
+    final text = _controller.text.trim();
     if (text.length >= 2) {
-      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          setState(() => _debouncedQuery = text);
-        }
+      _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+        if (!mounted || _controller.text.trim() != text) return;
+        setState(() {
+          _debouncedQuery = text;
+          _query = text;
+          // Show matching results automatically while the user types.
+          // The explicit search button remains available for immediate submit.
+          _hasSubmitted = true;
+        });
       });
     } else {
-      setState(() => _debouncedQuery = '');
+      setState(() {
+        _debouncedQuery = '';
+        _query = '';
+        _hasSubmitted = false;
+      });
     }
   }
 
@@ -164,8 +173,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void _submitSearch(String query) {
     final sanitized = query.trim();
     if (sanitized.isEmpty) return;
+    _debounceTimer?.cancel();
     setState(() {
       _query = sanitized;
+      _debouncedQuery = sanitized;
       _hasSubmitted = true;
     });
     ref.read(recentSearchesProvider.notifier).add(sanitized);
@@ -198,6 +209,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         setState(() {
                           _hasSubmitted = false;
                           _query = '';
+                          _debouncedQuery = '';
                           _controller.clear();
                         });
                       } else {
@@ -222,6 +234,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 _controller.clear();
                                 setState(() {
                                   _query = '';
+                                  _debouncedQuery = '';
                                   _hasSubmitted = false;
                                 });
                               },
