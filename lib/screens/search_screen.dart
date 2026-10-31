@@ -144,8 +144,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final currentMin = double.tryParse(_initialFilters['min_price'] ?? '') ?? 0;
     final currentMax = double.tryParse(_initialFilters['max_price'] ?? '') ?? 10000;
     RangeValues priceRange = RangeValues(
-      currentMin.clamp(0, 10000),
-      currentMax.clamp(currentMin.clamp(0, 10000), 10000),
+      currentMin.clamp(0, 10000).toDouble(),
+      currentMax.clamp(currentMin.clamp(0, 10000), 10000).toDouble(),
     );
 
     showModalBottomSheet<void>(
