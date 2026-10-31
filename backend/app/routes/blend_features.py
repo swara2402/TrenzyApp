@@ -389,10 +389,10 @@ def get_shared_wishlist(
             "dislikeCount": sum(1 for score in scores if score < 0),
             "totalVotes": len(scores),
             "ratingAverage": round(sum(rating_values) / len(rating_values), 1) if rating_values else None,
-            "myVote": next(
-                ("dislike" if vote.score < 0 else ("love" if vote.score >= 2 else "like"))
+            "myVote": next((
+                "dislike" if vote.score < 0 else ("love" if vote.score >= 2 else "like")
                 for vote in votes if vote.user_firebase_uid == firebase_uid
-            , None),
+            ), None),
         })
     return response
 
