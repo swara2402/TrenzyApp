@@ -24,11 +24,9 @@ final unifiedSearchProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, query) async {
       if (query.trim().length < 2) return {};
       final api = ref.watch(apiServiceProvider);
-      try {
-        return await api.unifiedSearch(query.trim());
-      } catch (_) {
-        return {};
-      }
+      // Preserve genuine request failures so the search screen can show its
+      // retry state instead of incorrectly reporting "no results".
+      return api.unifiedSearch(query.trim());
     });
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
