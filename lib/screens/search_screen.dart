@@ -635,25 +635,34 @@ class _SearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final category = initialFilters['category'];
-    if (category != null && category.trim().isNotEmpty) {
-      final filters = CategorySearchParams(
-        category: category.trim(),
-        sort: initialFilters['sort'],
-        minPrice: double.tryParse(initialFilters['min_price'] ?? ''),
-        maxPrice: double.tryParse(initialFilters['max_price'] ?? ''),
+    final category = initialFilters['category']?.trim();
+    final minPrice = double.tryParse(initialFilters['min_price'] ?? '');
+    final maxPrice = double.tryParse(initialFilters['max_price'] ?? '');
+    final sort = initialFilters['sort'] == 'rating'
+        ? 'rating_desc'
+        : initialFilters['sort'];
+    final hasProductFilters = (category != null && category.isNotEmpty) ||
+        minPrice != null || maxPrice != null || sort != null;
+
+    if (hasProductFilters) {
+      final params = ProductSearchParams(
+        query: query,
+        category: category?.isEmpty == true ? null : category,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        sort: sort,
       );
-      final categoryAsync = ref.watch(categorySearchProductsProvider(filters));
-      return categoryAsync.when(
+      final productsAsync = ref.watch(productSearchProvider(params));
+      return productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorSection(
-          title: 'Could not load this category',
+          title: 'Could not load filtered products',
           message: 'Please try again in a moment.',
-          onRetry: () => ref.invalidate(categorySearchProductsProvider(filters)),
+          onRetry: () => ref.invalidate(productSearchProvider(params)),
         ),
         data: (products) {
           if (products.isEmpty) {
-            return _NoResultsView(query: category);
+            return _NoResultsView(query: category?.isNotEmpty == true ? category! : query);
           }
           return GridView.builder(
             padding: const EdgeInsets.all(16),
@@ -669,7 +678,7 @@ class _SearchResults extends ConsumerWidget {
               return ProductCard(
                 product: product,
                 variant: ProductCardVariant.standard,
-                heroTagSuffix: '_category_${category}_$index',
+                heroTagSuffix: '_filtered_${product.id}_$index',
                 onTap: () => context.push(AppRoutes.productDetailsFor(product.id)),
               );
             },
