@@ -101,11 +101,9 @@ final categoriesProvider = FutureProvider.autoDispose<List<String>>((
   if (uid == null) return const <String>[];
 
   final api = ref.watch(apiServiceProvider);
-  try {
-    return await api.getCategories();
-  } catch (_) {
-    return const <String>[];
-  }
+  // Preserve the error state so CategoriesScreen can show a real Retry action.
+  // Returning [] here made a temporary backend outage look like an empty catalog.
+  return api.getCategories();
 });
 
 final productDetailsProvider = FutureProvider.autoDispose
