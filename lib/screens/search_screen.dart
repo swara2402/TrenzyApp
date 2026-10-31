@@ -643,13 +643,13 @@ class _SearchResults extends ConsumerWidget {
         minPrice: double.tryParse(initialFilters['min_price'] ?? ''),
         maxPrice: double.tryParse(initialFilters['max_price'] ?? ''),
       );
-      final categoryAsync = ref.watch(categorySearchProductsProvider(filters));
+      final categoryAsync = ref.watch(productSearchProvider(ProductSearchParams(query: '', category: filters.category.trim(), minPrice: filters.minPrice, maxPrice: filters.maxPrice, sort: filters.sort)));
       return categoryAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorSection(
           title: 'Could not load this category',
           message: 'Please try again in a moment.',
-          onRetry: () => ref.invalidate(categorySearchProductsProvider(filters)),
+          onRetry: () => ref.invalidate(productSearchProvider(ProductSearchParams(query: '', category: filters.category.trim(), minPrice: filters.minPrice, maxPrice: filters.maxPrice, sort: filters.sort))),
         ),
         data: (products) {
           if (products.isEmpty) {
