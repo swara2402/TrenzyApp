@@ -41,6 +41,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool _hasSubmitted = false;
   Timer? _debounceTimer;
 
+  bool get _hasActiveFilters => _initialFilters.values.any(
+    (value) => value != null && value.trim().isNotEmpty,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +87,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } else {
       setState(() {
         _query = '';
-        _hasSubmitted = false;
+        _hasSubmitted = _hasActiveFilters;
       });
     }
   }
@@ -138,6 +142,161 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _focusNode.unfocus();
   }
 
+  void _showSearchFilters() {
+    String? selectedCategory = _initialFilters['category'];
+    String sortBy = _initialFilters['sort'] == 'rating'
+        ? 'rating_desc'
+        : (_initialFilters['sort'] ?? 'relevance');
+    final currentMin = double.tryParse(_initialFilters['min_price'] ?? '') ?? 0;
+    final currentMax = double.tryParse(_initialFilters['max_price'] ?? '') ?? 10000;
+    final availableCategories = ref.read(categoriesProvider).valueOrNull ??
+        const <String>['Dresses', 'Footwear', 'Tops', 'Bottoms', 'Outerwear', 'Accessories'];
+    RangeValues priceRange = RangeValues(
+      currentMin.clamp(0, 10000).toDouble(),
+      currentMax.clamp(currentMin.clamp(0, 10000), 10000).toDouble(),
+    );
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: context.trenzyColors.graphite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                        color: context.trenzyColors.mutedFg.withValues(alpha: .35),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('FILTER & SORT', style: TextStyle(
+                    color: context.trenzyColors.primary,
+                    fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: 1.3,
+                  )),
+                  const SizedBox(height: 20),
+                  Text('Category', style: TextStyle(
+                    color: context.trenzyColors.foreground,
+                    fontWeight: FontWeight.w600,
+                  )),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: ['All', ...availableCategories.where((category) => category.toLowerCase() != 'all')].map((category) {
+                      final selected = category == 'All'
+                          ? selectedCategory == null
+                          : selectedCategory == category;
+                      return GlassTag(
+                        text: category,
+                        selected: selected,
+                        onTap: () => setSheetState(() => selectedCategory = category == 'All' ? null : category),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 22),
+                  Text('Price range', style: TextStyle(
+                    color: context.trenzyColors.foreground,
+                    fontWeight: FontWeight.w600,
+                  )),
+                  RangeSlider(
+                    values: priceRange,
+                    min: 0, max: 10000, divisions: 40,
+                    activeColor: context.trenzyColors.primary,
+                    inactiveColor: context.trenzyColors.background,
+                    labels: RangeLabels('₹${priceRange.start.round()}', '₹${priceRange.end.round()}'),
+                    onChanged: (value) => setSheetState(() => priceRange = value),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('₹${priceRange.start.round()}', style: TextStyle(color: context.trenzyColors.mutedFg)),
+                      Text('₹${priceRange.end.round()}', style: TextStyle(color: context.trenzyColors.mutedFg)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Sort by', style: TextStyle(
+                    color: context.trenzyColors.foreground,
+                    fontWeight: FontWeight.w600,
+                  )),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: const [
+                      ('relevance', 'Relevance'),
+                      ('price_asc', 'Price: low to high'),
+                      ('price_desc', 'Price: high to low'),
+                      ('rating_desc', 'Top rated'),
+                    ].map((option) => GlassTag(
+                      text: option.$2,
+                      selected: sortBy == option.$1,
+                      onTap: () => setSheetState(() => sortBy = option.$1),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: GlowButton(
+                      label: 'Apply filters',
+                      onTap: () {
+                        setState(() {
+                          _initialFilters = {
+                            ..._initialFilters,
+                            'category': selectedCategory,
+                            'subcategory': null,
+                            'sort': sortBy == 'relevance' ? null : sortBy,
+                            'min_price': priceRange.start > 0 ? priceRange.start.round().toString() : null,
+                            'max_price': priceRange.end < 10000 ? priceRange.end.round().toString() : null,
+                          };
+                          _query = _controller.text.trim();
+                          _hasSubmitted = selectedCategory != null ||
+                              _query.length >= 2 ||
+                              _initialFilters['min_price'] != null ||
+                              _initialFilters['max_price'] != null ||
+                              _initialFilters['sort'] != null;
+                        });
+                        Navigator.of(sheetContext).pop();
+                      },
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _initialFilters = {
+                          ..._initialFilters,
+                          'category': null, 'subcategory': null, 'sort': null,
+                          'min_price': null, 'max_price': null,
+                        };
+                        _hasSubmitted = _query.trim().length >= 2;
+                      });
+                      Navigator.of(sheetContext).pop();
+                    },
+                    child: Text('Clear filters', style: TextStyle(color: context.trenzyColors.mutedFg)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,9 +313,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     onTap: () {
                       if (_hasSubmitted) {
                         setState(() {
-                          _hasSubmitted = false;
+                          if (_query.isEmpty) {
+                            _initialFilters = {
+                              'category': null,
+                              'subcategory': null,
+                              'sort': null,
+                              'min_price': null,
+                              'max_price': null,
+                            };
+                          }
                           _query = '';
                           _controller.clear();
+                          _hasSubmitted = _hasActiveFilters;
                         });
                       } else {
                         context.pop();
@@ -180,7 +348,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 _controller.clear();
                                 setState(() {
                                   _query = '';
-                                  _hasSubmitted = false;
+                                  _hasSubmitted = _hasActiveFilters;
                                 });
                               },
                             )
@@ -188,7 +356,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ),
                   ),
                   SizedBox(width: 8),
-                  // Send button
+                  GestureDetector(
+                    onTap: _showSearchFilters,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: context.trenzyColors.graphite,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: context.trenzyColors.glassBorder),
+                      ),
+                      child: Icon(Icons.tune_rounded, color: context.trenzyColors.primary),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  // Search button
                   GestureDetector(
                     onTap: () => _submitSearch(_controller.text),
                     child: Container(
