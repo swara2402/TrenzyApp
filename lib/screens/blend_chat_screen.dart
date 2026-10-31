@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/models/group_message.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/auth_provider.dart' as auth_p;
