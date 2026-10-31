@@ -115,7 +115,9 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
   }
 
   void _animateSwipe(int direction) {
-    if (_currentIndex >= _products.length) return;
+    // Ignore rapid repeated taps/gestures while the current card is exiting.
+    // This prevents duplicate vote requests and multiple index advances.
+    if (_swipeAnimator.isAnimating || _currentIndex >= _products.length) return;
 
     final product = _products[_currentIndex];
     if (direction < 0) {
@@ -661,8 +663,8 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                   }
                   return LayoutBuilder(
                     builder: (context, constraints) {
-                      final cardWidth = min(constraints.maxWidth - 24, 340.0);
-                      final cardHeight = min(constraints.maxHeight, 460.0);
+                      final cardWidth = min(constraints.maxWidth - 32, 340.0);
+                      final cardHeight = min(constraints.maxHeight - 24, 460.0);
                       return Center(
                         child: SizedBox(
                           width: cardWidth,
@@ -783,7 +785,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                     _ActionBtn(
                       icon: Icons.bookmark_outline_rounded,
                       color: context.trenzyColors.primary,
-                      size: 44,
+                      size: 40,
                       onTap: _saveProduct,
                       label: 'Save',
                       small: true,
@@ -793,7 +795,7 @@ class _SwipeDiscoveryScreenState extends ConsumerState<SwipeDiscoveryScreen>
                       color: context.trenzyColors.emerald,
                       size: 56,
                       onTap: _likeProduct,
-                      label: 'Like',
+                      label: 'Love',
                     ),
                   ],
                 ),
