@@ -83,6 +83,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
   final _swipeHistory = <String, String>{};
   StreamSubscription<BlendLiveState>? _stateSub;
   StreamSubscription<Map<String, dynamic>>? _swipeSub;
+  StreamSubscription<Map<String, dynamic>>? _deckSub;
   StreamSubscription<String>? _errorSub;
   StreamSubscription<bool>? _connectionSub;
   BlendLiveState? _liveState;
@@ -139,6 +140,12 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
             : (swipeType == 'like' ? 'liked' : 'passed on');
         GlassToast.info(context, '$userName $verb this');
       }
+    });
+
+    _deckSub = BlendSocketService.instance.deckUpdatedStream.listen((event) {
+      if (!mounted || event['groupId'] != widget.groupId) return;
+      ref.invalidate(blendGroupProvider(widget.groupId));
+      setState(() => _currentIndex = 0);
     });
 
     // P0 ERROR: Listen for socket errors (expired invite, revoked access, etc.)
@@ -198,6 +205,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _stateSub?.cancel();
+    _deckSub?.cancel();
     _swipeSub?.cancel();
     _errorSub?.cancel();
     _connectionSub?.cancel();
