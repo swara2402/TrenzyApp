@@ -41,6 +41,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool _hasSubmitted = false;
   Timer? _debounceTimer;
 
+  bool get _hasActiveFilters => _initialFilters.values.any(
+    (value) => value != null && value.trim().isNotEmpty,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +87,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } else {
       setState(() {
         _query = '';
-        _hasSubmitted = false;
+        _hasSubmitted = _hasActiveFilters;
       });
     }
   }
@@ -309,9 +313,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     onTap: () {
                       if (_hasSubmitted) {
                         setState(() {
-                          _hasSubmitted = false;
+                          if (_query.isEmpty) {
+                            _initialFilters = {
+                              'category': null,
+                              'subcategory': null,
+                              'sort': null,
+                              'min_price': null,
+                              'max_price': null,
+                            };
+                          }
                           _query = '';
                           _controller.clear();
+                          _hasSubmitted = _hasActiveFilters;
                         });
                       } else {
                         context.pop();
@@ -335,7 +348,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 _controller.clear();
                                 setState(() {
                                   _query = '';
-                                  _hasSubmitted = false;
+                                  _hasSubmitted = _hasActiveFilters;
                                 });
                               },
                             )
