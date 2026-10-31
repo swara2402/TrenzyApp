@@ -330,7 +330,14 @@ class _CategoryImageTile extends ConsumerWidget {
                   ),
                 ),
               ),
-              Center(child: Icon(fallbackIcon, size: 34, color: Colors.white.withValues(alpha: 0.9))),
+              if (imageUrl == null || imageUrl.isEmpty)
+                Center(
+                  child: Icon(
+                    fallbackIcon,
+                    size: 34,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
