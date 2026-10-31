@@ -103,33 +103,33 @@ class DiscoverScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverToBoxAdapter(child: _buildSearchAndFilter(context)),
             ),
-            if (campaignState.isLoading || campaignState.hasError || campaignState.valueOrNull != null)
+            if (campaignState.isLoading || campaignState.valueOrNull != null)
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _CampaignBanner()),
               ),
-            if (swipeState.isLoading || swipeState.hasError || (swipeState.valueOrNull?.isNotEmpty ?? false))
+            if (swipeState.isLoading || (swipeState.valueOrNull?.isNotEmpty ?? false))
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _SwipeDiscoveryPreview()),
               ),
-            if (personaState.isLoading || personaState.hasError || personaState.valueOrNull != null)
+            if (personaState.isLoading || personaState.valueOrNull != null)
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _PersonaSection()),
               ),
-            if (categoriesState.isLoading || categoriesState.hasError || (categoriesState.valueOrNull?.isNotEmpty ?? false))
+            if (categoriesState.isLoading || (categoriesState.valueOrNull?.isNotEmpty ?? false))
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _CategoryChips()),
               ),
-            if (trendingState.isLoading || trendingState.hasError || (trendingState.valueOrNull?.isNotEmpty ?? false) || (catalogState.valueOrNull?.isNotEmpty ?? false))
+            if (trendingState.isLoading || (trendingState.valueOrNull?.isNotEmpty ?? false) || (catalogState.valueOrNull?.isNotEmpty ?? false))
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 sliver: const SliverToBoxAdapter(child: _TrendingProducts()),
               ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               sliver: const SliverToBoxAdapter(child: _RecommendedSection()),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 120)),
