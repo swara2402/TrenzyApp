@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/models/group_message.dart';
 import 'package:trenzy/providers/api_service_provider.dart';
 import 'package:trenzy/providers/auth_provider.dart' as auth_p;
@@ -177,98 +178,13 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
       appBar: AppBar(
         backgroundColor: context.trenzyColors.background.withValues(alpha: 0.8),
         elevation: 0,
-        leadingWidth: 120,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: Row(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          context.trenzyColors.primary,
-                          context.trenzyColors.emerald,
-                        ],
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: context.trenzyColors.graphite,
-                      child: Text(
-                        '#',
-                        style: TextStyle(
-                          color: context.trenzyColors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -2,
-                    right: -4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.trenzyColors.emerald,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.trenzyColors.emerald.withValues(
-                              alpha: 0.4,
-                            ),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        'Online',
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _groupId != null
-                        ? 'Blend ${_groupId!.substring(0, _groupId!.length > 8 ? 8 : _groupId!.length)}...'
-                        : 'Blend Chat',
-                    style: TextStyle(
-                      color: context.trenzyColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    'Blend Chat',
-                    style: TextStyle(
-                      color: context.trenzyColors.mutedFg,
-                      fontSize: 9,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        leadingWidth: 56,
+        leading: IconButton(
+          tooltip: 'Back to Blend',
+          icon: Icon(Icons.arrow_back_rounded, color: context.trenzyColors.mutedFg),
+          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${_groupId ?? ''}'),
         ),
+        title: const Text('Blend Chat'),
         actions: [
           Container(
             width: 36,

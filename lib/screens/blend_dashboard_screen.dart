@@ -237,9 +237,6 @@ class _BlendDashboardContent extends ConsumerWidget {
                   break;
                 case 'settings':
                   break;
-                case 'results':
-                  context.go('${AppRoutes.blendResults}?groupId=$groupId');
-                  break;
                 case 'leave':
                   break;
               }
@@ -255,21 +252,6 @@ class _BlendDashboardContent extends ConsumerWidget {
                   ),
                   title: Text(
                     'Chat',
-                    style: TextStyle(color: context.trenzyColors.foreground),
-                  ),
-                  dense: true,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'results',
-                child: ListTile(
-                  leading: Icon(
-                    Icons.analytics,
-                    color: context.trenzyColors.primary,
-                    size: 20,
-                  ),
-                  title: Text(
-                    'Results',
                     style: TextStyle(color: context.trenzyColors.foreground),
                   ),
                   dense: true,
@@ -399,8 +381,10 @@ class _BlendDashboardContent extends ConsumerWidget {
   Widget _buildQuickActions(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
+      child: Column(
         children: [
+          Row(
+            children: [
           _ActionButton(
             icon: Icons.swipe,
             label: 'Swipe',
@@ -423,12 +407,27 @@ class _BlendDashboardContent extends ConsumerWidget {
                 context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
           ),
           SizedBox(width: 12),
-          _ActionButton(
-            icon: Icons.dashboard,
-            label: 'Moodboard',
-            color: context.trenzyColors.primary,
-            onTap: () =>
-                context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
+          ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Spacer(),
+              _ActionButton(
+                icon: Icons.analytics_rounded,
+                label: 'Analytics',
+                color: context.trenzyColors.primary,
+                onTap: () => context.go('${AppRoutes.blendResults}?groupId=$groupId'),
+              ),
+              SizedBox(width: 12),
+              _ActionButton(
+                icon: Icons.dashboard,
+                label: 'Moodboard',
+                color: context.trenzyColors.primary,
+                onTap: () => context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
+              ),
+              Spacer(),
+            ],
           ),
         ],
       ),

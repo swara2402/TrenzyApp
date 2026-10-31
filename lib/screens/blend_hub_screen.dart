@@ -190,7 +190,7 @@ class _BlendCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 300,
-        margin: const EdgeInsets.only(right: 24),
+        margin: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: context.trenzyColors.graphite,
           borderRadius: BorderRadius.circular(32),
