@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
-import '../providers/api_service_provider.dart';
 import '../services/api_service.dart';
 import '../theme/glass_theme.dart';
 
