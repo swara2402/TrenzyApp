@@ -169,7 +169,7 @@ class DiscoverScreen extends ConsumerWidget {
   void _buildFilterBottomSheet(BuildContext context) {
     String? selectedCategory;
     String sortBy = 'relevance';
-    RangeValues priceRange = RangeValues(0, 5000);
+    RangeValues priceRange = RangeValues(0, 10000);
 
     showModalBottomSheet(
       context: context,
@@ -322,7 +322,7 @@ class DiscoverScreen extends ConsumerWidget {
                               selectedCategory!.isNotEmpty) {
                             params['category'] = selectedCategory!;
                           }
-                          if (sortBy.isNotEmpty) {
+                          if (sortBy != 'relevance') {
                             params['sort'] = sortBy;
                           }
                           if (priceRange.start > 0) {

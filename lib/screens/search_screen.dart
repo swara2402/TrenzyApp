@@ -41,9 +41,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool _hasSubmitted = false;
   Timer? _debounceTimer;
 
-  bool get _hasActiveFilters => _initialFilters.values.any(
-    (value) => value != null && value.trim().isNotEmpty,
-  );
+  bool get _hasActiveFilters => _initialFilters.entries.any((entry) {
+    final value = entry.value;
+    if (value == null || value.trim().isEmpty) return false;
+    return !(entry.key == 'sort' && value == 'relevance');
+  });
 
   @override
   void initState() {
@@ -69,6 +71,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       'min_price': widget.initialMinPrice,
       'max_price': widget.initialMaxPrice,
     };
+    _hasSubmitted = _hasSubmitted || _hasActiveFilters;
   }
 
   void _onTextChanged() {
@@ -97,7 +100,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.didUpdateWidget(oldWidget);
     if (widget.initialCategory != oldWidget.initialCategory ||
         widget.initialSubcategory != oldWidget.initialSubcategory ||
-        widget.initialQuery != oldWidget.initialQuery) {
+        widget.initialQuery != oldWidget.initialQuery ||
+        widget.initialSort != oldWidget.initialSort ||
+        widget.initialMinPrice != oldWidget.initialMinPrice ||
+        widget.initialMaxPrice != oldWidget.initialMaxPrice) {
       if (widget.initialCategory != null) {
         _controller.text = widget.initialSubcategory != null
             ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
@@ -116,6 +122,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         'min_price': widget.initialMinPrice,
         'max_price': widget.initialMaxPrice,
       };
+      _hasSubmitted = widget.initialQuery != null ||
+          widget.initialCategory != null || _hasActiveFilters;
     }
   }
 
@@ -513,9 +521,10 @@ class _SearchResults extends ConsumerWidget {
     final category = initialFilters['category']?.trim();
     final minPrice = double.tryParse(initialFilters['min_price'] ?? '');
     final maxPrice = double.tryParse(initialFilters['max_price'] ?? '');
-    final sort = initialFilters['sort'] == 'rating'
+    final rawSort = initialFilters['sort'];
+    final sort = rawSort == 'rating'
         ? 'rating_desc'
-        : initialFilters['sort'];
+        : (rawSort == 'relevance' ? null : rawSort);
     final hasProductFilters = (category != null && category.isNotEmpty) ||
         minPrice != null || maxPrice != null || sort != null;
 
