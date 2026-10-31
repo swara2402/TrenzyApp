@@ -65,9 +65,29 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     final text = promptText ?? _controller.text.trim();
     if (text.isEmpty || _loading) return;
     if (promptText == null) _controller.clear();
+    await _requestStylist(text, addUserMessage: true);
+  }
+
+  Future<void> _retry(String prompt) async {
+    if (_loading) return;
+    setState(() {
+      if (_messages.isNotEmpty && _messages.last['retryPrompt'] == prompt) {
+        _messages.removeLast();
+      }
+    });
+    await _requestStylist(prompt, addUserMessage: false);
+  }
+
+  Future<void> _requestStylist(
+    String text, {
+    required bool addUserMessage,
+  }) async {
+    if (text.trim().isEmpty || _loading) return;
 
     setState(() {
-      _messages.add({'role': 'user', 'text': text, 'products': []});
+      if (addUserMessage) {
+        _messages.add({'role': 'user', 'text': text, 'products': []});
+      }
       _loading = true;
     });
     _scrollToBottom();
@@ -75,12 +95,17 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     try {
       final result = await ref
           .read(apiServiceProvider)
-          .aiStylistChat(message: text, conversationId: _conversationId, persona: _selectedPersona);
+          .aiStylistChat(
+            message: text,
+            conversationId: _conversationId,
+            persona: _selectedPersona,
+          );
       _conversationId = (result['conversation_id'] as num?)?.toInt();
 
-      final responseText = (result['message'] ?? result['reply'] ?? result['response'])
-          ?.toString()
-          .trim();
+      final responseText =
+          (result['message'] ?? result['reply'] ?? result['response'])
+              ?.toString()
+              .trim();
       final rawProducts = result['mentioned_products'] ?? result['products'];
       final products = rawProducts is List
           ? rawProducts.whereType<Map<String, dynamic>>().toList()
@@ -104,8 +129,9 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
           _messages.add({
             'role': 'assistant',
             'text':
-                'I’m having trouble reaching the stylist right now. Check your connection and tap to try again.',
+                'I’m having trouble reaching the stylist right now. Check your connection and try again.',
             'products': [],
+            'retryPrompt': text,
           });
         });
         _scrollToBottom();
@@ -259,6 +285,26 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                             height: 1.45,
                           ),
                         ),
+                        if (!isUser && m['retryPrompt'] is String) ...[
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: _loading
+                                  ? null
+                                  : () => _retry(m['retryPrompt'] as String),
+                              icon: const Icon(Icons.refresh_rounded, size: 16),
+                              label: const Text('Try again'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: c.primary,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         if (products.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           const Divider(height: 1),
