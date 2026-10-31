@@ -382,52 +382,96 @@ class _BlendDashboardContent extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-          _ActionButton(
-            icon: Icons.swipe,
-            label: 'Swipe',
-            color: context.trenzyColors.primary,
-            onTap: () => context.go('${AppRoutes.blendSwipe}?groupId=$groupId'),
-          ),
-          SizedBox(width: 12),
-          _ActionButton(
-            icon: Icons.chat,
-            label: 'Chat',
-            color: context.trenzyColors.emerald,
-            onTap: () => context.go('${AppRoutes.blendChat}?groupId=$groupId'),
-          ),
-          SizedBox(width: 12),
-          _ActionButton(
-            icon: Icons.favorite,
-            label: 'Wishlist',
-            color: context.trenzyColors.crimson,
-            onTap: () =>
-                context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
-          ),
-          SizedBox(width: 12),
-          ],
+          Text(
+            'WHAT WOULD YOU LIKE TO DO?',
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 1.5,
+              color: context.trenzyColors.mutedFg,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => context.go('${AppRoutes.blendSwipe}?groupId=$groupId'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+              decoration: BoxDecoration(
+                gradient: GlassGradients.primary,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: context.trenzyColors.primary.withValues(alpha: 0.2),
+                    blurRadius: 14,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.swipe_rounded, color: context.trenzyColors.primaryFg, size: 28),
+                  SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Find your next favourite',
+                          style: TextStyle(
+                            color: context.trenzyColors.primaryFg,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Swipe through styles together',
+                          style: TextStyle(
+                            color: context.trenzyColors.primaryFg.withValues(alpha: 0.8),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded, color: context.trenzyColors.primaryFg),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
           Row(
             children: [
-              Spacer(),
-              _ActionButton(
-                icon: Icons.analytics_rounded,
-                label: 'Analytics',
-                color: context.trenzyColors.primary,
-                onTap: () => context.go('${AppRoutes.blendResults}?groupId=$groupId'),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.favorite_outline_rounded,
+                  label: 'Shared picks',
+                  color: context.trenzyColors.crimson,
+                  onTap: () => context.go('${AppRoutes.blendWishlist}?groupId=$groupId'),
+                ),
               ),
-              SizedBox(width: 12),
-              _ActionButton(
-                icon: Icons.dashboard,
-                label: 'Moodboard',
-                color: context.trenzyColors.primary,
-                onTap: () => context.go('${AppRoutes.blendMoodboard}?groupId=$groupId'),
+              SizedBox(width: 10),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: 'Group chat',
+                  color: context.trenzyColors.emerald,
+                  onTap: () => context.go('${AppRoutes.blendChat}?groupId=$groupId'),
+                ),
               ),
-              Spacer(),
             ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Swipe to discover • Save picks to decide • Chat with your group',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: context.trenzyColors.mutedFg,
+            ),
           ),
         ],
       ),
