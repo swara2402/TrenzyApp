@@ -235,7 +235,12 @@ def search_products(
     limit = max(1, min(limit, 100))
     normalized_query = q.strip()[:200]  # Cap search query to prevent abuse
 
-    if not normalized_query and not any((category, subcategory, gender, color, season, brand, min_price is not None, max_price is not None)):
+    has_explicit_filters = any((
+        category, subcategory, gender, color, season, brand,
+        min_price is not None, max_price is not None,
+    ))
+    has_non_relevance_sort = sort not in ("", "relevance")
+    if not normalized_query and not has_explicit_filters and not has_non_relevance_sort:
         return {"products": []}
 
     # Full-text search requires PostgreSQL's ``search_vector`` tsvector. On
