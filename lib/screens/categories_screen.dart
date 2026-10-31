@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trenzy/providers/products_provider.dart';
@@ -178,55 +179,14 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                 _tileColors[index % _tileColors.length];
                             final isSelected = _selectedCategory == cat;
 
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedCategory = isSelected ? null : cat;
-                                });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? context.trenzyColors.primary
-                                        : context.trenzyColors.glassBorder,
-                                    width: isSelected ? 2 : 0.5,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 52,
-                                      height: 52,
-                                      decoration: BoxDecoration(
-                                        color: context.trenzyColors.primary
-                                            .withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        icon,
-                                        size: 24,
-                                        color: context.trenzyColors.primary,
-                                      ),
-                                    ),
-                                    SizedBox(height: 12),
-                                    Text(
-                                      cat,
-                                      style: TextStyle(
-                                        color: context.trenzyColors.foreground,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            return _CategoryImageTile(
+                              category: cat,
+                              fallbackIcon: icon,
+                              fallbackColor: color,
+                              selected: isSelected,
+                              onTap: () => setState(() {
+                                _selectedCategory = isSelected ? null : cat;
+                              }),
                             );
                           },
                         ),
@@ -311,6 +271,87 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class _CategoryImageTile extends ConsumerWidget {
+  const _CategoryImageTile({
+    required this.category,
+    required this.fallbackIcon,
+    required this.fallbackColor,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String category;
+  final IconData fallbackIcon;
+  final Color fallbackColor;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final products = ref.watch(productsProvider((category: category)));
+    final imageUrl = products.valueOrNull
+        ?.map((product) => product.effectiveImageUrl.trim())
+        .firstWhere((url) => url.isNotEmpty, orElse: () => '');
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: fallbackColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? context.trenzyColors.primary : context.trenzyColors.glassBorder,
+            width: selected ? 2 : 0.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(19),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (imageUrl != null && imageUrl.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, _, _) => const SizedBox.shrink(),
+                ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.78)],
+                  ),
+                ),
+              ),
+              Center(child: Icon(fallbackIcon, size: 34, color: Colors.white.withValues(alpha: 0.9))),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 12),
+                  child: Text(
+                    category,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      shadows: [Shadow(color: Colors.black87, blurRadius: 8)],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
