@@ -53,3 +53,48 @@ void main() {
     });
   });
 }
+
+
+  group('guardRedirect authentication', () {
+    test('redirects signed-out users away from onboarding deep links', () {
+      for (final route in [
+        AppRoutes.onboarding,
+        AppRoutes.favoriteCategories,
+        AppRoutes.preferredStyles,
+        AppRoutes.discoveryPreferences,
+        AppRoutes.persona,
+      ]) {
+        expect(
+          AppRoutes.guardRedirect(
+            isLoggedIn: false,
+            isOnboardingDone: false,
+            isAgeVerified: false,
+            location: route,
+          ),
+          AppRoutes.splash,
+          reason: 'Signed-out access should be blocked for $route',
+        );
+      }
+    });
+
+    test('keeps signed-out users on public authentication routes', () {
+      expect(
+        AppRoutes.guardRedirect(
+          isLoggedIn: false,
+          isOnboardingDone: false,
+          isAgeVerified: false,
+          location: AppRoutes.login,
+        ),
+        isNull,
+      );
+      expect(
+        AppRoutes.guardRedirect(
+          isLoggedIn: false,
+          isOnboardingDone: false,
+          isAgeVerified: false,
+          location: AppRoutes.signUp,
+        ),
+        isNull,
+      );
+    });
+  });
