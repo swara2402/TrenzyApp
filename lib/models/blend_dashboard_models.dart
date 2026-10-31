@@ -404,7 +404,7 @@ class ActivityEvent {
   factory ActivityEvent.fromJson(Map<String, dynamic> json) {
     return ActivityEvent(
       id: json['id']?.toString(),
-      type: json['type'] as String?,
+      type: (json['type'] ?? json['kind']) as String?,
       description: json['description'] as String?,
       user: json['user'] != null
           ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
