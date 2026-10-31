@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
+import '../providers/api_service_provider.dart';
 import '../services/api_service.dart';
 import '../theme/glass_theme.dart';
 
@@ -210,6 +211,7 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
         item: items[index],
         onToggleFavorite: () => _toggleFavorite(items[index]),
         onRemove: () => _removeItem(items[index]),
+        onVote: (vote) => _voteItem(items[index], vote),
         onTap: () => _showItemDetails(context, items[index]),
       ),
     );
@@ -271,6 +273,29 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     }
 
     return result;
+  }
+
+  Future<void> _voteItem(SharedWishlistItem item, String vote) async {
+    final productId = item.productId;
+    if (productId.isEmpty) {
+      GlassToast.error(context, 'This item cannot be rated yet.');
+      return;
+    }
+    final success = await ref
+        .read(blendWishlistNotifierProvider.notifier)
+        .voteItem(
+          blendId: widget.groupId,
+          productId: productId,
+          swipeType: vote,
+        );
+    if (!mounted) return;
+    if (success) {
+      ref.invalidate(sharedWishlistProvider(widget.groupId));
+      ref.invalidate(blendDashboardProvider(widget.groupId));
+      GlassToast.success(context, 'Your vote was added');
+    } else {
+      GlassToast.error(context, 'Could not save your vote. Please try again.');
+    }
   }
 
   void _toggleFavorite(SharedWishlistItem item) {
@@ -508,12 +533,14 @@ class _WishlistItemCard extends StatelessWidget {
   final SharedWishlistItem item;
   final VoidCallback onToggleFavorite;
   final VoidCallback onRemove;
+  final ValueChanged<String> onVote;
   final VoidCallback onTap;
 
   const _WishlistItemCard({
     required this.item,
     required this.onToggleFavorite,
     required this.onRemove,
+    required this.onVote,
     required this.onTap,
   });
 
@@ -606,7 +633,55 @@ class _WishlistItemCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                    Spacer(),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text(
+                          item.ratingAverage == null
+                              ? 'No ratings yet'
+                              : '★ ${item.ratingAverage!.toStringAsFixed(1)}/5',
+                          style: TextStyle(
+                            color: context.trenzyColors.primary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${item.totalVotes} votes',
+                          style: TextStyle(
+                            color: context.trenzyColors.mutedFg,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        _VoteChip(
+                          label: 'Like ${item.likeCount}',
+                          icon: Icons.thumb_up_alt_outlined,
+                          selected: item.myVote == 'like',
+                          onTap: () => onVote('like'),
+                        ),
+                        const SizedBox(width: 4),
+                        _VoteChip(
+                          label: 'Love ${item.loveCount}',
+                          icon: Icons.favorite_border_rounded,
+                          selected: item.myVote == 'love',
+                          onTap: () => onVote('love'),
+                        ),
+                        const SizedBox(width: 4),
+                        _VoteChip(
+                          label: 'No ${item.dislikeCount}',
+                          icon: Icons.thumb_down_alt_outlined,
+                          selected: item.myVote == 'dislike',
+                          onTap: () => onVote('dislike'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Text(
@@ -632,6 +707,67 @@ class _WishlistItemCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VoteChip extends StatelessWidget {
+  const _VoteChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(9),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected
+                ? context.trenzyColors.primary.withValues(alpha: 0.18)
+                : context.trenzyColors.glass,
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: selected
+                  ? context.trenzyColors.primary
+                  : context.trenzyColors.glassBorder,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 11, color: selected
+                  ? context.trenzyColors.primary
+                  : context.trenzyColors.mutedFg),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                    color: selected
+                        ? context.trenzyColors.primary
+                        : context.trenzyColors.mutedFg,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
