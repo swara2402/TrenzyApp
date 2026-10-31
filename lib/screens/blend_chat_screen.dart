@@ -177,10 +177,13 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
       appBar: AppBar(
         backgroundColor: context.trenzyColors.background.withValues(alpha: 0.8),
         elevation: 0,
-        leadingWidth: 120,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: Row(
+        leadingWidth: 56,
+        leading: IconButton(
+          tooltip: 'Back to Blend',
+          icon: Icon(Icons.arrow_back_rounded, color: context.trenzyColors.mutedFg),
+          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${_groupId ?? ''}'),
+        ),
+        title: Row(
             children: [
               Stack(
                 clipBehavior: Clip.none,
@@ -268,7 +271,6 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
               ),
             ],
           ),
-        ),
         actions: [
           Container(
             width: 36,

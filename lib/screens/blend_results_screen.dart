@@ -116,12 +116,14 @@ class _BlendResultsContent extends StatelessWidget {
             elevation: 0,
             leading: GlassBackButton(
               onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                  return;
+                }
                 final id = results.groupId;
-                context.go(
-                  id == null || id.isEmpty
-                      ? AppRoutes.blendHub
-                      : '${AppRoutes.blendDashboard}?groupId=$id',
-                );
+                context.go(id == null || id.isEmpty
+                    ? AppRoutes.blendHub
+                    : '${AppRoutes.blendDashboard}?groupId=$id');
               },
             ),
             title: DisplayText(
