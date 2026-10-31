@@ -205,7 +205,7 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.56,
+        childAspectRatio: 0.58,
       ),
       itemBuilder: (context, index) => _WishlistItemCard(
         item: items[index],
@@ -559,7 +559,7 @@ class _WishlistItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Stack(
                 children: [
                   CachedNetworkImage(
@@ -599,7 +599,7 @@ class _WishlistItemCard extends StatelessWidget {
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 3,
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: Column(
@@ -674,7 +674,7 @@ class _WishlistItemCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         _VoteChip(
-                          label: 'No ${item.dislikeCount}',
+                          label: 'Pass ${item.dislikeCount}',
                           icon: Icons.thumb_down_alt_outlined,
                           selected: item.myVote == 'dislike',
                           onTap: () => onVote('dislike'),
@@ -685,7 +685,7 @@ class _WishlistItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          item.addedByName,
+                          'By ${item.addedByName}',
                           style: TextStyle(
                             fontSize: 9,
                             color: context.trenzyColors.mutedFg,
