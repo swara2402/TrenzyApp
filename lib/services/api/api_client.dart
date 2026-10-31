@@ -360,18 +360,12 @@ class ApiClient {
         if (e.statusCode == 401) {
           onSessionExpired?.call();
         }
-        if (_isTransientStatus(e.statusCode) && attempts < maxRetries) {
-          _log('Transient HTTP ${e.statusCode} for $endpoint; retry $attempts/$maxRetries');
-          await _waitBeforeRetry(attempts);
-          continue;
-        }
+        // Mutating requests (POST/PUT/PATCH/DELETE/uploads) are not
+        // automatically replayed: the server may have processed them even
+        // when the client received a transient response.
         rethrow;
       } catch (e) {
-        if (attempts >= maxRetries) {
-          throw ApiException('Connection failed: $e', details: endpoint);
-        }
-        _log('Network failure for $endpoint; retry $attempts/$maxRetries: $e');
-        await _waitBeforeRetry(attempts);
+        throw ApiException('Connection failed: $e', details: endpoint);
       }
     }
     throw ApiException('Request failed after retries', details: endpoint);
