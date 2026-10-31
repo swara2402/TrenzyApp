@@ -201,7 +201,9 @@ class AppRoutes {
         location.startsWith(discoveryPreferences) ||
         location.startsWith(persona);
 
-    if (!isLoggedIn && !isAuthRoute && !isOnboardingRoute) {
+    if (!isLoggedIn && !isAuthRoute) {
+      // Onboarding persists account preferences and is only available after
+      // signup/login. Deep links must not expose onboarding to signed-out users.
       return splash;
     }
 
