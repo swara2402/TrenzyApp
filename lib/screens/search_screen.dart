@@ -39,7 +39,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _focusNode = FocusNode();
   String _query = '';
   bool _hasSubmitted = false;
-  String _debouncedQuery = '';
   Timer? _debounceTimer;
 
   @override
@@ -75,7 +74,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _debounceTimer = Timer(const Duration(milliseconds: 400), () {
         if (!mounted || _controller.text.trim() != text) return;
         setState(() {
-          _debouncedQuery = text;
           _query = text;
           // Show matching results automatically while the user types.
           // The explicit search button remains available for immediate submit.
@@ -84,7 +82,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       });
     } else {
       setState(() {
-        _debouncedQuery = '';
         _query = '';
         _hasSubmitted = false;
       });
@@ -135,7 +132,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _debounceTimer?.cancel();
     setState(() {
       _query = sanitized;
-      _debouncedQuery = sanitized;
       _hasSubmitted = true;
     });
     trackSearch(ref, sanitized);
@@ -160,7 +156,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         setState(() {
                           _hasSubmitted = false;
                           _query = '';
-                          _debouncedQuery = '';
                           _controller.clear();
                         });
                       } else {
@@ -185,7 +180,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 _controller.clear();
                                 setState(() {
                                   _query = '';
-                                  _debouncedQuery = '';
                                   _hasSubmitted = false;
                                 });
                               },
@@ -749,70 +743,6 @@ class _SearchErrorView extends StatelessWidget {
             ),
             SizedBox(height: 24),
             GlowButton(label: 'Try Again', width: 200, onTap: onRetry),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Swipe discovery card ───────────────────────────────────────────────────
-class _SwipeDiscoveryCard extends StatelessWidget {
-  const _SwipeDiscoveryCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      color: context.trenzyColors.graphite,
-      radius: 16,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      onTap: () => context.push(AppRoutes.swipeDiscovery),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: context.trenzyColors.primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                Icons.swipe_rounded,
-                size: 28,
-                color: context.trenzyColors.primary,
-              ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Start Swipe Discovery',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: context.trenzyColors.foreground,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Let our AI learn your style, one swipe at a time.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.trenzyColors.mutedFg,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: context.trenzyColors.mutedFg,
-            ),
           ],
         ),
       ),
