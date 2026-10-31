@@ -12,47 +12,6 @@ import 'package:trenzy/widgets/product_card.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:trenzy/widgets/section_states.dart';
 
-// ── Recent search persistence ──────────────────────────────────────────────
-const _kMaxRecentSearches = 10;
-
-class _RecentSearchesNotifier extends StateNotifier<List<String>> {
-  _RecentSearchesNotifier() : super([]);
-
-  void add(String query) {
-    final q = query.trim();
-    if (q.isEmpty) return;
-    state = [
-      q,
-      ...state.where((s) => s != q),
-    ].take(_kMaxRecentSearches).toList();
-  }
-
-  void remove(String query) {
-    state = state.where((s) => s != query).toList();
-  }
-
-  void clear() {
-    state = [];
-  }
-}
-
-final recentSearchesProvider =
-    StateNotifierProvider<_RecentSearchesNotifier, List<String>>(
-      (_) => _RecentSearchesNotifier(),
-    );
-
-// ── Trending searches (static for now, can be wired to API later) ──────────
-const _kTrendingSearches = [
-  'Oversized blazer',
-  'Minimal sneakers',
-  'Streetwear hoodie',
-  'Linen trousers',
-  'Gold jewelry',
-  'Leather bag',
-  'Y2K aesthetic',
-  'Quiet luxury',
-];
-
 // ── Main screen ────────────────────────────────────────────────────────────
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({
@@ -80,7 +39,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _focusNode = FocusNode();
   String _query = '';
   bool _hasSubmitted = false;
-  String _debouncedQuery = '';
   Timer? _debounceTimer;
 
   @override
@@ -111,15 +69,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _onTextChanged() {
     _debounceTimer?.cancel();
-    final text = _controller.text;
+    final text = _controller.text.trim();
     if (text.length >= 2) {
-      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          setState(() => _debouncedQuery = text);
-        }
+      _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+        if (!mounted || _controller.text.trim() != text) return;
+        setState(() {
+          _query = text;
+          // Show matching results automatically while the user types.
+          // The explicit search button remains available for immediate submit.
+          _hasSubmitted = true;
+        });
       });
     } else {
-      setState(() => _debouncedQuery = '');
+      setState(() {
+        _query = '';
+        _hasSubmitted = false;
+      });
     }
   }
 
@@ -164,24 +129,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void _submitSearch(String query) {
     final sanitized = query.trim();
     if (sanitized.isEmpty) return;
+    _debounceTimer?.cancel();
     setState(() {
       _query = sanitized;
       _hasSubmitted = true;
     });
-    ref.read(recentSearchesProvider.notifier).add(sanitized);
     trackSearch(ref, sanitized);
     _focusNode.unfocus();
   }
 
-  void _selectRecent(String query) {
-    _controller.text = query;
-    _submitSearch(query);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final recentSearches = ref.watch(recentSearchesProvider);
-
     return Scaffold(
       backgroundColor: context.trenzyColors.background,
       body: SafeArea(
@@ -251,16 +209,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
 
-            // ── Search suggestions ───────────────────────────────────────
-            if (!_hasSubmitted && _debouncedQuery.length >= 2)
-              _SuggestionsOverlay(
-                query: _debouncedQuery,
-                onSelect: (suggestion) {
-                  _controller.text = suggestion;
-                  _submitSearch(suggestion);
-                },
-              ),
-
             // ── Body ────────────────────────────────────────────────────
             Expanded(
               child: _hasSubmitted
@@ -269,16 +217,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       initialFilters: _initialFilters,
                     )
                   : _BrowseView(
-                      recentSearches: recentSearches,
-                      onRecentTap: _selectRecent,
-                      onRecentRemove: (q) =>
-                          ref.read(recentSearchesProvider.notifier).remove(q),
-                      onClearRecent: () =>
-                          ref.read(recentSearchesProvider.notifier).clear(),
-                      onTrendingTap: _selectRecent,
                       onCategoryTap: (category) {
-                        _controller.text = category;
-                        _submitSearch(category);
+                        _controller.clear();
+                        setState(() {
+                          _query = '';
+                          _initialFilters = {
+                            ..._initialFilters,
+                            'category': category,
+                            'subcategory': null,
+                          };
+                          _hasSubmitted = true;
+                        });
                       },
                     ),
             ),
@@ -289,279 +238,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 }
 
-// ── Suggestions overlay (shown while typing) ───────────────────────────────
-class _SuggestionsOverlay extends ConsumerWidget {
-  final String query;
-  final ValueChanged<String> onSelect;
-  const _SuggestionsOverlay({required this.query, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final suggestionsAsync = ref.watch(searchSuggestionsProvider(query));
-    return suggestionsAsync.when(
-      loading: () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: SizedBox(
-          height: 32,
-          child: Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: context.trenzyColors.mutedFg,
-              ),
-            ),
-          ),
-        ),
-      ),
-      error: (_, _) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 16,
-              color: context.trenzyColors.crimson,
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Suggestions are unavailable right now',
-                style: GlassTypography.body(
-                  fontSize: 13,
-                  color: context.trenzyColors.mutedFg,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      data: (suggestions) {
-        if (suggestions.isEmpty) return SizedBox.shrink();
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: context.trenzyColors.surfaceContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          constraints: const BoxConstraints(maxHeight: 200),
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: suggestions.length,
-            itemBuilder: (context, index) {
-              final suggestion = suggestions[index];
-              return InkWell(
-                onTap: () => onSelect(suggestion),
-                borderRadius: index == 0
-                    ? BorderRadius.vertical(top: Radius.circular(12))
-                    : index == suggestions.length - 1
-                    ? BorderRadius.vertical(bottom: Radius.circular(12))
-                    : null,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.search_rounded,
-                        size: 18,
-                        color: context.trenzyColors.mutedFg,
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          suggestion,
-                          style: TextStyle(
-                            fontFamily: GlassTypography.bodyFont,
-                            fontSize: 14,
-                            color: context.trenzyColors.foreground,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
 // ── Browse view (shown before search) ──────────────────────────────────────
 class _BrowseView extends StatelessWidget {
-  final List<String> recentSearches;
-  final ValueChanged<String> onRecentTap;
-  final ValueChanged<String> onRecentRemove;
-  final VoidCallback onClearRecent;
-  final ValueChanged<String> onTrendingTap;
   final ValueChanged<String> onCategoryTap;
 
-  const _BrowseView({
-    required this.recentSearches,
-    required this.onRecentTap,
-    required this.onRecentRemove,
-    required this.onClearRecent,
-    required this.onTrendingTap,
-    required this.onCategoryTap,
-  });
+  const _BrowseView({required this.onCategoryTap});
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
       children: [
-        // ── Recent searches ─────────────────────────────────────────────
-        if (recentSearches.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Searches',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: context.trenzyColors.foreground,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onClearRecent,
-                  child: Text(
-                    'Clear all',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.trenzyColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 12),
-          ...recentSearches.map(
-            (query) => ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 0,
-              ),
-              leading: Icon(
-                Icons.history,
-                color: context.trenzyColors.mutedFg,
-                size: 20,
-              ),
-              title: Text(
-                query,
-                style: TextStyle(
-                  color: context.trenzyColors.foreground,
-                  fontSize: 14,
-                ),
-              ),
-              trailing: GestureDetector(
-                onTap: () => onRecentRemove(query),
-                child: Icon(
-                  Icons.close,
-                  color: context.trenzyColors.mutedFg,
-                  size: 16,
-                ),
-              ),
-              onTap: () => onRecentTap(query),
-            ),
-          ),
-          SizedBox(height: 8),
-        ],
-
-        // ── Trending searches ───────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.trending_up_rounded,
-                color: context.trenzyColors.primary,
-                size: 18,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Trending Searches',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: context.trenzyColors.foreground,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _kTrendingSearches.map((term) {
-              return GestureDetector(
-                onTap: () => onTrendingTap(term),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.trenzyColors.graphite,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: context.trenzyColors.glassBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.trending_up_rounded,
-                        color: context.trenzyColors.primary,
-                        size: 14,
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        term,
-                        style: TextStyle(
-                          color: context.trenzyColors.foreground,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-
-        SizedBox(height: 24),
-
-        // ── Browse categories ──────────────────────────────────────────
         _CategoryChips(onCategoryTap: onCategoryTap),
-
-        SizedBox(height: 16),
-
-        // ── Swipe discovery ────────────────────────────────────────────
-        _SwipeDiscoveryCard(),
-
-        SizedBox(height: 32),
       ],
     );
   }
 }
 
-// ── Category chips ─────────────────────────────────────────────────────────
 class _CategoryChips extends ConsumerWidget {
   final ValueChanged<String> onCategoryTap;
   const _CategoryChips({required this.onCategoryTap});
@@ -1050,70 +743,6 @@ class _SearchErrorView extends StatelessWidget {
             ),
             SizedBox(height: 24),
             GlowButton(label: 'Try Again', width: 200, onTap: onRetry),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Swipe discovery card ───────────────────────────────────────────────────
-class _SwipeDiscoveryCard extends StatelessWidget {
-  const _SwipeDiscoveryCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      color: context.trenzyColors.graphite,
-      radius: 16,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      onTap: () => context.push(AppRoutes.swipeDiscovery),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: context.trenzyColors.primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                Icons.swipe_rounded,
-                size: 28,
-                color: context.trenzyColors.primary,
-              ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Start Swipe Discovery',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: context.trenzyColors.foreground,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Let our AI learn your style, one swipe at a time.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.trenzyColors.mutedFg,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: context.trenzyColors.mutedFg,
-            ),
           ],
         ),
       ),

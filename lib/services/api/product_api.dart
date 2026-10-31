@@ -125,18 +125,22 @@ class ProductApi {
     String query, {
     int limit = 10,
   }) async {
-    final data = await _client.get(
-      '/search',
-      queryParams: {'q': query, 'limit': limit.toString()},
-    );
-    final result = data is Map<String, dynamic>
-        ? Map<String, dynamic>.from(data)
-        : <String, dynamic>{};
+    // Keep people/blend search optional: an outage in the unified endpoint
+    // must never hide valid matches from the product catalog.
+    var result = <String, dynamic>{};
+    try {
+      final data = await _client.get(
+        '/search',
+        queryParams: {'q': query, 'limit': limit.toString()},
+      );
+      if (data is Map<String, dynamic>) {
+        result = Map<String, dynamic>.from(data);
+      }
+    } catch (_) {
+      // Continue with catalog search below. Product discovery is the primary
+      // search experience and must work even if social search is unavailable.
+    }
 
-    // Unified search is intentionally broad for people and blends, while the
-    // product endpoint searches the catalog's indexed name/category/attribute
-    // fields. Use the catalog search for product cards so a query such as
-    // "oversized blazer" cannot be replaced by unrelated generic results.
     try {
       final productResults = await searchProducts(query: query);
       final seenProductIds = <String>{};
@@ -149,6 +153,9 @@ class ProductApi {
           .take(limit)
           .toList();
     } catch (_) {
+      // If the social endpoint also failed, let the provider expose a retryable
+      // error instead of silently presenting a false "no results" screen.
+      if (result.isEmpty) rethrow;
       result.putIfAbsent('products', () => <dynamic>[]);
     }
     return result;
