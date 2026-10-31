@@ -131,6 +131,23 @@ class BlendWishlistNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<bool> voteItem({
+    required String blendId,
+    required String productId,
+    required String swipeType,
+  }) async {
+    try {
+      await _api.recordBlendSwipe(
+        groupId: blendId,
+        productId: productId,
+        swipeType: swipeType,
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<bool> updateItem({
     required String blendId,
     required int itemId,

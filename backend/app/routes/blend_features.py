@@ -20,6 +20,7 @@ from ..models import (
     ActivityEvent,
     Blend,
     BlendMember,
+    BlendMessage,
     BlendSwipe,
     Product,
 )
@@ -350,8 +351,26 @@ def get_shared_wishlist(
         query = query.order_by(desc(SharedWishlistItem.created_at))
 
     items = query.all()
-    return [
-        {
+    product_ids = [item.product_id for item in items]
+    vote_rows = (
+        session.query(BlendSwipe)
+        .filter(
+            BlendSwipe.blend_id == blend_id,
+            BlendSwipe.product_id.in_(product_ids),
+        )
+        .all()
+        if product_ids else []
+    )
+    votes_by_product: dict[str, list[BlendSwipe]] = {}
+    for vote in vote_rows:
+        votes_by_product.setdefault(vote.product_id, []).append(vote)
+
+    response = []
+    for item in items:
+        votes = votes_by_product.get(item.product_id, [])
+        scores = [vote.score for vote in votes]
+        rating_values = [1 if score < 0 else (5 if score >= 2 else 4) for score in scores]
+        response.append({
             "id": item.id,
             "productId": item.product_id,
             "productName": item.product_name,
@@ -366,9 +385,17 @@ def get_shared_wishlist(
             "isFavorite": item.is_favorite,
             "purchaseLink": item.purchase_link,
             "createdAt": item.created_at.isoformat() if item.created_at else None,
-        }
-        for item in items
-    ]
+            "likeCount": sum(1 for score in scores if score == 1),
+            "loveCount": sum(1 for score in scores if score >= 2),
+            "dislikeCount": sum(1 for score in scores if score < 0),
+            "totalVotes": len(scores),
+            "ratingAverage": round(sum(rating_values) / len(rating_values), 1) if rating_values else None,
+            "myVote": next((
+                "dislike" if vote.score < 0 else ("love" if vote.score >= 2 else "like")
+                for vote in votes if vote.user_firebase_uid == firebase_uid
+            ), None),
+        })
+    return response
 
 
 @router.post("/{blend_id}/wishlist")
@@ -409,6 +436,22 @@ def add_to_shared_wishlist(
         notes=payload.notes,
     )
     session.add(item)
+    session.flush()
+
+    # Persist a product attachment in the Blend chat as well as the shared
+    # wishlist. Members can see who suggested it when they open the chat.
+    session.add(BlendMessage(
+        blend_id=blend_id,
+        sender_firebase_uid=firebase_uid,
+        sender_name=decoded_name,
+        content=f"added {payload.productName or 'a product'} to the Blend",
+        attached_product_id=payload.productId,
+        attached_product_title=payload.productName,
+        attached_product_image=payload.productImage,
+        attached_product_price=(
+            str(payload.productPrice) if payload.productPrice is not None else None
+        ),
+    ))
     session.commit()
     session.refresh(item)
 

@@ -170,12 +170,9 @@ class BlendApi {
     if (notes != null) body['notes'] = notes;
 
     final data = await _client.post('/blends/$blendId/wishlist', body: body);
-    // The same explicitly selected product must be the first-class Blend swipe item,
-    // not merely an entry in the shared wishlist.
-    await _client.post(
-      '/blends/$blendId/deck',
-      body: {'productId': productId},
-    );
+    // Shared wishlist is its own persisted collaboration surface. Do not make
+    // a successful add depend on optional swipe-deck insertion: manually added
+    // or external products may not exist in the catalog deck.
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
 
