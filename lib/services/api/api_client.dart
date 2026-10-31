@@ -42,7 +42,17 @@ class ApiClient {
   static void Function()? onSessionExpired;
 
   static const Duration timeout = Duration(seconds: 45);
-  static const int maxRetries = 2;
+  // Render's free/staging instance can briefly return 502/503 while waking.
+  // Retry transient startup failures instead of making users force-close the app.
+  static const int maxRetries = 4;
+
+  static bool _isTransientStatus(int? statusCode) =>
+      statusCode == 408 || statusCode == 429 ||
+      statusCode == 500 || statusCode == 502 ||
+      statusCode == 503 || statusCode == 504;
+
+  static Future<void> _waitBeforeRetry(int attempt) =>
+      Future.delayed(Duration(seconds: attempt));
 
   static String get baseUrl => '${EnvConfig.apiBaseUrl}/api';
   static String get socketBaseUrl => EnvConfig.socketBaseUrl;
@@ -309,12 +319,18 @@ class ApiClient {
         if (e.statusCode == 401) {
           onSessionExpired?.call();
         }
+        if (_isTransientStatus(e.statusCode) && attempts < maxRetries) {
+          _log('Transient HTTP ${e.statusCode} for $endpoint; retry $attempts/$maxRetries');
+          await _waitBeforeRetry(attempts);
+          continue;
+        }
         rethrow;
       } catch (e) {
         if (attempts >= maxRetries) {
           throw ApiException('Connection failed: $e', details: endpoint);
         }
-        await Future.delayed(Duration(milliseconds: 300 * attempts));
+        _log('Network failure for $endpoint; retry $attempts/$maxRetries: $e');
+        await _waitBeforeRetry(attempts);
       }
     }
     throw ApiException('Request failed after retries', details: endpoint);
@@ -344,12 +360,18 @@ class ApiClient {
         if (e.statusCode == 401) {
           onSessionExpired?.call();
         }
+        if (_isTransientStatus(e.statusCode) && attempts < maxRetries) {
+          _log('Transient HTTP ${e.statusCode} for $endpoint; retry $attempts/$maxRetries');
+          await _waitBeforeRetry(attempts);
+          continue;
+        }
         rethrow;
       } catch (e) {
         if (attempts >= maxRetries) {
           throw ApiException('Connection failed: $e', details: endpoint);
         }
-        await Future.delayed(Duration(milliseconds: 500 * attempts));
+        _log('Network failure for $endpoint; retry $attempts/$maxRetries: $e');
+        await _waitBeforeRetry(attempts);
       }
     }
     throw ApiException('Request failed after retries', details: endpoint);
