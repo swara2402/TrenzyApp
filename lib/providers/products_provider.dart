@@ -135,7 +135,8 @@ final productSearchProvider = FutureProvider.autoDispose
           params.season == null &&
           params.brand == null &&
           params.minPrice == null &&
-          params.maxPrice == null) {
+          params.maxPrice == null &&
+          params.sort == null) {
         return [];
       }
 

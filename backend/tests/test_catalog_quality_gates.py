@@ -128,3 +128,34 @@ def test_manifest_seed_accepts_explicit_price_and_recognized_item_type():
     assert product["price"] == 1299.0
     assert product["brand"] is None
     assert product["style"] is None
+
+
+
+def test_product_search_can_sort_catalog_without_search_text(client, db_session):
+    lower_rated = Product(
+        id="sort_only_lower_rated",
+        name="Canvas Trainers",
+        category="footwear",
+        subcategory="retro trainers",
+        gender="men",
+        rating=3.2,
+        price=1299,
+        is_archived=False,
+    )
+    higher_rated = Product(
+        id="sort_only_higher_rated",
+        name="Classic Sneakers",
+        category="footwear",
+        subcategory="retro trainers",
+        gender="men",
+        rating=4.9,
+        price=2199,
+        is_archived=False,
+    )
+    db_session.add_all([lower_rated, higher_rated])
+    db_session.commit()
+
+    response = client.get("/api/products/search?sort=rating_desc")
+    assert response.status_code == 200
+    ids = [item["id"] for item in response.json()["products"]]
+    assert ids.index("sort_only_higher_rated") < ids.index("sort_only_lower_rated")
