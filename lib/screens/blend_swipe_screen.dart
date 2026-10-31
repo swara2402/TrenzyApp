@@ -25,6 +25,29 @@ class BlendSwipeScreen extends ConsumerWidget {
     if (groupId.isEmpty) {
       return Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Choose a group to begin', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(
           child: EmptySection(
             title: 'No group selected',
@@ -41,10 +64,56 @@ class BlendSwipeScreen extends ConsumerWidget {
     return groupAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Loading group picks', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(child: LoadingSkeletonShimmer(height: 200, radius: 20)),
       ),
       error: (err, _) => Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Could not load group picks', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(
           child: ErrorSection(
             title: 'Could not load products',
@@ -456,13 +525,25 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
         backgroundColor: context.trenzyColors.background,
         appBar: AppBar(
           backgroundColor: context.trenzyColors.background,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-            onPressed: () => context.go(AppRoutes.blendHub),
-          ),
-          title: Text(
-            'Swipe',
-            style: TextStyle(color: context.trenzyColors.foreground),
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Find your group’s next favourite', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
           ),
         ),
         body: Center(
@@ -482,13 +563,25 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
         backgroundColor: context.trenzyColors.background,
         appBar: AppBar(
           backgroundColor: context.trenzyColors.background,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-            onPressed: () => context.go(AppRoutes.blendHub),
-          ),
-          title: Text(
-            'Session Complete',
-            style: TextStyle(color: context.trenzyColors.foreground),
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Session complete', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
           ),
         ),
         body: Center(
@@ -580,16 +673,29 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
       backgroundColor: context.trenzyColors.background,
       appBar: AppBar(
         backgroundColor: context.trenzyColors.background,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.trenzyColors.mutedFg),
-          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${widget.groupId}'),
+        leading: GlassBackButton(
+          onTap: () => context.go('${AppRoutes.blendDashboard}?groupId=${widget.groupId}'),
         ),
+        leadingWidth: 56,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 72,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              widget.group.name.isNotEmpty ? widget.group.name : 'Blend Swipe',
+              'BLEND SWIPE',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+                color: context.trenzyColors.primary,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              widget.group.name.isNotEmpty ? widget.group.name : 'Your group',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -729,12 +835,14 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
               _SwipeButton(
                 icon: Icons.close,
                 color: context.trenzyColors.crimson,
+                label: 'Nope',
                 onTap: _isAnimating ? null : () => _swipeAway('dislike'),
               ),
               _SwipeButton(
                 icon: Icons.undo_rounded,
                 color: context.trenzyColors.mutedFg,
-                size: 40,
+                size: 56,
+                label: 'Undo',
                 onTap: _currentIndex > 0 && !_isAnimating
                     ? _undoLastSwipe
                     : null,
@@ -742,6 +850,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
               _SwipeButton(
                 icon: Icons.favorite,
                 color: context.trenzyColors.primary,
+                label: 'Love',
                 onTap: _isAnimating ? null : () => _swipeAway('love'),
               ),
             ],
@@ -930,28 +1039,54 @@ class _SwipeButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final double size;
+  final String label;
   final VoidCallback? onTap;
 
   const _SwipeButton({
     required this.icon,
     required this.color,
-    this.size = 64,
+    required this.label,
+    this.size = 72,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withValues(alpha: 0.15),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+    return Opacity(
+      opacity: onTap == null ? 0.4 : 1,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.12),
+                border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.14),
+                    blurRadius: 16,
+                    spreadRadius: -2,
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: color, size: size * 0.45),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
         ),
-        child: Icon(icon, color: color, size: size * 0.45),
       ),
     );
   }
