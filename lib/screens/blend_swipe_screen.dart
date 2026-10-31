@@ -25,6 +25,29 @@ class BlendSwipeScreen extends ConsumerWidget {
     if (groupId.isEmpty) {
       return Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Choose a group to begin', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(
           child: EmptySection(
             title: 'No group selected',
@@ -41,10 +64,56 @@ class BlendSwipeScreen extends ConsumerWidget {
     return groupAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Loading group picks', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(child: LoadingSkeletonShimmer(height: 200, radius: 20)),
       ),
       error: (err, _) => Scaffold(
         backgroundColor: context.trenzyColors.background,
+        appBar: AppBar(
+          backgroundColor: context.trenzyColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 72,
+          leading: GlassBackButton(onTap: () => context.go(AppRoutes.blendHub)),
+          leadingWidth: 56,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BLEND SWIPE', style: TextStyle(
+                color: context.trenzyColors.primary, fontSize: 10,
+                fontWeight: FontWeight.w800, letterSpacing: 1.5,
+              )),
+              const SizedBox(height: 3),
+              Text('Could not load group picks', style: TextStyle(
+                color: context.trenzyColors.foreground, fontSize: 14,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+        ),
         body: Center(
           child: ErrorSection(
             title: 'Could not load products',
