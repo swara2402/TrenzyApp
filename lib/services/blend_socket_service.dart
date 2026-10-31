@@ -43,8 +43,6 @@ class BlendSocketService {
   final _messageController = StreamController<GroupMessage>.broadcast();
   final _swipeAppliedController =
       StreamController<Map<String, dynamic>>.broadcast();
-  final _deckUpdatedController =
-      StreamController<Map<String, dynamic>>.broadcast();
 
   io.Socket? _socket;
   Map<String, dynamic>? _pendingJoin;
@@ -64,8 +62,6 @@ class BlendSocketService {
   Stream<bool> get connectionStateStream => _connectionController.stream;
   Stream<Map<String, dynamic>> get swipeAppliedStream =>
       _swipeAppliedController.stream;
-  Stream<Map<String, dynamic>> get deckUpdatedStream =>
-      _deckUpdatedController.stream;
   bool get isConnected => _socket?.connected ?? false;
 
   Future<void> connect() async {
@@ -156,12 +152,6 @@ class BlendSocketService {
     socket.on('swipe_applied', (payload) {
       if (payload is Map && !_swipeAppliedController.isClosed) {
         _swipeAppliedController.add(Map<String, dynamic>.from(payload));
-      }
-    });
-
-    socket.on('blend_deck_updated', (payload) {
-      if (payload is Map && !_deckUpdatedController.isClosed) {
-        _deckUpdatedController.add(Map<String, dynamic>.from(payload));
       }
     });
 

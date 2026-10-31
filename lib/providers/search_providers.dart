@@ -72,15 +72,27 @@ final categorySearchProductsProvider = FutureProvider.autoDispose
   );
   if (uid == null) return const <ProductModel>[];
   final api = ref.watch(apiServiceProvider);
-  final raw = await api.searchProducts(
-    query: '',
-    category: filters.category,
-    minPrice: filters.minPrice?.round(),
-    maxPrice: filters.maxPrice?.round(),
-    sort: filters.sort == 'rating' ? 'rating_desc' : filters.sort,
-  );
-  return raw
+  final response = await api.getProducts(category: filters.category, limit: 100);
+  final raw = response['products'] as List<dynamic>? ?? const [];
+  final products = raw
       .whereType<Map>()
       .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item)))
+      .where((product) =>
+          (filters.minPrice == null || product.displayPrice >= filters.minPrice!) &&
+          (filters.maxPrice == null || product.displayPrice <= filters.maxPrice!))
       .toList();
+
+  // Sort the actual returned catalog items, not the text-search relevance score.
+  switch (filters.sort) {
+    case 'price_asc':
+      products.sort((a, b) => a.displayPrice.compareTo(b.displayPrice));
+      break;
+    case 'price_desc':
+      products.sort((a, b) => b.displayPrice.compareTo(a.displayPrice));
+      break;
+    case 'rating':
+      products.sort((a, b) => b.rating.compareTo(a.rating));
+      break;
+  }
+  return products;
 });

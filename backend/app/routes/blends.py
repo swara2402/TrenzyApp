@@ -38,7 +38,7 @@ import time
 import uuid
 from typing import Any, Literal, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -562,25 +562,11 @@ def get_blend_matching_suggestions(
     }
 
 
-async def _broadcast_blend_deck_update(group_id: str, product_ids: list[str]) -> None:
-    """Notify connected Blend members after a deck selection is committed."""
-    try:
-        from ..socket_server import sio
-        await sio.emit(
-            "blend_deck_updated",
-            {"groupId": group_id, "productIds": product_ids},
-            room=group_id,
-        )
-    except Exception:
-        logger.exception("Could not broadcast Blend deck update")
-
-
 @router.post("/{group_id}/deck")
 def add_product_to_blend_deck(
     group_id: str,
     payload: BlendDeckProductRequest,
     request: Request,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Add an explicitly selected product to the shared swipe deck."""
@@ -618,7 +604,6 @@ def add_product_to_blend_deck(
     group.deck_json = json.dumps({"selected": True, "ids": selected_ids})
     session.add(group)
     session.commit()
-    background_tasks.add_task(_broadcast_blend_deck_update, group_id, selected_ids)
     return {"success": True, "productIds": selected_ids}
 
 
