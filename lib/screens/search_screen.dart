@@ -246,116 +246,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
 // ── Browse view (shown before search) ──────────────────────────────────────
 class _BrowseView extends StatelessWidget {
-  final List<String> recentSearches;
-  final ValueChanged<String> onRecentTap;
-  final ValueChanged<String> onRecentRemove;
-  final VoidCallback onClearRecent;
-  final ValueChanged<String> onTrendingTap;
-  final ValueChanged<String> onCategoryTap;
-
-  const _BrowseView({
-    required this.recentSearches,
-    required this.onRecentTap,
-    required this.onRecentRemove,
-    required this.onClearRecent,
-    required this.onTrendingTap,
-    required this.onCategoryTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      children: [
-        // ── Recent searches ─────────────────────────────────────────────
-        if (recentSearches.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Searches',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: context.trenzyColors.foreground,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onClearRecent,
-                  child: Text(
-                    'Clear all',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.trenzyColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 12),
-          ...recentSearches.map(
-            (query) => ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 0,
-              ),
-              leading: Icon(
-                Icons.history,
-                color: context.trenzyColors.mutedFg,
-                size: 20,
-              ),
-              title: Text(
-                query,
-                style: TextStyle(
-                  color: context.trenzyColors.foreground,
-                  fontSize: 14,
-                ),
-              ),
-              trailing: GestureDetector(
-                onTap: () => onRecentRemove(query),
-                child: Icon(
-                  Icons.close,
-                  color: context.trenzyColors.mutedFg,
-                  size: 16,
-                ),
-              ),
-              onTap: () => onRecentTap(query),
-            ),
-          ),
-          SizedBox(height: 8),
-        ],
-
-        // ── Trending searches ───────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.trending_up_rounded,
-                color: context.trenzyColors.primary,
-                size: 18,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Trending Searches',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: context.trenzyColors.foreground,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 12),
-        Padding(
-       // ── Browse view: categories only; no suggested/recent/trending queries ──
-class _BrowseView extends StatelessWidget {
   final ValueChanged<String> onCategoryTap;
 
   const _BrowseView({required this.onCategoryTap});
@@ -371,7 +261,6 @@ class _BrowseView extends StatelessWidget {
   }
 }
 
-// ── Category chips ─────────────────────────────────────────────────────────
 class _CategoryChips extends ConsumerWidget {
   final ValueChanged<String> onCategoryTap;
   const _CategoryChips({required this.onCategoryTap});
