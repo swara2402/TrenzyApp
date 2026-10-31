@@ -138,14 +138,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _debouncedQuery = sanitized;
       _hasSubmitted = true;
     });
-    ref.read(recentSearchesProvider.notifier).add(sanitized);
     trackSearch(ref, sanitized);
     _focusNode.unfocus();
-  }
-
-  void _selectRecent(String query) {
-    _controller.text = query;
-    _submitSearch(query);
   }
 
   @override
