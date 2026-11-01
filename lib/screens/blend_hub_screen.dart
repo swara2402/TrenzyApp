@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/blend_provider.dart';
+import '../providers/api_service_provider.dart';
 import '../models/blend_model.dart';
 import '../theme/glass_theme.dart';
 import '../router/app_router.dart';
@@ -84,10 +85,10 @@ class BlendHubScreen extends ConsumerWidget {
                     ),
                   ),
                   _buildActiveBlends(context, ref, blendsAsync),
-                  SizedBox(height: 48),
+                  SizedBox(height: 24),
                   _buildActionTiles(context),
-                  SizedBox(height: 56),
-                  SizedBox(height: 100),
+                  SizedBox(height: 28),
+                  SizedBox(height: 24),
                 ],
               ),
             ),
@@ -124,7 +125,7 @@ class BlendHubScreen extends ConsumerWidget {
           );
         }
         return SizedBox(
-          height: 380,
+          height: 340,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(
@@ -135,6 +136,35 @@ class BlendHubScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final blend = blends[index];
               return _BlendCard(
+                onDelete: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      backgroundColor: context.trenzyColors.graphite,
+                      title: const Text('End this Blend?'),
+                      content: const Text('This removes the Blend for everyone. This action cannot be undone.'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: Text('End Blend', style: TextStyle(color: context.trenzyColors.crimson)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true) return;
+                  try {
+                    await ref.read(apiServiceProvider).disbandBlend(blend.id);
+                    ref.invalidate(userBlendGroupsProvider);
+                    if (context.mounted) {
+                      GlassToast.success(context, 'Blend ended');
+                    }
+                  } catch (_) {
+                    if (context.mounted) {
+                      GlassToast.error(context, 'Could not end this Blend. Please try again.');
+                    }
+                  }
+                },
                 match: '${blend.memberCount} Members',
                 title: blend.name,
                 updateTime: '#${blend.inviteCode}',
@@ -176,19 +206,23 @@ class _BlendCard extends StatelessWidget {
   final String title;
   final String updateTime;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
 
   const _BlendCard({
     required this.match,
     required this.title,
     required this.updateTime,
     this.onTap,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: Stack(
+        children: [
+          Container(
         width: 300,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
@@ -288,7 +322,23 @@ class _BlendCard extends StatelessWidget {
             ),
             SizedBox(height: 20),
           ],
-        ),
+          ),
+          if (onDelete != null)
+            Positioned(
+              top: 14,
+              right: 14,
+              child: Material(
+                color: context.trenzyColors.background.withValues(alpha: 0.9),
+                shape: const CircleBorder(),
+                child: IconButton(
+                  tooltip: 'End Blend',
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(Icons.delete_outline_rounded, color: context.trenzyColors.crimson, size: 20),
+                  onPressed: onDelete,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
