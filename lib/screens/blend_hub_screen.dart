@@ -323,6 +323,7 @@ class _BlendCard extends StatelessWidget {
             SizedBox(height: 20),
           ],
           ),
+          ),
           if (onDelete != null)
             Positioned(
               top: 14,
