@@ -98,21 +98,52 @@ jobs:
           POSTGRES_PASSWORD: ci-test-password
           APP_ENV: test
         run: |
-          # Migration graph inspection should not install the heavyweight AI/ML stack.
-          python -m pip install "alembic>=1.13.2,<2.0.0"
+          # Inspect migration metadata with the stdlib AST parser. Importing
+          # migration modules pulls in the full application runtime and ML stack.
           python - <<'PY'
-          from alembic.config import Config
-          from alembic.script import ScriptDirectory
+          import ast
+          from pathlib import Path
 
-          config = Config("alembic.ini")
-          heads = ScriptDirectory.from_config(config).get_heads()
+          revisions = {}
+          migration_dir = Path("migrations/versions")
+          for path in sorted(migration_dir.glob("*.py")):
+              tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+              metadata = {}
+              for node in tree.body:
+                  if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                      targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                      value_node = node.value
+                      for target in targets:
+                          if isinstance(target, ast.Name) and target.id in {"revision", "down_revision"}:
+                              try:
+                                  metadata[target.id] = ast.literal_eval(value_node)
+                              except (ValueError, TypeError):
+                                  pass
+              revision = metadata.get("revision")
+              if isinstance(revision, str):
+                  revisions[revision] = metadata.get("down_revision")
+
+          if not revisions:
+              raise SystemExit("No Alembic revision metadata found")
+
+          parents = set()
+          missing = []
+          for revision, down_revision in revisions.items():
+              dependencies = down_revision if isinstance(down_revision, (tuple, list)) else (down_revision,)
+              for parent in dependencies:
+                  if parent is not None:
+                      parents.add(parent)
+                      if parent not in revisions:
+                          missing.append((revision, parent))
+
+          heads = sorted(set(revisions) - parents)
+          print("Alembic revisions:", len(revisions))
           print("Alembic heads:", heads)
+          if missing:
+              raise SystemExit(f"Missing down_revision targets: {missing}")
           if len(heads) != 1:
-              raise SystemExit(
-                  f"Expected exactly one Alembic head, found {len(heads)}: {heads}"
-              )
+              raise SystemExit(f"Expected exactly one Alembic head, found {len(heads)}: {heads}")
           PY
-
       - name: Verify beta commerce UI is not exposed
         run: |
           ! grep -RniE "Shop on Partner|trackAffiliateClick|_shopOnPartner|Save to List" lib/screens/product_details_screen.dart
