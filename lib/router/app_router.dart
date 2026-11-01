@@ -638,7 +638,11 @@ GoRouter createRouter({
         path: AppRoutes.blendChat,
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
-          return _buildPageWithTransition(context, state, BlendChatScreen());
+          return _buildPageWithTransition(
+            context,
+            state,
+            BlendChatScreen(groupId: state.uri.queryParameters['groupId'] ?? ''),
+          );
         },
       ),
       GoRoute(
