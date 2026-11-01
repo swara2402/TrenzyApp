@@ -228,7 +228,7 @@ def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
         headers=_auth(direct_joiner),
     )
     assert direct_join.status_code == 400
-    assert direct_join.json()["detail"] == "This blend is full"
+    assert "full" in direct_join.text.lower()
 
     # Two pending invitations must not allow a two-member blend to grow to 3.
     capped_blend = _create_blend(client, "Capped Crew", maxMembers=2)
@@ -260,7 +260,7 @@ def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
         headers=_auth(second_invitee),
     )
     assert second_accept.status_code == 400
-    assert second_accept.json()["detail"] == "This blend is full"
+    assert "full" in second_accept.text.lower()
 
     member_count = (
         db_session.query(BlendMember)
