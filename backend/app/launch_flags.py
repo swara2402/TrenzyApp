@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 
-from fastapi import HTTPException
 
 
 BETA_COMMERCE_ENABLED = (
@@ -20,6 +19,10 @@ BETA_COMMERCE_ENABLED = (
 def require_beta_commerce() -> None:
     """Fail closed while cart/checkout/purchase history are post-launch."""
     if not BETA_COMMERCE_ENABLED:
+        # Keep migration/config imports lightweight; FastAPI is only needed
+        # when an API request actually evaluates this guard.
+        from fastapi import HTTPException
+
         raise HTTPException(
             status_code=404,
             detail="Commerce checkout is not enabled in the current Trenzy release.",
