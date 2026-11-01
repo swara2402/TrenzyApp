@@ -261,3 +261,36 @@ def test_accept_invitation_rejects_when_blend_has_filled_its_member_cap(
         BlendMember.blend_id == created["id"],
         BlendMember.user_firebase_uid == invitee,
     ).first() is None
+
+
+
+def test_join_by_invite_code_rejects_when_blend_is_full(
+    client, db_session, multi_user_auth
+):
+    joiner = _new_uid("joiner")
+    filler = _new_uid("filler")
+    _seed_friendship(db_session, joiner, OWNER_UID)
+    created = _create_blend(client, "Full Crew", maxMembers=2)
+
+    db_session.add(
+        BlendMember(
+            blend_id=created["id"],
+            user_firebase_uid=filler,
+            user_name="Another Member",
+        )
+    )
+    db_session.commit()
+
+    response = client.post(
+        "/api/blends/join",
+        json={"groupId": created["inviteCode"]},
+        headers=_auth(joiner),
+    )
+    assert response.status_code == 409, response.text
+    assert response.json()["detail"] == (
+        "This blend is full. Ask the owner to make room before joining."
+    )
+    assert db_session.query(BlendMember).filter(
+        BlendMember.blend_id == created["id"],
+        BlendMember.user_firebase_uid == joiner,
+    ).first() is None
