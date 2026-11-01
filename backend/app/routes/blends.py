@@ -388,6 +388,22 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
         if invited.status == "revoked":
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
     if not existing:
+        # Serialize joins against the blend row and enforce max_members here;
+        # checking only invitation creation leaves direct joins unbounded.
+        locked_group = (
+            session.query(Blend)
+            .filter(Blend.id == group_id)
+            .with_for_update()
+            .first()
+        )
+        if not locked_group:
+            raise HTTPException(status_code=404, detail="Blend group not found")
+        if locked_group.max_members:
+            member_count = session.query(func.count(BlendMember.id)).filter(
+                BlendMember.blend_id == group_id
+            ).scalar() or 0
+            if member_count >= locked_group.max_members:
+                raise HTTPException(status_code=400, detail="This blend is full")
         session.add(
             BlendMember(
                 blend_id=group_id,
