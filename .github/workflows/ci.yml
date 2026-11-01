@@ -98,7 +98,8 @@ jobs:
           POSTGRES_PASSWORD: ci-test-password
           APP_ENV: test
         run: |
-          python -m pip install -r requirements.txt
+          # Migration graph inspection should not install the heavyweight AI/ML stack.
+          python -m pip install "alembic>=1.13.2,<2.0.0"
           python - <<'PY'
           from alembic.config import Config
           from alembic.script import ScriptDirectory
