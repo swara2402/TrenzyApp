@@ -114,7 +114,21 @@ class _JustDroppedSection extends ConsumerWidget {
                   ),
                 );
               }
-              return SizedBox(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Fresh from the catalog',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: context.trenzyColors.foreground,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
                 height: 270,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
@@ -160,7 +174,7 @@ class _JustDroppedSection extends ConsumerWidget {
                                     ),
                                   ),
                                   errorWidget: (_, _, _) => Container(
-                                    height: 120,
+                                    height: 170,
                                     color: Colors.grey[900],
                                     child: Icon(
                                       Icons.broken_image,
@@ -196,6 +210,17 @@ class _JustDroppedSection extends ConsumerWidget {
                                         color: context.trenzyColors.foreground,
                                       ),
                                     ),
+                                    if (p['price'] != null) ...[
+                                      SizedBox(height: 4),
+                                      Text(
+                                        '₹${p['price']}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: context.trenzyColors.primary,
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -206,6 +231,8 @@ class _JustDroppedSection extends ConsumerWidget {
                     );
                   },
                 ),
+              ),
+                ],
               );
             },
           ),
