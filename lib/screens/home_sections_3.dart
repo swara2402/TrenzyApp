@@ -210,18 +210,10 @@ class _InspiredByWardrobeSlot extends ConsumerWidget {
 
     return outfitsAsync.when(
       loading: () => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LoadingSkeletonShimmer(
-              height: 16,
-              width: 140,
-              radius: GlassRadius.chip,
-            ),
-            SizedBox(height: 12),
-            LoadingSkeletonShimmer(height: 180, radius: GlassRadius.card),
-          ],
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: LoadingSkeletonShimmer(
+          height: 72,
+          radius: GlassRadius.card,
         ),
       ),
       error: (error, _) => Padding(

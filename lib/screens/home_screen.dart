@@ -122,6 +122,7 @@ class HomeScreen extends ConsumerWidget {
         color: context.trenzyColors.primary,
         backgroundColor: context.trenzyColors.graphite,
         child: ListView(
+          padding: const EdgeInsets.only(bottom: 16),
           physics: AlwaysScrollableScrollPhysics(),
           children: [
             StaggeredEntry(index: 0, child: _WelcomeHeader()),
@@ -133,9 +134,9 @@ class HomeScreen extends ConsumerWidget {
             SizedBox(height: 24),
             StaggeredEntry(index: 3, child: _JustDroppedSection()),
             _InspiredByWardrobeSlot(),
-            SizedBox(height: 24),
+            SizedBox(height: 16),
             StaggeredEntry(index: 4, child: _SeeMoreSection()),
-            SizedBox(height: 24),
+            SizedBox(height: 16),
           ],
         ),
       ),
