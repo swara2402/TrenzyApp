@@ -218,10 +218,18 @@ def _seed_user(db_session, uid: str) -> None:
 def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
     client, db_session, multi_user_auth
 ):
-    # A one-member blend is already full because its owner is the first member.
-    full_blend = _create_blend(client, "Full Crew", maxMembers=1)
+    # Fill a two-member blend (owner + first friend), then reject the next join.
+    full_blend = _create_blend(client, "Full Crew", maxMembers=2)
+    first_member = _new_uid("first-member")
     direct_joiner = _new_uid("direct-joiner")
+    _seed_friendship(db_session, first_member, OWNER_UID)
     _seed_friendship(db_session, direct_joiner, OWNER_UID)
+    first_join = client.post(
+        "/api/blends/join",
+        json={"groupId": full_blend["id"]},
+        headers=_auth(first_member),
+    )
+    assert first_join.status_code == 200, first_join.text
     direct_join = client.post(
         "/api/blends/join",
         json={"groupId": full_blend["id"]},
