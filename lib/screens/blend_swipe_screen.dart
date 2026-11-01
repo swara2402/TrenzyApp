@@ -770,8 +770,16 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Fit the card between the app bar and action buttons on compact phones.
-            final cardWidth = (constraints.maxWidth - 32).clamp(0.0, 340.0).toDouble();
-            final cardHeight = (constraints.maxHeight - 24).clamp(0.0, 460.0).toDouble();
+            final cardWidth = (constraints.maxWidth - 32)
+                .clamp(0.0, 340.0)
+                .toDouble();
+            // Keep a consistent card proportion on narrow and short phones.
+            // The previous fixed 460px cap made the card feel excessively tall
+            // on compact devices and could crowd the swipe controls.
+            final preferredCardHeight = (cardWidth * 1.35).clamp(0.0, 460.0);
+            final cardHeight = (constraints.maxHeight - 24)
+                .clamp(0.0, preferredCardHeight)
+                .toDouble();
             return Stack(
               alignment: Alignment.center,
               children: [

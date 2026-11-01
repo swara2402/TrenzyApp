@@ -66,6 +66,16 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
     super.dispose();
   }
 
+  void _navigateBackToBlend() {
+    final groupId = widget.groupId.isNotEmpty
+        ? widget.groupId
+        : (_groupId ?? _groupIdFromRoute ?? '');
+    if (groupId.isEmpty) {
+      context.go(AppRoutes.blendHub);
+      return;
+    }
+    context.go('${AppRoutes.blendDashboard}?groupId=${Uri.encodeComponent(groupId)}');
+  }
   void _listenForMessages() {
     _messageSub?.cancel();
     _messageSub = BlendSocketService.instance.messageStream.listen((msg) {
@@ -182,7 +192,7 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
         leading: IconButton(
           tooltip: 'Back to Blend',
           icon: Icon(Icons.arrow_back_rounded, color: context.trenzyColors.mutedFg),
-          onPressed: () => context.go('${AppRoutes.blendDashboard}?groupId=${_groupId ?? ''}'),
+          onPressed: _navigateBackToBlend,
         ),
         title: const Text('Blend Chat'),
         actions: [
