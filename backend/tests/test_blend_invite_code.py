@@ -10,7 +10,7 @@ driven fake (the dev bypass is locked to a single UID).
 import uuid
 
 import pytest
-from app.models import Blend, BlendMember, Friend, User
+from app.models import Blend, BlendInvitation, BlendMember, Friend, User
 
 
 CODE_ALPHABET = set("23456789ABCDEFGHJKLMNPQRSTUVWXYZ")
@@ -63,6 +63,7 @@ def _blend_test_data(db_session):
         )
         db_session.commit()
     yield
+    db_session.query(BlendInvitation).delete()
     db_session.query(BlendMember).delete()
     db_session.query(Blend).delete()
     db_session.commit()
@@ -206,3 +207,65 @@ def test_join_rate_limit_per_user(client, db_session, multi_user_auth):
         if last_status == 429:
             break
     assert last_status == 429, "joins beyond the per-minute cap must be limited"
+
+def _seed_user(db_session, uid: str) -> None:
+    db_session.add(
+        User(firebase_uid=uid, name=f"User {uid}", email=f"{uid}@example.com")
+    )
+    db_session.commit()
+
+
+def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
+    client, db_session, multi_user_auth
+):
+    # A one-member blend is already full because its owner is the first member.
+    full_blend = _create_blend(client, "Full Crew", maxMembers=1)
+    direct_joiner = _new_uid("direct-joiner")
+    _seed_friendship(db_session, direct_joiner, OWNER_UID)
+    direct_join = client.post(
+        "/api/blends/join",
+        json={"groupId": full_blend["id"]},
+        headers=_auth(direct_joiner),
+    )
+    assert direct_join.status_code == 400
+    assert direct_join.json()["detail"] == "This blend is full"
+
+    # Two pending invitations must not allow a two-member blend to grow to 3.
+    capped_blend = _create_blend(client, "Capped Crew", maxMembers=2)
+    first_invitee = _new_uid("invitee")
+    second_invitee = _new_uid("invitee")
+    _seed_user(db_session, first_invitee)
+    _seed_user(db_session, second_invitee)
+
+    invitations = []
+    for invitee in (first_invitee, second_invitee):
+        response = client.post(
+            f"/api/blends/{capped_blend['id']}/invitations",
+            json={"invitee_id": invitee},
+            headers=_auth(OWNER_UID),
+        )
+        assert response.status_code == 200, response.text
+        invitations.append(response.json()["invitationId"])
+
+    first_accept = client.put(
+        f"/api/blends/invitations/{invitations[0]}",
+        json={"status": "accepted"},
+        headers=_auth(first_invitee),
+    )
+    assert first_accept.status_code == 200, first_accept.text
+
+    second_accept = client.put(
+        f"/api/blends/invitations/{invitations[1]}",
+        json={"status": "accepted"},
+        headers=_auth(second_invitee),
+    )
+    assert second_accept.status_code == 400
+    assert second_accept.json()["detail"] == "This blend is full"
+
+    member_count = (
+        db_session.query(BlendMember)
+        .filter(BlendMember.blend_id == capped_blend["id"])
+        .count()
+    )
+    assert member_count == 2
+
