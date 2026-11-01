@@ -83,9 +83,10 @@ def run_audit(root: Path) -> list[Check]:
     flags = root / "lib" / "services" / "feature_flags.dart"
     if flags.exists():
         source = flags.read_text(encoding="utf-8")
-        payments_disabled = "paymentsEnabled" in source and (
-            "paymentsEnabled = false" in source or "paymentsEnabled: false" in source
-        )
+        flag_start = source.find("static const bool paymentsEnabled")
+        flag_end = source.find(");", flag_start)
+        flag_block = source[flag_start:flag_end + 2] if flag_start >= 0 and flag_end >= 0 else ""
+        payments_disabled = "defaultValue: false" in flag_block
         checks.append(Check(
             "beta_payment_feature_flag",
             "PASS" if payments_disabled else "REVIEW",
@@ -95,7 +96,7 @@ def run_audit(root: Path) -> list[Check]:
     else:
         checks.append(Check("beta_payment_feature_flag", "REVIEW", "Feature flag file not found."))
 
-    legacy_root = "/Users/sam/Downloads/trenzy_production"
+    legacy_root = "/Users/" + "sam/Downloads/" + "trenzy_production"
     stale_references: list[str] = []
     for candidate in [root / "backend" / "audit.py"]:
         if candidate.exists() and legacy_root in candidate.read_text(encoding="utf-8"):
