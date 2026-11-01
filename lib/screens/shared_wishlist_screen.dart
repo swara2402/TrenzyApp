@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/blend_dashboard_models.dart';
 import '../providers/blend_dashboard_provider.dart';
 import '../services/api_service.dart';
+import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
 
 class SharedWishlistScreen extends ConsumerStatefulWidget {
@@ -79,7 +80,15 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
     return AppBar(
       backgroundColor: context.trenzyColors.background,
       elevation: 0,
-      leading: GlassBackButton(),
+      leading: GlassBackButton(
+        onTap: () {
+          if (widget.groupId.isNotEmpty) {
+            context.go('${AppRoutes.blendDashboard}?groupId=${Uri.encodeComponent(widget.groupId)}');
+          } else {
+            context.go(AppRoutes.blendHub);
+          }
+        },
+      ),
       title: Text(
         'Shared Wishlist',
         style: TextStyle(
