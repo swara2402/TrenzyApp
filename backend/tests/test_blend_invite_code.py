@@ -235,7 +235,7 @@ def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
         json={"groupId": full_blend["id"]},
         headers=_auth(direct_joiner),
     )
-    assert direct_join.status_code == 400
+    assert direct_join.status_code == 409
     assert "full" in direct_join.text.lower()
 
     # Two pending invitations must not allow a two-member blend to grow to 3.
@@ -267,8 +267,15 @@ def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
         json={"status": "accepted"},
         headers=_auth(second_invitee),
     )
-    assert second_accept.status_code == 400
+    assert second_accept.status_code == 409
     assert "full" in second_accept.text.lower()
+    pending_invitation = (
+        db_session.query(BlendInvitation)
+        .filter(BlendInvitation.id == invitations[1])
+        .first()
+    )
+    assert pending_invitation is not None
+    assert pending_invitation.status == "pending"
 
     member_count = (
         db_session.query(BlendMember)

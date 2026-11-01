@@ -403,7 +403,7 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
                 BlendMember.blend_id == group_id
             ).scalar() or 0
             if member_count >= locked_group.max_members:
-                raise HTTPException(status_code=400, detail="This blend is full")
+                raise HTTPException(status_code=409, detail="This blend is full")
         session.add(
             BlendMember(
                 blend_id=group_id,
@@ -967,7 +967,6 @@ def respond_to_blend_invitation(
         if inv.status == "revoked":
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
 
-    inv.status = payload.status
     if payload.status == "accepted":
         existing = session.query(BlendMember).filter(
             BlendMember.blend_id == inv.blend_id,
@@ -990,12 +989,14 @@ def respond_to_blend_invitation(
                     BlendMember.blend_id == inv.blend_id
                 ).scalar() or 0
                 if member_count >= blend.max_members:
-                    raise HTTPException(status_code=400, detail="This blend is full")
+                    raise HTTPException(status_code=409, detail="This blend is full")
             session.add(BlendMember(
                 blend_id=inv.blend_id,
                 user_firebase_uid=firebase_uid,
                 # The JOINING user's name — never fall back to the inviter's.
                 user_name=decoded.get("name") or "You",
             ))
+    # Only persist the accepted status after capacity and membership checks pass.
+    inv.status = payload.status
     session.commit()
     return {"status": payload.status}
