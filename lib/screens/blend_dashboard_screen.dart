@@ -300,6 +300,14 @@ class _BlendDashboardContent extends ConsumerWidget {
                   dense: true,
                 ),
               ),
+              PopupMenuItem(
+                value: 'end',
+                child: ListTile(
+                  leading: Icon(Icons.delete_outline_rounded, color: context.trenzyColors.crimson, size: 20),
+                  title: Text('End Blend', style: TextStyle(color: context.trenzyColors.crimson)),
+                  dense: true,
+                ),
+              ),
             ],
           ),
         ),
