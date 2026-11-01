@@ -958,6 +958,23 @@ def respond_to_blend_invitation(
             BlendMember.user_firebase_uid == firebase_uid,
         ).first()
         if not existing:
+            # Recheck capacity when accepting: several pending invitations may
+            # have been issued while slots were available. Lock the blend row
+            # so concurrent acceptances cannot overfill the group.
+            blend = (
+                session.query(Blend)
+                .filter(Blend.id == inv.blend_id)
+                .with_for_update()
+                .first()
+            )
+            if not blend:
+                raise HTTPException(status_code=404, detail="Blend not found")
+            if blend.max_members:
+                member_count = session.query(func.count(BlendMember.id)).filter(
+                    BlendMember.blend_id == inv.blend_id
+                ).scalar() or 0
+                if member_count >= blend.max_members:
+                    raise HTTPException(status_code=400, detail="This blend is full")
             session.add(BlendMember(
                 blend_id=inv.blend_id,
                 user_firebase_uid=firebase_uid,
