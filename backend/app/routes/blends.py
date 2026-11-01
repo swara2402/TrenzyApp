@@ -403,7 +403,7 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
                 BlendMember.blend_id == group_id
             ).scalar() or 0
             if member_count >= locked_group.max_members:
-                raise HTTPException(status_code=400, detail="This blend is full")
+                raise HTTPException(status_code=409, detail="This blend is full")
         session.add(
             BlendMember(
                 blend_id=group_id,
