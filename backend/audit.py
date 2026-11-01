@@ -15,6 +15,12 @@ from app.db import engine, SessionLocal
 from app.models import Product
 from app.ai.models_ai import ProductEmbedding
 
+# Resolve assets relative to this checkout, not a developer-specific Mac path.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BACKEND_ROOT = REPO_ROOT / "backend"
+DATA_ROOT = BACKEND_ROOT / "data"
+ROUTES_ROOT = BACKEND_ROOT / "app" / "routes"
+
 def run_audit():
     """Execute all readiness checks and generate audit report"""
     print("=================================")
@@ -35,7 +41,7 @@ def run_audit():
     # 1. CATALOG CHECKS (database-first with static file fallback)
     print("\nCATALOG:")
     db_available = True
-    products_path = Path("/Users/sam/Downloads/trenzy_production/backend/data/products.json")
+    products_path = DATA_ROOT / "products.json"
     static_products = None
     
     # First try database connection (works in containerized/production environment)
@@ -103,7 +109,7 @@ def run_audit():
     
     # 2. IMAGE MANIFEST CHECKS
     print("\nIMAGES:")
-    image_manifest_path = Path("/Users/sam/Downloads/trenzy_production/backend/data/image_manifest.json")
+    image_manifest_path = DATA_ROOT / "image_manifest.json"
     if image_manifest_path.exists():
         with open(image_manifest_path, 'r') as f:
             image_manifest = json.load(f)
@@ -185,7 +191,7 @@ def run_audit():
     
     # Fallback to static embeddings directory for local audits
     if not db_available:
-        embedding_dir = Path("/Users/sam/Downloads/trenzy_production/backend/data/embeddings")
+        embedding_dir = DATA_ROOT / "embeddings"
         if embedding_dir.exists():
             embedding_files = list(embedding_dir.glob("*.npy"))
             total_embeddings = len(embedding_files)
@@ -193,7 +199,7 @@ def run_audit():
             
             # Check for np.zeros contamination in codebase (always check regardless of db availability)
             # Check only embedding-related code for potential zero-vector contamination
-            embedding_dir = Path("/Users/sam/Downloads/trenzy_production/backend/app/ai/embeddings")
+            embedding_dir = BACKEND_ROOT / "app" / "ai" / "embeddings"
             zeros_found = 0
             if embedding_dir.exists():
                 for py_file in embedding_dir.rglob("*.py"):
@@ -212,7 +218,7 @@ def run_audit():
     else:
         # Always check for np.zeros contamination in codebase even when db is available
         # Check only embedding-related code for potential zero-vector contamination
-        embedding_dir = Path("/Users/sam/Downloads/trenzy_production/backend/app/ai/embeddings")
+        embedding_dir = BACKEND_ROOT / "app" / "ai" / "embeddings"
         zeros_found = 0
         if embedding_dir.exists():
             for py_file in embedding_dir.rglob("*.py"):
@@ -228,7 +234,7 @@ def run_audit():
     
     # 5. MODEL REGISTRY CHECK
     print("\nMODEL REGISTRY:")
-    registry_path = Path("/Users/sam/Downloads/trenzy_production/models/registry.json")
+    registry_path = REPO_ROOT / "models" / "registry.json"
     if registry_path.exists():
         with open(registry_path, 'r') as f:
             registry = json.load(f)
@@ -241,23 +247,24 @@ def run_audit():
     
     # 6. SEARCH ENDPOINTS VERIFICATION
     print("\nSEARCH:")
-    search_routes_path = Path("/Users/sam/Downloads/trenzy_production/backend/app/routes/search.py")
-    visual_verified = search_routes_path.exists() and "visual_search" in open(search_routes_path).read()
-    semantic_verified = search_routes_path.exists() and "semantic_search" in open(search_routes_path).read()
+    search_routes_path = ROUTES_ROOT / "search.py"
+    search_source = search_routes_path.read_text(encoding="utf-8") if search_routes_path.exists() else ""
+    visual_verified = "visual_search" in search_source
+    semantic_verified = "semantic_search" in search_source
     print(f"  Visual search: {'VERIFIED' if visual_verified else 'NOT FOUND'}")
     print(f"  Semantic search: {'VERIFIED' if semantic_verified else 'NOT FOUND'}")
     
     # 7. STYLE DNA VERIFICATION
     print("\nSTYLE DNA:")
-    style_dna_path = Path("/Users/sam/Downloads/trenzy_production/backend/app/routes/style_dna.py")
+    style_dna_path = ROUTES_ROOT / "style_dna.py"
     style_dna_verified = style_dna_path.exists()
     print(f"  Cold-start pipeline: {'VERIFIED' if style_dna_verified else 'NOT FOUND'}")
     
     # 8. SECURITY CHECKS
     print("\nSECURITY:")
-    auth_routes = list(Path("/Users/sam/Downloads/trenzy_production/backend/app/routes").glob("*.py"))
-    auth_verified = any("firebase_auth" in open(p).read() for p in auth_routes)
-    rate_limit_verified = any("rate_limit" in open(p).read() for p in auth_routes)
+    auth_routes = list(ROUTES_ROOT.glob("*.py"))
+    auth_verified = any("firebase_auth" in p.read_text(encoding="utf-8") for p in auth_routes)
+    rate_limit_verified = any("rate_limit" in p.read_text(encoding="utf-8") for p in auth_routes)
     print(f"  Authentication: {'VERIFIED' if auth_verified else 'INCOMPLETE'}")
     print(f"  Rate limiting: {'VERIFIED' if rate_limit_verified else 'INCOMPLETE'}")
     if not auth_verified:
@@ -299,8 +306,8 @@ def run_audit():
     }
     
     # Save report
-    report_path = Path("/Users/sam/Downloads/trenzy_production/docs/TRENZY_READINESS_REPORT.json")
-    report_path.parent.mkdir(exist_ok=True)
+    report_path = REPO_ROOT / "docs" / "TRENZY_READINESS_REPORT.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     with open(report_path, 'w') as f:
         json.dump(report, f, indent=2)
     print(f"\n📊 Machine-readable report saved to: docs/TRENZY_READINESS_REPORT.json")
