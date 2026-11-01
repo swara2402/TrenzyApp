@@ -213,7 +213,7 @@ class _SharedWishlistScreenState extends ConsumerState<SharedWishlistScreen> {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.58,
+        childAspectRatio: 0.68,
       ),
       itemBuilder: (context, index) => _WishlistItemCard(
         item: items[index],

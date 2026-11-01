@@ -9,6 +9,8 @@ import '../models/blend_model.dart';
 import '../models/blend_dashboard_models.dart';
 import '../models/wardrobe_model.dart';
 import '../providers/blend_dashboard_provider.dart';
+import '../providers/blend_provider.dart';
+import '../providers/api_service_provider.dart';
 import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
 import '../services/blend_socket_service.dart';
@@ -157,7 +159,7 @@ class _BlendDashboardContent extends ConsumerWidget {
         backgroundColor: context.trenzyColors.graphite,
         child: CustomScrollView(
           slivers: [
-            _buildSliverAppBar(context),
+            _buildSliverAppBar(context, ref),
             SliverToBoxAdapter(child: SizedBox(height: 20)),
             SliverToBoxAdapter(child: _buildCompatibilitySection(context)),
             SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -190,7 +192,7 @@ class _BlendDashboardContent extends ConsumerWidget {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
+  Widget _buildSliverAppBar(BuildContext context, WidgetRef ref) {
     return SliverAppBar(
       backgroundColor: context.trenzyColors.background.withValues(alpha: 0.8),
       pinned: true,
@@ -230,14 +232,40 @@ class _BlendDashboardContent extends ConsumerWidget {
               color: context.trenzyColors.mutedFg,
               size: 18,
             ),
-            onSelected: (value) {
+            onSelected: (value) async {
               switch (value) {
                 case 'chat':
                   context.go('${AppRoutes.blendChat}?groupId=$groupId');
                   break;
                 case 'settings':
                   break;
-                case 'leave':
+                case 'end':
+                  final shouldEnd = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      backgroundColor: context.trenzyColors.graphite,
+                      title: Text('End this Blend?', style: TextStyle(color: context.trenzyColors.foreground)),
+                      content: Text('This will end the Blend for everyone and remove it from your active Blends. This cannot be undone.', style: TextStyle(color: context.trenzyColors.mutedFg)),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Keep Blend')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: Text('End Blend', style: TextStyle(color: context.trenzyColors.crimson)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (shouldEnd != true) return;
+                  try {
+                    await ref.read(apiServiceProvider).disbandBlend(groupId);
+                    ref.invalidate(userBlendGroupsProvider);
+                    if (!context.mounted) return;
+                    GlassToast.success(context, 'Blend ended');
+                    context.go(AppRoutes.blendHub);
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    GlassToast.error(context, 'Could not end this Blend. Please try again.');
+                  }
                   break;
               }
             },
@@ -269,6 +297,14 @@ class _BlendDashboardContent extends ConsumerWidget {
                     'Settings',
                     style: TextStyle(color: context.trenzyColors.foreground),
                   ),
+                  dense: true,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'end',
+                child: ListTile(
+                  leading: Icon(Icons.delete_outline_rounded, color: context.trenzyColors.crimson, size: 20),
+                  title: Text('End Blend', style: TextStyle(color: context.trenzyColors.crimson)),
                   dense: true,
                 ),
               ),
