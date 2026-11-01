@@ -248,7 +248,7 @@ def test_accept_invitation_rejects_when_blend_has_filled_its_member_cap(
         headers=_auth(invitee),
     )
     assert response.status_code == 409, response.text
-    assert response.json()["detail"] == (
+    assert response.json()["message"] == (
         "This blend is full. Ask the owner to make room before accepting."
     )
 
@@ -287,7 +287,7 @@ def test_join_by_invite_code_rejects_when_blend_is_full(
         headers=_auth(joiner),
     )
     assert response.status_code == 409, response.text
-    assert response.json()["detail"] == (
+    assert response.json()["message"] == (
         "This blend is full. Ask the owner to make room before joining."
     )
     assert db_session.query(BlendMember).filter(
