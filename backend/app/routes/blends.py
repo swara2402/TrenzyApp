@@ -951,12 +951,25 @@ def respond_to_blend_invitation(
         if inv.status == "revoked":
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
 
-    inv.status = payload.status
     if payload.status == "accepted":
+        blend = session.query(Blend).filter(Blend.id == inv.blend_id).first()
+        if not blend:
+            raise HTTPException(status_code=404, detail="Blend no longer exists")
+
         existing = session.query(BlendMember).filter(
             BlendMember.blend_id == inv.blend_id,
             BlendMember.user_firebase_uid == firebase_uid,
         ).first()
+        if not existing and blend.max_members:
+            member_count = session.query(func.count(BlendMember.id)).filter(
+                BlendMember.blend_id == inv.blend_id
+            ).scalar() or 0
+            if member_count >= blend.max_members:
+                raise HTTPException(
+                    status_code=409,
+                    detail="This blend is full. Ask the owner to make room before accepting.",
+                )
+
         if not existing:
             session.add(BlendMember(
                 blend_id=inv.blend_id,
@@ -964,5 +977,7 @@ def respond_to_blend_invitation(
                 # The JOINING user's name — never fall back to the inviter's.
                 user_name=decoded.get("name") or "You",
             ))
+
+    inv.status = payload.status
     session.commit()
     return {"status": payload.status}
