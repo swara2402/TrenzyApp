@@ -331,9 +331,9 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
     group = None
     code = group_id.upper()
     if len(code) <= 10 and not code.startswith("blend-"):
-        group = session.query(Blend).filter(Blend.invite_code == code).first()
+        group = session.query(Blend).filter(Blend.invite_code == code).with_for_update().first()
     if group is None:
-        group = session.query(Blend).filter(Blend.id == group_id).first()
+        group = session.query(Blend).filter(Blend.id == group_id).with_for_update().first()
     if not group:
         raise HTTPException(status_code=404, detail="Blend group not found")
     group_id = group.id
@@ -388,6 +388,15 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
         if invited.status == "revoked":
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
     if not existing:
+        if group.max_members:
+            member_count = session.query(func.count(BlendMember.id)).filter(
+                BlendMember.blend_id == group_id
+            ).scalar() or 0
+            if member_count >= group.max_members:
+                raise HTTPException(
+                    status_code=409,
+                    detail="This blend is full. Ask the owner to make room before joining.",
+                )
         session.add(
             BlendMember(
                 blend_id=group_id,
@@ -952,7 +961,7 @@ def respond_to_blend_invitation(
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
 
     if payload.status == "accepted":
-        blend = session.query(Blend).filter(Blend.id == inv.blend_id).first()
+        blend = session.query(Blend).filter(Blend.id == inv.blend_id).with_for_update().first()
         if not blend:
             raise HTTPException(status_code=404, detail="Blend no longer exists")
 
