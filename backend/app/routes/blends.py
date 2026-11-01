@@ -388,6 +388,22 @@ def join_group(payload: GroupJoinRequest, request: Request, session: Session = D
         if invited.status == "revoked":
             raise HTTPException(status_code=400, detail="This invitation has been revoked.")
     if not existing:
+        # Serialize joins against the blend row and enforce max_members here;
+        # checking only invitation creation leaves direct joins unbounded.
+        locked_group = (
+            session.query(Blend)
+            .filter(Blend.id == group_id)
+            .with_for_update()
+            .first()
+        )
+        if not locked_group:
+            raise HTTPException(status_code=404, detail="Blend group not found")
+        if locked_group.max_members:
+            member_count = session.query(func.count(BlendMember.id)).filter(
+                BlendMember.blend_id == group_id
+            ).scalar() or 0
+            if member_count >= locked_group.max_members:
+                raise HTTPException(status_code=400, detail="This blend is full")
         session.add(
             BlendMember(
                 blend_id=group_id,
@@ -958,6 +974,23 @@ def respond_to_blend_invitation(
             BlendMember.user_firebase_uid == firebase_uid,
         ).first()
         if not existing:
+            # Recheck capacity when accepting: several pending invitations may
+            # have been issued while slots were available. Lock the blend row
+            # so concurrent acceptances cannot overfill the group.
+            blend = (
+                session.query(Blend)
+                .filter(Blend.id == inv.blend_id)
+                .with_for_update()
+                .first()
+            )
+            if not blend:
+                raise HTTPException(status_code=404, detail="Blend not found")
+            if blend.max_members:
+                member_count = session.query(func.count(BlendMember.id)).filter(
+                    BlendMember.blend_id == inv.blend_id
+                ).scalar() or 0
+                if member_count >= blend.max_members:
+                    raise HTTPException(status_code=400, detail="This blend is full")
             session.add(BlendMember(
                 blend_id=inv.blend_id,
                 user_firebase_uid=firebase_uid,
