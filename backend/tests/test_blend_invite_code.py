@@ -10,7 +10,7 @@ driven fake (the dev bypass is locked to a single UID).
 import uuid
 
 import pytest
-from app.models import Blend, BlendMember, Friend, User
+from app.models import Blend, BlendInvitation, BlendMember, Friend, User
 
 
 CODE_ALPHABET = set("23456789ABCDEFGHJKLMNPQRSTUVWXYZ")
@@ -206,3 +206,58 @@ def test_join_rate_limit_per_user(client, db_session, multi_user_auth):
         if last_status == 429:
             break
     assert last_status == 429, "joins beyond the per-minute cap must be limited"
+
+
+
+def test_accept_invitation_rejects_when_blend_has_filled_its_member_cap(
+    client, db_session, multi_user_auth
+):
+    invitee = _new_uid("invitee")
+    filler = _new_uid("filler")
+    db_session.add(
+        User(
+            firebase_uid=invitee,
+            name="Invited User",
+            email=f"{invitee}@example.com",
+        )
+    )
+    db_session.commit()
+
+    created = _create_blend(client, "Capacity Crew", maxMembers=2)
+    invite_response = client.post(
+        f"/api/blends/{created['id']}/invitations",
+        json={"invitee_id": invitee},
+        headers=_auth(OWNER_UID),
+    )
+    assert invite_response.status_code == 200, invite_response.text
+    invitation_id = invite_response.json()["invitationId"]
+
+    # Fill the final slot after the invitation was sent.
+    db_session.add(
+        BlendMember(
+            blend_id=created["id"],
+            user_firebase_uid=filler,
+            user_name="Another Member",
+        )
+    )
+    db_session.commit()
+
+    response = client.put(
+        f"/api/blends/invitations/{invitation_id}",
+        json={"status": "accepted"},
+        headers=_auth(invitee),
+    )
+    assert response.status_code == 409, response.text
+    assert response.json()["detail"] == (
+        "This blend is full. Ask the owner to make room before accepting."
+    )
+
+    invitation = db_session.query(BlendInvitation).filter(
+        BlendInvitation.id == invitation_id
+    ).first()
+    assert invitation is not None
+    assert invitation.status == "pending"
+    assert db_session.query(BlendMember).filter(
+        BlendMember.blend_id == created["id"],
+        BlendMember.user_firebase_uid == invitee,
+    ).first() is None
