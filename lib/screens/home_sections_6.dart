@@ -57,7 +57,7 @@ class _JustDroppedSection extends ConsumerWidget {
                 );
               }
               return SizedBox(
-                height: 190,
+                height: 270,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
@@ -115,7 +115,7 @@ class _JustDroppedSection extends ConsumerWidget {
                 );
               }
               return SizedBox(
-                height: 190,
+                height: 270,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: justDropped.length,
@@ -130,7 +130,7 @@ class _JustDroppedSection extends ConsumerWidget {
                         ),
                       ),
                       child: SizedBox(
-                        width: 130,
+                        width: 155,
                         child: GlassContainer(
                           color: context.trenzyColors.graphite,
                           radius: 16,
@@ -147,12 +147,12 @@ class _JustDroppedSection extends ConsumerWidget {
                                         p['image_url'],
                                       ) ??
                                       'https://placehold.co/400x400/1a1a2e/666.png?text=No+Image',
-                                  height: 120,
-                                  width: 130,
+                                  height: 170,
+                                  width: 155,
                                   fit: BoxFit.cover,
-                                  memCacheWidth: 260,
+                                  memCacheWidth: 310,
                                   placeholder: (_, _) => Container(
-                                    height: 120,
+                                    height: 170,
                                     color: Colors.grey[900],
                                     child: Icon(
                                       Icons.image_outlined,
@@ -191,7 +191,7 @@ class _JustDroppedSection extends ConsumerWidget {
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: context.trenzyColors.foreground,
                                       ),
