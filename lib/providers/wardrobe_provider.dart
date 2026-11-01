@@ -336,6 +336,8 @@ class OutfitsNotifier extends AutoDisposeAsyncNotifier<List<Outfit>> {
         occasion: occasion,
         wardrobeItemIds: wardrobeItemIds,
       );
+      // Reload the authoritative outfit/item relation after the server update.
+      ref.invalidateSelf();
       ref.invalidate(wardrobeRecommendationsProvider);
     } catch (e) {
       state = AsyncData(previous);
