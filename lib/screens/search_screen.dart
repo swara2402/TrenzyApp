@@ -516,6 +516,7 @@ class _SearchResults extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final category = initialFilters['category']?.trim();
+    final subcategory = initialFilters['subcategory']?.trim();
     final minPrice = double.tryParse(initialFilters['min_price'] ?? '');
     final maxPrice = double.tryParse(initialFilters['max_price'] ?? '');
     final rawSort = initialFilters['sort'];
@@ -523,12 +524,14 @@ class _SearchResults extends ConsumerWidget {
         ? 'rating_desc'
         : (rawSort == 'relevance' ? null : rawSort);
     final hasProductFilters = (category != null && category.isNotEmpty) ||
+        (subcategory != null && subcategory.isNotEmpty) ||
         minPrice != null || maxPrice != null || sort != null;
 
     if (hasProductFilters) {
       final params = ProductSearchParams(
         query: query,
         category: category?.isEmpty == true ? null : category,
+        subcategory: subcategory?.isEmpty == true ? null : subcategory,
         minPrice: minPrice,
         maxPrice: maxPrice,
         sort: sort,
