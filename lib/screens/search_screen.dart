@@ -57,10 +57,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _hasSubmitted = true;
     }
     if (widget.initialCategory != null) {
-      _controller.text = widget.initialSubcategory != null
-          ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
-          : widget.initialCategory!;
-      _query = widget.initialCategory!;
+      // A category is a structured filter, never a free-text query. Seeding
+      // the text field with the category makes a later category change send
+      // q=oldCategory&category=newCategory and can incorrectly return no hits.
+      _query = widget.initialQuery?.trim() ?? '';
       _hasSubmitted = true;
     }
     // Store initial filters for search results
@@ -104,17 +104,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         widget.initialSort != oldWidget.initialSort ||
         widget.initialMinPrice != oldWidget.initialMinPrice ||
         widget.initialMaxPrice != oldWidget.initialMaxPrice) {
-      if (widget.initialCategory != null) {
-        _controller.text = widget.initialSubcategory != null
-            ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
-            : widget.initialCategory!;
-        _query = widget.initialCategory!;
-        _hasSubmitted = true;
-      } else if (widget.initialQuery != null) {
-        _controller.text = widget.initialQuery!;
-        _query = widget.initialQuery!;
-        _hasSubmitted = true;
-      }
+      // Route updates replace the active query/filter state atomically.
+      // Keep only an explicit q= value in the text field; category/subcategory
+      // remain structured filters and must not leak into free-text search.
+      final nextQuery = widget.initialQuery?.trim() ?? '';
+      _controller.value = TextEditingValue(
+        text: nextQuery,
+        selection: TextSelection.collapsed(offset: nextQuery.length),
+      );
+      _query = nextQuery;
       _initialFilters = {
         'category': widget.initialCategory,
         'subcategory': widget.initialSubcategory,
@@ -122,8 +120,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         'min_price': widget.initialMinPrice,
         'max_price': widget.initialMaxPrice,
       };
-      _hasSubmitted = widget.initialQuery != null ||
-          widget.initialCategory != null || _hasActiveFilters;
+      _hasSubmitted = nextQuery.length >= 2 || _hasActiveFilters;
     }
   }
 
