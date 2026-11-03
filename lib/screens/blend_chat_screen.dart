@@ -255,7 +255,64 @@ class _BlendChatScreenState extends ConsumerState<BlendChatScreen> {
   }
 
   Widget _buildMessageBubble(GroupMessage msg, bool isMe) {
-    return _buildProductMessage(msg, isMe);
+    final hasProductAttachment = msg.attachedProductId.isNotEmpty ||
+        msg.attachedProductImage.isNotEmpty ||
+        msg.attachedProductTitle.isNotEmpty;
+    if (hasProductAttachment) return _buildProductMessage(msg, isMe);
+
+    final messageText = msg.message.isNotEmpty ? msg.message : msg.content;
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.sizeOf(context).width * 0.78,
+        ),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isMe
+                ? context.trenzyColors.primary.withValues(alpha: 0.16)
+                : context.trenzyColors.graphite,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(18),
+              topRight: const Radius.circular(18),
+              bottomLeft: Radius.circular(isMe ? 18 : 5),
+              bottomRight: Radius.circular(isMe ? 5 : 18),
+            ),
+            border: Border.all(
+              color: isMe
+                  ? context.trenzyColors.primary.withValues(alpha: 0.28)
+                  : context.trenzyColors.glassBorder,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isMe && (msg.displayName?.trim().isNotEmpty ?? false)) ...[
+                Text(
+                  msg.displayName!,
+                  style: TextStyle(
+                    color: context.trenzyColors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                messageText,
+                style: TextStyle(
+                  color: context.trenzyColors.foreground,
+                  fontSize: 14,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildProductMessage(GroupMessage msg, bool isMe) {
