@@ -57,10 +57,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _hasSubmitted = true;
     }
     if (widget.initialCategory != null) {
-      _controller.text = widget.initialSubcategory != null
-          ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
-          : widget.initialCategory!;
-      _query = widget.initialCategory!;
+      // A category is a structured filter, never a free-text query. Seeding
+      // the text field with the category makes a later category change send
+      // q=oldCategory&category=newCategory and can incorrectly return no hits.
+      _query = widget.initialQuery?.trim() ?? '';
       _hasSubmitted = true;
     }
     // Store initial filters for search results
@@ -104,17 +104,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         widget.initialSort != oldWidget.initialSort ||
         widget.initialMinPrice != oldWidget.initialMinPrice ||
         widget.initialMaxPrice != oldWidget.initialMaxPrice) {
-      if (widget.initialCategory != null) {
-        _controller.text = widget.initialSubcategory != null
-            ? '${widget.initialCategory!} > ${widget.initialSubcategory!}'
-            : widget.initialCategory!;
-        _query = widget.initialCategory!;
-        _hasSubmitted = true;
-      } else if (widget.initialQuery != null) {
-        _controller.text = widget.initialQuery!;
-        _query = widget.initialQuery!;
-        _hasSubmitted = true;
-      }
+      // Route updates replace the active query/filter state atomically.
+      // Keep only an explicit q= value in the text field; category/subcategory
+      // remain structured filters and must not leak into free-text search.
+      final nextQuery = widget.initialQuery?.trim() ?? '';
+      _controller.value = TextEditingValue(
+        text: nextQuery,
+        selection: TextSelection.collapsed(offset: nextQuery.length),
+      );
+      _query = nextQuery;
       _initialFilters = {
         'category': widget.initialCategory,
         'subcategory': widget.initialSubcategory,
@@ -122,8 +120,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         'min_price': widget.initialMinPrice,
         'max_price': widget.initialMaxPrice,
       };
-      _hasSubmitted = widget.initialQuery != null ||
-          widget.initialCategory != null || _hasActiveFilters;
+      _hasSubmitted = nextQuery.length >= 2 || _hasActiveFilters;
     }
   }
 
@@ -263,6 +260,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       label: 'Apply filters',
                       onTap: () {
                         setState(() {
+                          final categoryChanged =
+                              selectedCategory != _initialFilters['category'];
                           _initialFilters = {
                             ..._initialFilters,
                             'category': selectedCategory,
@@ -271,7 +270,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             'min_price': priceRange.start > 0 ? priceRange.start.round().toString() : null,
                             'max_price': priceRange.end < 10000 ? priceRange.end.round().toString() : null,
                           };
-                          _query = _controller.text.trim();
+                          // A category selection replaces the previous search
+                          // intent. Never combine stale text (e.g. "Dresses")
+                          // with a newly selected category (e.g. "Outerwear").
+                          if (categoryChanged) {
+                            _debounceTimer?.cancel();
+                            _controller.clear();
+                            _query = '';
+                          } else {
+                            _query = _controller.text.trim();
+                          }
                           _hasSubmitted = selectedCategory != null ||
                               _query.length >= 2 ||
                               _initialFilters['min_price'] != null ||
@@ -519,6 +527,7 @@ class _SearchResults extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final category = initialFilters['category']?.trim();
+    final subcategory = initialFilters['subcategory']?.trim();
     final minPrice = double.tryParse(initialFilters['min_price'] ?? '');
     final maxPrice = double.tryParse(initialFilters['max_price'] ?? '');
     final rawSort = initialFilters['sort'];
@@ -526,19 +535,34 @@ class _SearchResults extends ConsumerWidget {
         ? 'rating_desc'
         : (rawSort == 'relevance' ? null : rawSort);
     final hasProductFilters = (category != null && category.isNotEmpty) ||
+        (subcategory != null && subcategory.isNotEmpty) ||
         minPrice != null || maxPrice != null || sort != null;
 
     if (hasProductFilters) {
       final params = ProductSearchParams(
         query: query,
         category: category?.isEmpty == true ? null : category,
+        subcategory: subcategory?.isEmpty == true ? null : subcategory,
         minPrice: minPrice,
         maxPrice: maxPrice,
         sort: sort,
       );
       final productsAsync = ref.watch(productSearchProvider(params));
       return productsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.62,
+            ),
+            itemCount: 6,
+            itemBuilder: (_, _) => const ProductCardSkeleton(),
+          ),
+        ),
         error: (error, _) => ErrorSection(
           title: 'Could not load filtered products',
           message: 'Please try again in a moment.',

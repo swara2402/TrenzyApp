@@ -132,10 +132,14 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 memCacheWidth: 400,
-                                placeholder: (context, url) => SizedBox(
+                                placeholder: (context, url) => Container(
                                   width: double.infinity,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
+                                  color: context.trenzyColors.graphite,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.checkroom_rounded,
+                                    size: 30,
+                                    color: context.trenzyColors.mutedFg.withValues(alpha: 0.45),
                                   ),
                                 ),
                                 errorWidget: (context, url, error) => Container(
@@ -299,11 +303,11 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               memCacheWidth: 400,
               placeholder: (context, url) => Container(
                 color: context.trenzyColors.surfaceContainer,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: context.trenzyColors.primary,
-                  ),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.checkroom_rounded,
+                  size: 34,
+                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.45),
                 ),
               ),
               errorWidget: (context, url, error) => Container(

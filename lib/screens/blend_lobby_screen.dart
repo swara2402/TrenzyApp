@@ -111,7 +111,7 @@ class _BlendLobbyContent extends StatelessWidget {
       backgroundColor: context.trenzyColors.background,
       body: Stack(
         children: [
-          _buildAtmosphericBackground(),
+          _buildAtmosphericBackground(context),
           CustomScrollView(
             slivers: [
               // ── Glass app bar ─────────────────────────────────────────
@@ -174,11 +174,11 @@ class _BlendLobbyContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
                     children: [
-                      SizedBox(height: 28),
-                      _buildParticipantGrid(),
-                      SizedBox(height: 80),
+                      SizedBox(height: 24),
+                      _buildParticipantGrid(context),
+                      SizedBox(height: 36),
                       _buildContextMessage(context),
-                      SizedBox(height: 160),
+                      SizedBox(height: 104),
                     ],
                   ),
                 ),
@@ -191,20 +191,20 @@ class _BlendLobbyContent extends StatelessWidget {
     );
   }
 
-  Widget _buildAtmosphericBackground() {
+  Widget _buildAtmosphericBackground(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: RadialGradient(
           center: Alignment(-1.5, -0.8),
           radius: 1.0,
-          colors: [GlassColors.primary, GlassColors.background],
+          colors: [context.trenzyColors.primary, context.trenzyColors.background],
           stops: [0.0, 0.4],
         ),
       ),
     );
   }
 
-  Widget _buildParticipantGrid() {
+  Widget _buildParticipantGrid(BuildContext context) {
     final members = group.members;
     if (members.isEmpty) {
       return Center(
@@ -215,12 +215,12 @@ class _BlendLobbyContent extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: GlassColors.glass,
-                border: Border.all(color: GlassColors.glassBorder),
+                color: context.trenzyColors.glass,
+                border: Border.all(color: context.trenzyColors.glassBorder),
               ),
               child: Icon(
                 Icons.person_add_outlined,
-                color: GlassColors.primary,
+                color: context.trenzyColors.primary,
                 size: 28,
               ),
             ),
@@ -228,7 +228,7 @@ class _BlendLobbyContent extends StatelessWidget {
             Text(
               'No members yet. Share the invite code to add people.',
               style: GlassTypography.body(
-                color: GlassColors.mutedFg,
+                color: context.trenzyColors.mutedFg,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -261,19 +261,19 @@ class _BlendLobbyContent extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: member.isOnline == true
                             ? [
-                                GlassColors.emerald,
-                                GlassColors.emerald.withValues(alpha: 0.7),
+                                context.trenzyColors.emerald,
+                                context.trenzyColors.emerald.withValues(alpha: 0.7),
                               ]
                             : [
-                                GlassColors.mutedFg,
-                                GlassColors.mutedFg.withValues(alpha: 0.5),
+                                context.trenzyColors.mutedFg,
+                                context.trenzyColors.mutedFg.withValues(alpha: 0.5),
                               ],
                       ),
                     ),
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: GlassColors.graphite,
+                        color: context.trenzyColors.graphite,
                       ),
                       child: Center(
                         child: Text(
@@ -282,8 +282,8 @@ class _BlendLobbyContent extends StatelessWidget {
                               : '?',
                           style: TextStyle(
                             color: member.isOnline == true
-                                ? GlassColors.emerald
-                                : GlassColors.mutedFg,
+                                ? context.trenzyColors.emerald
+                                : context.trenzyColors.mutedFg,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
@@ -301,14 +301,14 @@ class _BlendLobbyContent extends StatelessWidget {
                         height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: GlassColors.emerald,
+                          color: context.trenzyColors.emerald,
                           border: Border.all(
-                            color: GlassColors.background,
+                            color: context.trenzyColors.background,
                             width: 3,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: GlassColors.emerald.withValues(alpha: 0.6),
+                              color: context.trenzyColors.emerald.withValues(alpha: 0.6),
                               blurRadius: 8,
                             ),
                           ],
@@ -325,9 +325,9 @@ class _BlendLobbyContent extends StatelessWidget {
                         height: 28,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: GlassColors.primary,
+                          color: context.trenzyColors.primary,
                           border: Border.all(
-                            color: GlassColors.background,
+                            color: context.trenzyColors.background,
                             width: 3,
                           ),
                         ),
@@ -343,7 +343,7 @@ class _BlendLobbyContent extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 member.userName,
-                style: TextStyle(color: GlassColors.foreground, fontSize: 14),
+                style: TextStyle(color: context.trenzyColors.foreground, fontSize: 14),
               ),
             ],
           ),
@@ -376,7 +376,7 @@ class _BlendLobbyContent extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: allReady ? GlassColors.emerald : GlassColors.mutedFg,
+            color: allReady ? context.trenzyColors.emerald : context.trenzyColors.mutedFg,
             height: 1.6,
           ),
         ),
@@ -400,10 +400,10 @@ class _BlendLobbyContent extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: GlassColors.glass,
+                  color: context.trenzyColors.glass,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: GlassColors.primary.withValues(alpha: 0.4),
+                    color: context.trenzyColors.primary.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
@@ -412,7 +412,7 @@ class _BlendLobbyContent extends StatelessWidget {
                     Icon(
                       Icons.content_copy_rounded,
                       size: 16,
-                      color: GlassColors.primary,
+                      color: context.trenzyColors.primary,
                     ),
                     SizedBox(width: 8),
                     Text(
@@ -420,7 +420,7 @@ class _BlendLobbyContent extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: GlassColors.primary,
+                        color: context.trenzyColors.primary,
                         letterSpacing: 2.0,
                       ),
                     ),
@@ -441,7 +441,7 @@ class _BlendLobbyContent extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: GlassColors.primary.withValues(alpha: 0.3),
+                      color: context.trenzyColors.primary.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: Offset(0, 3),
                     ),
@@ -453,7 +453,7 @@ class _BlendLobbyContent extends StatelessWidget {
                     Icon(
                       Icons.share_rounded,
                       size: 16,
-                      color: GlassColors.primaryFg,
+                      color: context.trenzyColors.primaryFg,
                     ),
                     SizedBox(width: 8),
                     Text(
@@ -461,7 +461,7 @@ class _BlendLobbyContent extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: GlassColors.primaryFg,
+                        color: context.trenzyColors.primaryFg,
                       ),
                     ),
                   ],
@@ -479,11 +479,11 @@ class _BlendLobbyContent extends StatelessWidget {
               height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: allReady ? GlassColors.emerald : GlassColors.mutedFg,
+                color: allReady ? context.trenzyColors.emerald : context.trenzyColors.mutedFg,
                 boxShadow: allReady
                     ? [
                         BoxShadow(
-                          color: GlassColors.emerald.withValues(alpha: 0.5),
+                          color: context.trenzyColors.emerald.withValues(alpha: 0.5),
                           blurRadius: 6,
                         ),
                       ]
@@ -495,7 +495,7 @@ class _BlendLobbyContent extends StatelessWidget {
               '$readyCount / ${group.memberCount} Ready',
               style: TextStyle(
                 fontSize: 12,
-                color: allReady ? GlassColors.emerald : GlassColors.mutedFg,
+                color: allReady ? context.trenzyColors.emerald : context.trenzyColors.mutedFg,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -534,12 +534,12 @@ class _BlendLobbyContent extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            GlassColors.primary.withValues(alpha: 0.14),
-            GlassColors.emerald.withValues(alpha: 0.08),
+            context.trenzyColors.primary.withValues(alpha: 0.14),
+            context.trenzyColors.emerald.withValues(alpha: 0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: GlassColors.primary.withValues(alpha: 0.25)),
+        border: Border.all(color: context.trenzyColors.primary.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,7 +549,7 @@ class _BlendLobbyContent extends StatelessWidget {
               Icon(
                 Icons.group_add_rounded,
                 size: 20,
-                color: GlassColors.primary,
+                color: context.trenzyColors.primary,
               ),
               SizedBox(width: 10),
               Expanded(
@@ -558,7 +558,7 @@ class _BlendLobbyContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: GlassColors.foreground,
+                    color: context.trenzyColors.foreground,
                   ),
                 ),
               ),
@@ -569,7 +569,7 @@ class _BlendLobbyContent extends StatelessWidget {
             'Invite someone so you can both swipe and agree on what to buy together.',
             style: GlassTypography.body(
               fontSize: 12,
-              color: GlassColors.mutedFg,
+              color: context.trenzyColors.mutedFg,
               height: 1.4,
             ),
             textAlign: TextAlign.left,
@@ -613,7 +613,7 @@ class _BlendLobbyContent extends StatelessWidget {
                 notReadyMembers.isNotEmpty
                     ? 'Waiting for ${notReadyMembers.first}'
                     : 'Wait for all members to be ready',
-                style: TextStyle(color: GlassColors.mutedFg, fontSize: 12),
+                style: TextStyle(color: context.trenzyColors.mutedFg, fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ),
