@@ -549,7 +549,20 @@ class _SearchResults extends ConsumerWidget {
       );
       final productsAsync = ref.watch(productSearchProvider(params));
       return productsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.62,
+            ),
+            itemCount: 6,
+            itemBuilder: (_, _) => const ProductCardSkeleton(),
+          ),
+        ),
         error: (error, _) => ErrorSection(
           title: 'Could not load filtered products',
           message: 'Please try again in a moment.',
