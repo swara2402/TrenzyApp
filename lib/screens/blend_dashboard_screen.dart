@@ -316,6 +316,7 @@ class _BlendDashboardContent extends ConsumerWidget {
   }
 
   Widget _buildCompatibilitySection(BuildContext context) {
+    final hasEnoughSwipes = dashboard.totalSwipes > 0;
     final pct = dashboard.fashionScore / 100.0;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -389,25 +390,33 @@ class _BlendDashboardContent extends ConsumerWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(99),
               child: LinearProgressIndicator(
-                value: pct.clamp(0.0, 1.0),
-                backgroundColor: context.trenzyColors.glass.withValues(
-                  alpha: 0.5,
-                ),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  context.trenzyColors.primary,
-                ),
+                value: hasEnoughSwipes ? pct.clamp(0.0, 1.0) : 0,
+                backgroundColor: context.trenzyColors.glass.withValues(alpha: 0.5),
+                valueColor: AlwaysStoppedAnimation<Color>(context.trenzyColors.primary),
                 minHeight: 8,
               ),
             ),
             SizedBox(height: 12),
             Text(
-              '${dashboard.fashionScore}%',
+              hasEnoughSwipes ? '${dashboard.fashionScore}%' : 'Not enough data yet',
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.w900,
+                fontSize: hasEnoughSwipes ? 36 : 16,
+                fontWeight: FontWeight.w800,
                 color: context.trenzyColors.foreground,
               ),
             ),
+            if (!hasEnoughSwipes) ...[
+              SizedBox(height: 6),
+              Text(
+                'Swipe on a few picks to discover your group compatibility.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.trenzyColors.mutedFg,
+                ),
+              ),
+            ],
           ],
         ),
       ),
