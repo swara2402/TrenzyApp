@@ -174,11 +174,11 @@ class _BlendLobbyContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
                     children: [
-                      SizedBox(height: 28),
+                      SizedBox(height: 24),
                       _buildParticipantGrid(context),
-                      SizedBox(height: 80),
+                      SizedBox(height: 36),
                       _buildContextMessage(context),
-                      SizedBox(height: 160),
+                      SizedBox(height: 104),
                     ],
                   ),
                 ),
