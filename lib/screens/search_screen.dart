@@ -260,6 +260,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       label: 'Apply filters',
                       onTap: () {
                         setState(() {
+                          final categoryChanged =
+                              selectedCategory != _initialFilters['category'];
                           _initialFilters = {
                             ..._initialFilters,
                             'category': selectedCategory,
@@ -268,7 +270,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             'min_price': priceRange.start > 0 ? priceRange.start.round().toString() : null,
                             'max_price': priceRange.end < 10000 ? priceRange.end.round().toString() : null,
                           };
-                          _query = _controller.text.trim();
+                          // A category selection replaces the previous search
+                          // intent. Never combine stale text (e.g. "Dresses")
+                          // with a newly selected category (e.g. "Outerwear").
+                          if (categoryChanged) {
+                            _debounceTimer?.cancel();
+                            _controller.clear();
+                            _query = '';
+                          } else {
+                            _query = _controller.text.trim();
+                          }
                           _hasSubmitted = selectedCategory != null ||
                               _query.length >= 2 ||
                               _initialFilters['min_price'] != null ||
