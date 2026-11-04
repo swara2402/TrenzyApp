@@ -303,11 +303,11 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               memCacheWidth: 400,
               placeholder: (context, url) => Container(
                 color: context.trenzyColors.surfaceContainer,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: context.trenzyColors.primary,
-                  ),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.checkroom_rounded,
+                  size: 34,
+                  color: context.trenzyColors.mutedFg.withValues(alpha: 0.45),
                 ),
               ),
               errorWidget: (context, url, error) => Container(
