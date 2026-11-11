@@ -12,7 +12,6 @@ attributes.
 """
 import hashlib
 import logging
-import random
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -132,13 +131,21 @@ async def generate_persona(
     auth_uid = _uid(user_data)
     
     try:
-        if preferences and any(preferences.get(key) for key in (
-            "preferred_categories", "preferred_styles", "preferred_aesthetics",
-            "product_interests", "preferred_colors", "preferred_brands",
-        )):
-            idx = _match_persona_from_preferences(preferences)
-        else:
-            idx = random.randint(0, len(_STYLE_PERSONAS) - 1)
+        has_style_input = bool(preferences) and any(
+            preferences.get(key) for key in (
+                "preferred_categories", "preferred_styles", "preferred_aesthetics",
+                "product_interests", "preferred_colors", "preferred_brands",
+            )
+        )
+        if not has_style_input:
+            return {
+                "name": "Style Newcomer",
+                "description": "Your style identity will take shape as you choose the looks, colours, and categories you love.",
+                "keywords": [],
+                "vibe": "",
+                "color_palette": [],
+            }
+        idx = _match_persona_from_preferences(preferences)
         
         persona_data = _STYLE_PERSONAS[idx]
         
