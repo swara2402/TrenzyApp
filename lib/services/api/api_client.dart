@@ -443,4 +443,34 @@ class ApiClient {
       return http.Response.fromStream(streamedResponse);
     });
   }
+ 
+  Future<dynamic> uploadMultipleMultipart(
+    String endpoint,
+    List<XFile> files, {
+    String fieldName = 'files',
+    Map<String, String> fields = const {},
+  }) async {
+    final uri = resolveUri(endpoint);
+    return _sendWithRetry(endpoint, () async {
+      final token = await getIdToken(forceRefresh: false);
+      final request = http.MultipartRequest('POST', uri);
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.fields.addAll(fields);
+      for (final file in files) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fieldName,
+            await file.readAsBytes(),
+            filename: file.name,
+          ),
+        );
+      }
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 90),
+      );
+      return http.Response.fromStream(streamedResponse);
+    });
+  }
 }
