@@ -364,7 +364,7 @@ If you don't know something, be honest and ask for more details to better assist
             for phrase in (
                 "outfit", "look", "what should i wear", "what do i wear",
                 "style me", "dress me", "pair", "match with", "combine",
-                "wear with", "put together",
+                "wear with", "put together", "choose", "recommend", "saree", "sari", "jewellery", "jewelry",
             )
         )
 
