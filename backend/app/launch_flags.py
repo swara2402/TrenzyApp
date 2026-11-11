@@ -15,6 +15,24 @@ BETA_COMMERCE_ENABLED = (
     in {"1", "true", "yes", "on"}
 )
 
+# Affiliate outbound links have their own opt-in. Enabling affiliate links must
+# never implicitly enable cart, checkout, orders, or payment APIs.
+BETA_AFFILIATE_ENABLED = (
+    os.getenv("TRENZY_BETA_AFFILIATE_ENABLED", "false").strip().lower()
+    in {"1", "true", "yes", "on"}
+)
+
+
+def require_beta_affiliate() -> None:
+    """Fail closed until an approved affiliate integration is configured."""
+    if not BETA_AFFILIATE_ENABLED:
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            status_code=404,
+            detail="Affiliate links are not enabled in the current Trenzy release.",
+        )
+
 
 def require_beta_commerce() -> None:
     """Fail closed while cart/checkout/purchase history are post-launch."""
