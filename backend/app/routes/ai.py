@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any
 import logging
 import io
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -978,3 +978,123 @@ async def process_shopping_request(
         parsed_params=result["parsed_params"],
         result=result,
     )
+
+def _dominant_outfit_color(image_bytes: bytes) -> str:
+    """Extract a coarse dominant colour from an outfit photo without storing it."""
+    from io import BytesIO
+    from PIL import Image, ImageOps
+
+    try:
+        with Image.open(BytesIO(image_bytes)) as source:
+            image = ImageOps.exif_transpose(source).convert("RGB")
+            image.thumbnail((96, 96))
+            quantized = image.quantize(colors=5, method=Image.Quantize.MEDIANCUT)
+            palette = quantized.getpalette()
+            counts = quantized.getcolors(96 * 96) or []
+            if not counts or not palette:
+                raise ValueError("The image has no readable colour information.")
+            _, palette_index = max(counts)
+            rgb = tuple(palette[palette_index * 3: palette_index * 3 + 3])
+    except Exception as exc:
+        raise ValueError("The uploaded file is not a readable image.") from exc
+
+    named = {
+        "black": (20, 20, 20), "white": (242, 242, 242),
+        "grey": (128, 128, 128), "brown": (112, 72, 42),
+        "red": (190, 35, 45), "orange": (225, 115, 35),
+        "yellow": (225, 190, 45), "green": (55, 125, 75),
+        "teal": (35, 135, 135), "blue": (50, 85, 165),
+        "purple": (120, 70, 145), "pink": (220, 125, 160),
+    }
+    def distance(target):
+        return sum((rgb[channel] - target[channel]) ** 2 for channel in range(3))
+    return min(named, key=lambda colour: distance(named[colour]))
+
+
+@router.post("/ai/stylist/compare-photos")
+async def compare_stylist_outfit_photos(
+    images: List[UploadFile] = File(...),
+    occasion: str = Form(default="Everyday", max_length=80),
+    aesthetic: str = Form(default="Casual", max_length=80),
+    prompt: str = Form(default="", max_length=500),
+    current_user: dict = Depends(get_current_user),
+):
+    """Compare 2–4 temporary outfit photos using visual and palette signals.
+
+    Images are processed in memory only: they are not persisted or made public.
+    This endpoint does not perform face recognition, identity analysis, or fit assessment.
+    """
+    if not 2 <= len(images) <= 4:
+        raise HTTPException(status_code=400, detail="Upload between 2 and 4 outfit photos.")
+
+    visual_search = get_visual_search()
+    query = "fashion outfit suitable for " + occasion.strip() + ", " + aesthetic.strip()
+    if prompt.strip():
+        query += ". " + prompt.strip()
+    query += ". well coordinated clothing, wearable complete look"
+
+    try:
+        text_embedding = visual_search.image_model.encode_text(query)
+        options = []
+        for index, image in enumerate(images, start=1):
+            if not image.content_type or image.content_type not in {
+                "image/jpeg", "image/png", "image/webp"
+            }:
+                raise HTTPException(status_code=400, detail=f"Option {index}: use a JPG, PNG, or WebP image.")
+            image_bytes = await image.read()
+            if not image_bytes:
+                raise HTTPException(status_code=400, detail=f"Option {index} is empty.")
+            if len(image_bytes) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail=f"Option {index} exceeds the 5 MB limit.")
+
+            try:
+                dominant_color = _dominant_outfit_color(image_bytes)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=f"Option {index}: {exc}") from exc
+
+            embedding = visual_search.encode_image_bytes(image_bytes)
+            base_similarity = float((embedding * text_embedding).sum())
+            palette_query = (
+                f"fashion outfit with a dominant {dominant_color} colour palette, "
+                f"suitable for {occasion.strip()} and {aesthetic.strip()}"
+            )
+            palette_embedding = visual_search.image_model.encode_text(palette_query)
+            palette_similarity = float((embedding * palette_embedding).sum())
+            # The visual brief remains primary; palette contributes a smaller, explicit signal.
+            score = (0.8 * base_similarity) + (0.2 * palette_similarity)
+            options.append({
+                "option": index,
+                "score": round(score, 4),
+                "visual_score": round(base_similarity, 4),
+                "palette_score": round(palette_similarity, 4),
+                "dominant_color": dominant_color,
+                "filename": (image.filename or f"Option {index}")[:100],
+            })
+
+        options.sort(key=lambda item: item["score"], reverse=True)
+        winner = options[0]
+        margin = winner["score"] - options[1]["score"]
+        confidence = "stronger_match" if margin >= 0.04 else "close_call"
+        return {
+            "winner_option": winner["option"],
+            "winner_score": winner["score"],
+            "confidence": confidence,
+            "options": options,
+            "reason": (
+                f"Option {winner['option']} has the strongest combined visual match "
+                f"for the {occasion.strip()} occasion and {aesthetic.strip()} aesthetic. "
+                f"Its detected dominant colour is {winner['dominant_color']}."
+            ),
+            "method": "FashionCLIP visual similarity with coarse dominant-colour analysis",
+            "images_stored": False,
+            "note": (
+                "Colour is estimated from the dominant pixels and may be affected by lighting. "
+                "This does not assess garment fit, fabric quality, exact garment type, or how "
+                "the outfit looks on the wearer. Review close results yourself."
+            ),
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Stylist photo comparison failed")
+        raise HTTPException(status_code=503, detail="Photo comparison is temporarily unavailable.") from exc

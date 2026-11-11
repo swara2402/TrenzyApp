@@ -24,6 +24,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal, Optional
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -34,6 +35,7 @@ from ..db import get_session
 from ..auth_deps import get_current_user
 from ..firebase_auth import verify_firebase_token
 from ..models import TrendingCreator, TrendingProduct, AffiliateClick, Product, View, TrendMetric
+from ..launch_flags import require_beta_affiliate
 
 logger = logging.getLogger(__name__)
 
@@ -267,17 +269,31 @@ def track_affiliate_click(
     user: dict = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """POST to record an affiliate ("Shop on Partner") click.
-
-    Feeds trend scoring (clicks are weighted 3x vs views) and powers the
-    affiliate attribution pipeline. Returns the clean affiliate URL when the
-    product has one so the client can open the partner site directly.
-    """
+    """POST to record an approved affiliate partner click and return its URL."""
+    require_beta_affiliate()
     uid = _get_uid(user)
 
     product = session.query(Product).filter(Product.id == data.product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    affiliate_link = None
+    raw_links = product.affiliate_links
+    if isinstance(raw_links, dict):
+        for value in raw_links.values():
+            candidate = str(value or "").strip()
+            parsed = urlparse(candidate)
+            if parsed.scheme == "https" and parsed.netloc:
+                affiliate_link = candidate
+                break
+    elif isinstance(raw_links, str):
+        candidate = raw_links.strip()
+        parsed = urlparse(candidate)
+        if parsed.scheme == "https" and parsed.netloc:
+            affiliate_link = candidate
+
+    if not affiliate_link:
+        raise HTTPException(status_code=404, detail="No active affiliate link for this product")
 
     click = AffiliateClick(
         product_id=data.product_id,
@@ -311,16 +327,6 @@ def track_affiliate_click(
         session.add(metric)
 
     session.commit()
-
-    affiliate_link = None
-    raw_links = product.affiliate_links
-    if isinstance(raw_links, dict):
-        for key, value in raw_links.items():
-            if value and str(value).startswith(("http://", "https://")):
-                affiliate_link = str(value)
-                break
-    elif isinstance(raw_links, str) and raw_links.strip().startswith("http"):
-        affiliate_link = raw_links.strip()
 
     return {
         "status": "recorded",

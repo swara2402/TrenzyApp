@@ -42,7 +42,7 @@ _AGE_EXEMPT_PATHS = {
 }
 
 def _enforce_age_verification(request: Request, uid: str, db) -> None:
-    """Fail closed for authenticated app routes until 13+ is verified."""
+    """Fail closed for authenticated app routes until 16+ is verified."""
     if request.url.path in _AGE_EXEMPT_PATHS:
         return
     user = db.query(User).filter(User.firebase_uid == uid).first()
@@ -50,6 +50,11 @@ def _enforce_age_verification(request: Request, uid: str, db) -> None:
         raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
     if user.date_of_birth is None:
         raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
+    from .age_policy import validate_date_of_birth
+    try:
+        validate_date_of_birth(user.date_of_birth)
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED") from exc
 
 
 def get_bearer_token(request: Request) -> str | None:
@@ -65,7 +70,7 @@ def get_current_user(
     token: str | None = Depends(get_bearer_token),
     db=Depends(get_session),
 ) -> dict[str, any]:
-    """Verify Firebase auth and enforce the 13+ account gate."""
+    """Verify Firebase auth and enforce the 16+ account gate."""
     if not token:
         raise HTTPException(status_code=401, detail="Missing authentication token")
     claims = firebase_auth.verify_token_string(token)
@@ -80,7 +85,7 @@ def get_current_user_id(
     request: Request,
     db=Depends(get_session),
 ) -> str:
-    """Return the verified UID after enforcing the 13+ account gate."""
+    """Return the verified UID after enforcing the 16+ account gate."""
     token = get_bearer_token(request)
     if not token:
         raise HTTPException(status_code=401, detail="Missing authentication token")

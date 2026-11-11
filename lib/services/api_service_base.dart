@@ -155,6 +155,12 @@ abstract class ApiServiceBase {
   });
   Future<Map<String, dynamic>> aiStylistOutfit(String prompt);
   Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20});
+  Future<Map<String, dynamic>> compareStylistPhotos(
+    List<XFile> images, {
+    required String occasion,
+    required String aesthetic,
+    String prompt = '',
+  });
 
   // ---------- Notifications ----------
   Future<Map<String, dynamic>> getNotifications();

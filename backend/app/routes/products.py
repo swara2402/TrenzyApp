@@ -42,7 +42,7 @@ from ..models import Brand, Product, ProductImage, ProductVariant, Wishlist
 from ..catalog_categories import canonical_category as _canonical_category
 from ..catalog_categories import canonical_category_expr as _canonical_category_expr
 from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
-from ..launch_flags import BETA_COMMERCE_ENABLED
+from ..launch_flags import BETA_AFFILIATE_ENABLED
 
 router = APIRouter(prefix="/api", tags=["products"])
 
@@ -103,7 +103,7 @@ def _product_payload(product):
         "rating": product.rating,
         "image_url": product.image_url,
         "tags": _product_tags(product),
-        "affiliate_links": product.affiliate_links if BETA_COMMERCE_ENABLED else None,
+        "affiliate_links": product.affiliate_links if BETA_AFFILIATE_ENABLED else None,
         "outfit_role": getattr(product, "outfit_role", None),
         "style": getattr(product, "style", None),
         "occasion": getattr(product, "occasion", None),

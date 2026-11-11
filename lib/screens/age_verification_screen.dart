@@ -36,7 +36,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
 
   DateTime _latestAllowedDob() {
     final n = DateTime.now();
-    return DateTime(n.year - 13, n.month, n.day);
+    return DateTime(n.year - 16, n.month, n.day);
   }
 
   Future<void> _pick() async {
@@ -65,8 +65,8 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
         message.contains('failed host lookup')) {
       return "We couldn't connect to Trenzy right now. Check your internet connection and try again.";
     }
-    if (message.contains('13 and older') || message.contains('13+')) {
-      return 'Trenzy is available to users aged 13 and older.';
+    if (message.contains('16 and older') || message.contains('13+')) {
+      return 'Trenzy is available to users aged 16 and older.';
     }
     return 'We couldn’t verify your age right now. Please try again.';
   }
@@ -83,7 +83,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
     }
     if (dob.isAfter(_latestAllowedDob())) {
       setState(
-        () => _error = 'Trenzy is available to users aged 13 and older.',
+        () => _error = 'Trenzy is available to users aged 16 and older.',
       );
       return;
     }
@@ -146,7 +146,7 @@ class _AgeVerificationScreenState extends ConsumerState<AgeVerificationScreen> {
                   DisplayText('One last safety check.', fontSize: 34),
                   const SizedBox(height: 12),
                   Text(
-                    'Trenzy is 13+. Enter your date of birth to continue. '
+                    'Trenzy is 16+. Enter your date of birth to continue. '
                     'Your exact date of birth is kept private.',
                     style: GlassTypography.body(color: c.mutedFg, fontSize: 15),
                   ),

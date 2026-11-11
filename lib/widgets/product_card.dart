@@ -254,19 +254,42 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                             ],
                           ),
                         ],
-                        // Show recommendation reason if available
-                        if (widget.product.reason.isNotEmpty) ...[
-                          SizedBox(height: 2),
-                          Text(
-                            widget.product.reason,
-                            style: GlassTypography.body(
-                              fontSize: 10,
-                              color: context.trenzyColors.mutedFg.withValues(
-                                alpha: 0.8,
+                        // Make recommendation explanations easy to notice.
+                        if (widget.product.reason.trim().isNotEmpty) ...[
+                          const SizedBox(height: 5),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: context.trenzyColors.primary.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: context.trenzyColors.primary.withValues(alpha: 0.16),
                               ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 12,
+                                  color: context.trenzyColors.primary,
+                                ),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Text(
+                                    widget.product.reason,
+                                    style: GlassTypography.body(
+                                      fontSize: 10,
+                                      color: context.trenzyColors.foreground,
+                                      height: 1.25,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
 

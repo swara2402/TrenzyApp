@@ -144,9 +144,32 @@ jobs:
           if len(heads) != 1:
               raise SystemExit(f"Expected exactly one Alembic head, found {len(heads)}: {heads}")
           PY
-      - name: Verify beta commerce UI is not exposed
+      - name: Verify affiliate links are separately gated from beta checkout
         run: |
-          ! grep -RniE "Shop on Partner|trackAffiliateClick|_shopOnPartner|Save to List" lib/screens/product_details_screen.dart
+          python - <<'PY'
+          from pathlib import Path
+
+          screen = Path("lib/screens/product_details_screen.dart").read_text()
+          model = Path("lib/models/product_model.dart").read_text()
+          flutter_flags = Path("lib/services/feature_flags.dart").read_text()
+          server_flags = Path("backend/app/launch_flags.py").read_text()
+          products_route = Path("backend/app/routes/products.py").read_text()
+          trends_route = Path("backend/app/routes/trends.py").read_text()
+
+          assert "if (product.partnerUrl != null)" in screen
+          assert "trackAffiliateClick(product.id)" in screen
+          assert "uri.scheme != 'https'" in screen
+          assert "uri.scheme == 'https'" in model
+          assert "defaultValue: false" in flutter_flags[
+              flutter_flags.index("static const bool paymentsEnabled"):
+              flutter_flags.index("static const bool notificationsEnabled")
+          ]
+          assert 'TRENZY_BETA_COMMERCE_ENABLED", "false"' in server_flags
+          assert 'TRENZY_BETA_AFFILIATE_ENABLED", "false"' in server_flags
+          assert "BETA_AFFILIATE_ENABLED" in products_route
+          assert "require_beta_affiliate()" in trends_route
+          print("Affiliate UI is HTTPS-gated; affiliate and checkout flags fail closed independently.")
+          PY
   backend-auth-regression:
     name: Backend auth/age-gate regression
     runs-on: ubuntu-latest

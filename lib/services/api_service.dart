@@ -843,6 +843,18 @@ class ApiService implements ApiServiceBase {
   @override
   Future<Map<String, dynamic>> aiVisualSearch(XFile image, {int limit = 20}) =>
       _aiApi.visualSearch(image, limit: limit);
+  @override
+  Future<Map<String, dynamic>> compareStylistPhotos(
+    List<XFile> images, {
+    required String occasion,
+    required String aesthetic,
+    String prompt = '',
+  }) => _aiApi.compareStylistPhotos(
+    images,
+    occasion: occasion,
+    aesthetic: aesthetic,
+    prompt: prompt,
+  );
 
   // ---------- Notifications ----------
   @override

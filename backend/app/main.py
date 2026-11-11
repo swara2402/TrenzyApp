@@ -366,7 +366,15 @@ async def age_gate_middleware(request: Request, call_next):
             db = SessionLocal()
             try:
                 user = db.query(User).filter(User.firebase_uid == uid).first()
-                if user is None or user.date_of_birth is None:
+                age_verified = False
+                if user is not None and user.date_of_birth is not None:
+                    from .age_policy import validate_date_of_birth
+                    try:
+                        validate_date_of_birth(user.date_of_birth)
+                        age_verified = True
+                    except ValueError:
+                        age_verified = False
+                if not age_verified:
                     return JSONResponse(
                         status_code=403,
                         content={

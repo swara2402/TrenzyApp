@@ -15,13 +15,27 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from ...models import Product, User
+from ...models import Product, User, WardrobeItem
 from ..models_ai import UserStyleProfile, AIConversation, AIMessage
 from ..recommendation.rule_based_recommender import RuleBasedRecommender
 from ..outfits.outfit_generator import AIOutfitBuilder
 from ..personalization.style_dna import StyleDNAExtractor
 
 logger = logging.getLogger(__name__)
+
+
+def _selected_wardrobe_ids(message: str) -> set[int]:
+    """Read stable item IDs from the authenticated client's styling brief."""
+    import re
+
+    match = re.search(
+        r"owned wardrobe item ids:\s*([0-9,\s]+)",
+        message,
+        re.IGNORECASE,
+    )
+    if not match:
+        return set()
+    return {int(value) for value in re.findall(r"\d+", match.group(1))}
 
 
 class FashionStylistAgent:
@@ -177,10 +191,33 @@ If you don't know something, be honest and ask for more details to better assist
         # Retrieve relevant products
         relevant_products = self._retrieve_relevant_products(db, user_id, message)
 
-        # Use the local catalog-backed response path for reliable beta replies.
-        # Remote model calls can stall when an optional provider is unavailable;
-        # the launch configuration requires the stylist to work without them.
-        assistant_message = self._fallback_response(message, relevant_products, persona=persona)
+        # Build outfit suggestions from the signed-in user's actual closet.
+        # Only selected wardrobe names included by the Flutter style brief are used.
+        wardrobe_items = []
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.firebase_uid and "owned wardrobe pieces" in message.casefold():
+                all_items = db.query(WardrobeItem).filter(
+                    WardrobeItem.user_firebase_uid == user.firebase_uid
+                ).all()
+                if "no owned wardrobe pieces are selected" not in message.casefold():
+                    selected_ids = _selected_wardrobe_ids(message)
+                    if selected_ids:
+                        wardrobe_items = [item for item in all_items if item.id in selected_ids]
+                    else:
+                        # Backward-compatible handling for older app clients.
+                        wardrobe_items = [
+                            item for item in all_items
+                            if item.name and item.name.casefold() in message.casefold()
+                        ]
+        except Exception as exc:
+            logger.warning("Could not load owned wardrobe for stylist: %s", exc)
+
+        # Local deterministic styling remains available without a hosted LLM.
+        assistant_message = self._fallback_response(
+            message, relevant_products, persona=persona,
+            wardrobe_items=wardrobe_items,
+        )
 
         # Save assistant message
         assistant_msg = AIMessage(
@@ -301,6 +338,7 @@ If you don't know something, be honest and ask for more details to better assist
         message: str,
         relevant_products: List[Product],
         persona: str = "everyday",
+        wardrobe_items: Optional[List[WardrobeItem]] = None,
     ) -> str:
         """Generate friendly fashion response based on query and catalog.
 
@@ -320,15 +358,210 @@ If you don't know something, be honest and ask for more details to better assist
         persona_name, persona_focus = persona_styles.get(persona, persona_styles["everyday"])
         msg_lower = message.strip().lower()
 
+        user_request = message.split("Styling brief:", 1)[0].casefold()
+        outfit_intent = any(
+            phrase in user_request
+            for phrase in (
+                "outfit", "look", "what should i wear", "what do i wear",
+                "style me", "dress me", "pair", "match with", "combine",
+                "wear with", "put together", "choose", "pick", "which one", "help me decide", "recommend", "saree", "sari", "jewellery", "jewelry",
+            )
+        )
+
+        if wardrobe_items and outfit_intent:
+            import re
+
+            def item_text(item: WardrobeItem) -> str:
+                return " ".join(filter(None, (
+                    item.name, item.category, item.color, item.season,
+                ))).casefold()
+
+            def role(item: WardrobeItem) -> str:
+                category = (item.category or "").casefold()
+                text = item_text(item)
+                if any(word in text for word in (
+                    "saree", "sari", "lehenga", "anarkali", "kurta set",
+                    "ethnic set", "ethnic wear", "salwar suit", "suit set", "sherwani",
+                )):
+                    return "ethnic_base"
+                if any(word in category or word in text for word in (
+                    "dress", "gown", "one-piece", "jumpsuit", "romper", "co-ord set", "coord set",
+                )):
+                    return "dress"
+                if any(word in text for word in ("earring", "jhumka", "chandbali", "stud", "hoop")):
+                    return "earrings"
+                if any(word in text for word in ("necklace", "neckpiece", "choker", "pendant", "haar")):
+                    return "necklace"
+                if any(word in text for word in ("bangle", "bracelet", "kada")):
+                    return "wristwear"
+                if any(word in text for word in ("maang tikka", "mangtikka", "nose pin", "ring")):
+                    return "jewellery_extra"
+                if any(word in category or word in text for word in ("shoe", "sneaker", "boot", "sandal", "footwear", "heel", "flat")):
+                    return "footwear"
+                if any(word in category or word in text for word in ("jacket", "blazer", "cardigan", "coat", "outerwear")):
+                    return "layer"
+                if any(word in category or word in text for word in ("handbag", "purse", "clutch", "tote", "backpack", "bag")):
+                    return "bag"
+                if any(word in text for word in ("watch", "belt", "hat", "scarf", "sunglasses")):
+                    return "finishing_accessory"
+                if any(word in category or word in text for word in ("top", "shirt", "tee", "blouse", "upper")):
+                    return "top"
+                if any(word in category or word in text for word in ("trouser", "pant", "jean", "skirt", "short", "bottom")):
+                    return "bottom"
+                if "jewel" in category or "accessor" in category:
+                    return "finishing_accessory"
+                return "other"
+
+            occasion_match = re.search(r"occasion=([^;.]+)", message, re.IGNORECASE)
+            aesthetic_match = re.search(r"aesthetic=([^;.]+)", message, re.IGNORECASE)
+            occasion = occasion_match.group(1).strip() if occasion_match else "your occasion"
+            aesthetic = aesthetic_match.group(1).strip() if aesthetic_match else persona
+            palette = {
+                "minimal": ("black", "white", "grey", "gray", "beige", "cream", "navy", "brown"),
+                "streetwear": ("black", "white", "grey", "gray", "denim", "blue", "red", "green"),
+                "classic": ("navy", "white", "black", "beige", "brown", "cream", "gold"),
+                "old money": ("navy", "white", "beige", "cream", "brown", "black"),
+                "boho": ("earth", "rust", "olive", "beige", "brown", "tan"),
+                "y2k": ("pink", "silver", "blue", "purple", "denim"),
+                "sporty": ("black", "white", "grey", "gray", "blue", "red"),
+                "casual": ("black", "white", "blue", "beige", "brown", "grey", "gray"),
+            }.get(aesthetic.casefold(), ())
+
+            def tokens(value: str) -> set[str]:
+                return {
+                    token for token in re.findall(r"[a-z]+", (value or "").casefold())
+                    if token not in {"light", "dark", "the", "and", "with"}
+                }
+
+            request_tokens = tokens(user_request)
+            color_words = {
+                "black", "white", "red", "blue", "green", "pink", "purple",
+                "yellow", "orange", "brown", "beige", "cream", "gold", "silver",
+                "grey", "gray", "navy", "maroon", "wine",
+            }
+            requested_colors = request_tokens & color_words
+
+            def score(item: WardrobeItem, base_color: str = "") -> tuple[int, int, int, int, int]:
+                color = (item.color or "").casefold()
+                item_tokens = tokens(color)
+                shared = len(tokens(base_color) & item_tokens)
+                requested_match = len(requested_colors & item_tokens)
+                neutral = int(any(word in color for word in (
+                    "gold", "silver", "pearl", "black", "white", "cream", "beige", "nude",
+                )))
+                palette_match = int(bool(palette) and any(word in color for word in palette))
+                return (
+                    requested_match * 5 + shared * 3 + palette_match + neutral,
+                    int(bool(item.is_favorite)),
+                    int(bool(item.image_url)),
+                    -int(item.id or 0),
+                    len(item_tokens),
+                )
+
+            by_role: dict[str, list[WardrobeItem]] = {}
+            for item in wardrobe_items:
+                by_role.setdefault(role(item), []).append(item)
+
+            # Compare complete outfit candidates, then style accessories around
+            # the single winning base (or the best top + bottom combination).
+            candidates: list[tuple[tuple[int, ...], list[WardrobeItem]]] = []
+            for base_role in ("ethnic_base", "dress"):
+                for item in by_role.get(base_role, []):
+                    candidates.append((score(item), [item]))
+            for top in by_role.get("top", []):
+                for bottom in by_role.get("bottom", []):
+                    top_score = score(top)
+                    bottom_score = score(bottom)
+                    # Average both pieces so a two-piece outfit is not
+                    # unfairly favored just because it contains two items.
+                    pair_score = tuple(
+                        (top_value + bottom_value) / 2
+                        for top_value, bottom_value in zip(top_score, bottom_score)
+                    )
+                    candidates.append((pair_score, [top, bottom]))
+
+            if candidates:
+                _, chosen_base = max(candidates, key=lambda candidate: candidate[0])
+                base_color = " ".join(item.color or "" for item in chosen_base)
+                chosen = list(chosen_base)
+                accessory_roles = (
+                    "earrings", "necklace", "wristwear", "jewellery_extra",
+                    "footwear", "bag", "layer", "finishing_accessory",
+                )
+                labels = {
+                    "ethnic_base": "Outfit", "dress": "Dress",
+                    "top": "Top", "bottom": "Bottom",
+                    "earrings": "Earrings", "necklace": "Necklace",
+                    "wristwear": "Bangles / bracelet",
+                    "jewellery_extra": "Additional jewellery",
+                    "footwear": "Footwear", "bag": "Bag", "layer": "Layer",
+                    "finishing_accessory": "Finishing accessory",
+                }
+                for accessory_role in accessory_roles:
+                    options = by_role.get(accessory_role, [])
+                    if options:
+                        chosen.append(max(options, key=lambda item: score(item, base_color)))
+
+                is_ethnic = role(chosen_base[0]) == "ethnic_base"
+                title = (
+                    f"My pick: **{chosen_base[0].name}**"
+                    if len(chosen_base) == 1
+                    else "My pick: **" + " + ".join(item.name for item in chosen_base) + "**"
+                )
+                lines = [
+                    title + (f" ({base_color})" if base_color else "") + ".",
+                    (
+                        f"Here's a {aesthetic} look for {occasion}, built from pieces you own."
+                        if not is_ethnic
+                        else f"I chose this combination for your {occasion} and {aesthetic} aesthetic from the options in your wardrobe."
+                    ),
+                    "",
+                    "Here's the complete look I'd put together:",
+                ]
+                for item in chosen:
+                    item_role = role(item)
+                    if item in chosen_base:
+                        label = labels.get(item_role, "Outfit")
+                    else:
+                        label = labels.get(item_role, "Accessory")
+                    detail = f" — {item.color}" if item.color else ""
+                    lines.append(f"• **{label}:** {item.name}{detail}")
+
+                missing = []
+                for key, label in (
+                    ("footwear", "footwear"),
+                    ("earrings", "earrings"),
+                    ("necklace", "a necklace"),
+                    ("wristwear", "bangles or a bracelet"),
+                ):
+                    if not by_role.get(key):
+                        missing.append(label)
+                if missing:
+                    lines.extend(["", "Not in your selected wardrobe: " + ", ".join(missing) + "."])
+                lines.extend([
+                    "",
+                    "This is my best match using the pieces and details you've shared. You can swap any item and I'll restyle the look.",
+                ])
+                return "\n".join(lines)
+
+            return (
+                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but couldn't identify "
+                "a complete outfit base yet. Add or label a dress, saree/ethnic set, or a top and bottom, "
+                "and I'll choose the strongest combination and coordinate the accessories."
+            )
+
         # Handle casual greetings warmly
         greetings = ["hey", "heyyy", "heyy", "hi", "hello", "hola", "yo", "sup", "good morning", "good evening"]
         if any(msg_lower == g for g in greetings) or msg_lower.startswith("hey") or msg_lower.startswith("hi"):
             return f"Hey there! I'm {persona_name}. I focus on {persona_focus}. Tell me the occasion and I'll help you put a look together. 💗"
 
+        # Internal styling metadata and selected closet items are context, not
+        # part of the user's visible question. Never echo that private context.
+        visible_request = user_request.strip() or message.strip()
         if not relevant_products:
-            return f"I'd love to help you style '{message}' with {persona_focus}. Try adding the occasion, colours, or budget and I'll narrow it down for you."
+            return f"I'd love to help you style '{visible_request}' with {persona_focus}. Try adding the occasion, colours, or budget and I'll narrow it down for you."
 
-        response = f"As {persona_name}, I'd style '{message}' around {persona_focus}. Here are some catalog picks:\n\n"
+        response = f"As {persona_name}, I'd style '{visible_request}' around {persona_focus}. Here are some catalog picks:\n\n"
         for product in relevant_products[:3]:
             response += f"• {product.name} — ₹{product.price:.0f}\n"
         response += "\nLet me know if you'd like outfit combinations with these!"

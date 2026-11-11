@@ -69,4 +69,23 @@ class AiApi {
     );
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
   }
+ 
+  Future<Map<String, dynamic>> compareStylistPhotos(
+    List<XFile> images, {
+    required String occasion,
+    required String aesthetic,
+    String prompt = '',
+  }) async {
+    final data = await _client.uploadMultipleMultipart(
+      '/ai/stylist/compare-photos',
+      images,
+      fieldName: 'images',
+      fields: {
+        'occasion': occasion,
+        'aesthetic': aesthetic,
+        'prompt': prompt,
+      },
+    );
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
 }

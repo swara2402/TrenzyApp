@@ -1,5 +1,6 @@
 """Regression tests for authenticated database-user age enforcement."""
 
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
@@ -61,7 +62,7 @@ def test_get_current_db_user_allows_verified_user(monkeypatch):
 
     user = SimpleNamespace(
         firebase_uid="user-1",
-        date_of_birth="2000-01-01",
+        date_of_birth=date(2000, 1, 1),
     )
 
     result = get_current_db_user(

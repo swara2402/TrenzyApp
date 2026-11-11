@@ -4,7 +4,7 @@ import pytest
 
 from app import auth_helpers
 from app.models import AffiliateClick, Product, TrendMetric
-from app.routes import trends
+from app.routes import trends, products as products_route
 
 
 @pytest.mark.parametrize(
@@ -101,3 +101,57 @@ def test_trend_aggregation_includes_click_only_products(
     assert metric.view_count == 0
     assert metric.click_count == 1
     assert metric.trending_score == 3
+
+
+
+def test_affiliate_click_route_is_disabled_by_default(client, auth_headers):
+    response = client.post(
+        "/api/trends/affiliate-click",
+        json={"product_id": "affiliate-disabled-test"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_affiliate_click_returns_only_https_partner_urls(
+    client, db_session, auth_headers, monkeypatch
+):
+    product = Product(
+        id="affiliate-https-test",
+        name="Partner Link Test",
+        category="Tops",
+        affiliate_links={
+            "legacy": "http://unsafe.example/product",
+            "partner": "https://shop.example/product/123",
+        },
+    )
+    db_session.add(product)
+    db_session.commit()
+    monkeypatch.setattr(trends, "require_beta_affiliate", lambda: None)
+
+    response = client.post(
+        "/api/trends/affiliate-click",
+        json={"product_id": product.id},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["affiliate_link"] == "https://shop.example/product/123"
+
+
+
+def test_affiliate_catalog_visibility_has_its_own_flag(monkeypatch):
+    product = Product(
+        id="affiliate-payload-test",
+        name="Partner Catalog Test",
+        affiliate_links={"partner": "https://shop.example/product/456"},
+    )
+
+    monkeypatch.setattr(products_route, "BETA_AFFILIATE_ENABLED", False)
+    assert products_route._product_payload(product)["affiliate_links"] is None
+
+    monkeypatch.setattr(products_route, "BETA_AFFILIATE_ENABLED", True)
+    assert products_route._product_payload(product)["affiliate_links"] == {
+        "partner": "https://shop.example/product/456"
+    }
