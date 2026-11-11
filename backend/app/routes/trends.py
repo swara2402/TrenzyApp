@@ -316,10 +316,10 @@ def track_affiliate_click(
     raw_links = product.affiliate_links
     if isinstance(raw_links, dict):
         for key, value in raw_links.items():
-            if value and str(value).startswith(("http://", "https://")):
+            if value and str(value).strip().startswith("https://"):
                 affiliate_link = str(value)
                 break
-    elif isinstance(raw_links, str) and raw_links.strip().startswith("http"):
+    elif isinstance(raw_links, str) and raw_links.strip().startswith("https://"):
         affiliate_link = raw_links.strip()
 
     return {
