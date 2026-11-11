@@ -253,6 +253,10 @@ def test_stylist_photo_comparison_ranks_multiple_options_without_persisting(monk
             return np.array([0.9, 0.1]) if image_bytes == b"best" else np.array([0.1, 0.9])
 
     monkeypatch.setattr(ai_routes, "get_visual_search", lambda: FakeVisualSearch())
+    monkeypatch.setattr(
+        ai_routes, "_dominant_outfit_color",
+        lambda image_bytes: "navy" if image_bytes == b"best" else "red",
+    )
     response = client.post(
         "/ai/stylist/compare-photos",
         headers=auth_headers,
@@ -267,7 +271,9 @@ def test_stylist_photo_comparison_ranks_multiple_options_without_persisting(monk
     payload = response.json()
     assert payload["winner_option"] == 2
     assert payload["images_stored"] is False
-    assert payload["method"] == "FashionCLIP image-to-text similarity"
+    assert payload["method"] == "FashionCLIP visual similarity with coarse dominant-colour analysis"
+    assert payload["options"][0]["dominant_color"] == "navy"
+    assert "palette_score" in payload["options"][0]
     assert [option["option"] for option in payload["options"]] == [2, 1]
 
 
