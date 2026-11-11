@@ -445,13 +445,13 @@ If you don't know something, be honest and ask for more details to better assist
                 if len(colors) >= 2:
                     lines.append("\nThese colours work together as your base; keep any extra accessories simple so the look feels balanced.")
                 if not dress and not by_role["top"]:
-                    lines.append("\\nWardrobe gap: add a top to complete the outfit.")
+                    lines.append("\nWardrobe gap: add a top to complete the outfit.")
                 if not dress and not by_role["bottom"]:
-                    lines.append("\\nWardrobe gap: add a bottom to complete the outfit.")
+                    lines.append("\nWardrobe gap: add a bottom to complete the outfit.")
                 if not footwear:
-                    lines.append("\\nWardrobe gap: add a footwear option to finish the look.")
+                    lines.append("\nWardrobe gap: add a footwear option to finish the look.")
                 if not accessory:
-                    lines.append("\\nOptional finishing touch: add jewellery or a bag from your closet.")
+                    lines.append("\nOptional finishing touch: add jewellery or a bag from your closet.")
                 return "\n".join(lines)
             return (
                 f"I found {len(wardrobe_items)} selected piece(s) in your closet, but their categories "
