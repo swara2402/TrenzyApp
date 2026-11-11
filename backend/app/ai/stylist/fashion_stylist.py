@@ -379,9 +379,14 @@ If you don't know something, be honest and ask for more details to better assist
             def role(item: WardrobeItem) -> str:
                 category = (item.category or "").casefold()
                 text = item_text(item)
-                if any(word in text for word in ("saree", "sari", "lehenga", "anarkali", "kurta set", "ethnic set")):
+                if any(word in text for word in (
+                    "saree", "sari", "lehenga", "anarkali", "kurta set",
+                    "ethnic set", "ethnic wear", "salwar suit", "suit set", "sherwani",
+                )):
                     return "ethnic_base"
-                if any(word in category or word in text for word in ("dress", "gown", "one-piece", "jumpsuit", "romper")):
+                if any(word in category or word in text for word in (
+                    "dress", "gown", "one-piece", "jumpsuit", "romper", "co-ord set", "coord set",
+                )):
                     return "dress"
                 if any(word in text for word in ("earring", "jhumka", "chandbali", "stud", "hoop")):
                     return "earrings"
@@ -393,6 +398,8 @@ If you don't know something, be honest and ask for more details to better assist
                     return "jewellery_extra"
                 if any(word in category or word in text for word in ("shoe", "sneaker", "boot", "sandal", "footwear", "heel", "flat")):
                     return "footwear"
+                if any(word in category or word in text for word in ("jacket", "blazer", "cardigan", "coat", "outerwear")):
+                    return "layer"
                 if any(word in category or word in text for word in ("handbag", "purse", "clutch", "tote", "backpack", "bag")):
                     return "bag"
                 if any(word in text for word in ("watch", "belt", "hat", "scarf", "sunglasses")):
@@ -472,7 +479,7 @@ If you don't know something, be honest and ask for more details to better assist
                 chosen = list(chosen_base)
                 accessory_roles = (
                     "earrings", "necklace", "wristwear", "jewellery_extra",
-                    "footwear", "bag", "finishing_accessory",
+                    "footwear", "bag", "layer", "finishing_accessory",
                 )
                 labels = {
                     "ethnic_base": "Outfit", "dress": "Dress",
@@ -480,7 +487,7 @@ If you don't know something, be honest and ask for more details to better assist
                     "earrings": "Earrings", "necklace": "Necklace",
                     "wristwear": "Bangles / bracelet",
                     "jewellery_extra": "Additional jewellery",
-                    "footwear": "Footwear", "bag": "Bag",
+                    "footwear": "Footwear", "bag": "Bag", "layer": "Layer",
                     "finishing_accessory": "Finishing accessory",
                 }
                 for accessory_role in accessory_roles:
