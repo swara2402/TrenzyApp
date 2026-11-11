@@ -385,8 +385,8 @@ If you don't know something, be honest and ask for more details to better assist
                     return "accessory"
                 return "other"
 
-            occasion_match = re.search(r"occasion=([^;\\.]+)", message, re.IGNORECASE)
-            aesthetic_match = re.search(r"aesthetic=([^;\\.]+)", message, re.IGNORECASE)
+            occasion_match = re.search(r"occasion=([^;.]+)", message, re.IGNORECASE)
+            aesthetic_match = re.search(r"aesthetic=([^;.]+)", message, re.IGNORECASE)
             occasion = occasion_match.group(1).strip() if occasion_match else "your occasion"
             aesthetic = aesthetic_match.group(1).strip() if aesthetic_match else persona
             palettes = {
@@ -443,7 +443,7 @@ If you don't know something, be honest and ask for more details to better assist
                     lines.append(f"• {item.name}{detail}")
                 colors = [item.color.strip() for item in chosen if item.color and item.color.strip()]
                 if len(colors) >= 2:
-                    lines.append("\\nThese colours work together as your base; keep any extra accessories simple so the look feels balanced.")
+                    lines.append("\nThese colours work together as your base; keep any extra accessories simple so the look feels balanced.")
                 if not dress and not by_role["top"]:
                     lines.append("\\nWardrobe gap: add a top to complete the outfit.")
                 if not dress and not by_role["bottom"]:
@@ -452,7 +452,7 @@ If you don't know something, be honest and ask for more details to better assist
                     lines.append("\\nWardrobe gap: add a footwear option to finish the look.")
                 if not accessory:
                     lines.append("\\nOptional finishing touch: add jewellery or a bag from your closet.")
-                return "\\n".join(lines)
+                return "\n".join(lines)
             return (
                 f"I found {len(wardrobe_items)} selected piece(s) in your closet, but their categories "
                 "aren't specific enough to build an outfit yet. Label them as tops, bottoms, dresses, "
