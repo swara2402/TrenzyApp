@@ -34,6 +34,7 @@ from ..db import get_session
 from ..auth_deps import get_current_user
 from ..firebase_auth import verify_firebase_token
 from ..models import TrendingCreator, TrendingProduct, AffiliateClick, Product, View, TrendMetric
+from ..launch_flags import require_beta_affiliate
 
 logger = logging.getLogger(__name__)
 
@@ -267,12 +268,8 @@ def track_affiliate_click(
     user: dict = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """POST to record an affiliate ("Shop on Partner") click.
-
-    Feeds trend scoring (clicks are weighted 3x vs views) and powers the
-    affiliate attribution pipeline. Returns the clean affiliate URL when the
-    product has one so the client can open the partner site directly.
-    """
+    """POST to record an approved affiliate partner click and return its URL."""
+    require_beta_affiliate()
     uid = _get_uid(user)
 
     product = session.query(Product).filter(Product.id == data.product_id).first()
