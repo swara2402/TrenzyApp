@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any
 import logging
 import io
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -978,3 +978,74 @@ async def process_shopping_request(
         parsed_params=result["parsed_params"],
         result=result,
     )
+
+@router.post("/ai/stylist/compare-photos")
+async def compare_stylist_outfit_photos(
+    images: List[UploadFile] = File(...),
+    occasion: str = Form(default="Everyday", max_length=80),
+    aesthetic: str = Form(default="Casual", max_length=80),
+    prompt: str = Form(default="", max_length=500),
+    current_user: User = Depends(get_current_db_user),
+):
+    """Compare 2–4 temporary outfit photos with FashionCLIP.
+
+    Images are processed in memory only: they are not persisted or made public.
+    The endpoint does not perform face recognition or identity analysis.
+    """
+    if not 2 <= len(images) <= 4:
+        raise HTTPException(status_code=400, detail="Upload between 2 and 4 outfit photos.")
+
+    visual_search = get_visual_search()
+    query = "fashion outfit suitable for " + occasion.strip() + ", " + aesthetic.strip()
+    if prompt.strip():
+        query += ". " + prompt.strip()
+    query += ". well coordinated clothing, wearable complete look"
+
+    try:
+        text_embedding = visual_search.image_model.encode_text(query)
+        options = []
+        for index, image in enumerate(images, start=1):
+            if not image.content_type or image.content_type not in {
+                "image/jpeg", "image/png", "image/webp"
+            }:
+                raise HTTPException(status_code=400, detail=f"Option {index}: use a JPG, PNG, or WebP image.")
+            image_bytes = await image.read()
+            if not image_bytes:
+                raise HTTPException(status_code=400, detail=f"Option {index} is empty.")
+            if len(image_bytes) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail=f"Option {index} exceeds the 5 MB limit.")
+
+            embedding = visual_search.encode_image_bytes(image_bytes)
+            similarity = float((embedding * text_embedding).sum())
+            options.append({
+                "option": index,
+                "score": round(similarity, 4),
+                "filename": (image.filename or f"Option {index}")[:100],
+            })
+
+        options.sort(key=lambda item: item["score"], reverse=True)
+        winner = options[0]
+        margin = winner["score"] - options[1]["score"]
+        confidence = "stronger_match" if margin >= 0.04 else "close_call"
+        return {
+            "winner_option": winner["option"],
+            "winner_score": winner["score"],
+            "confidence": confidence,
+            "options": options,
+            "reason": (
+                f"Option {winner['option']} is the closest visual match to the "
+                f"{occasion.strip()} occasion and {aesthetic.strip()} aesthetic brief "
+                f"among the uploaded photos."
+            ),
+            "method": "FashionCLIP image-to-text similarity",
+            "images_stored": False,
+            "note": (
+                "This is a visual similarity recommendation, not a human stylist's "
+                "judgement. Review the options yourself, especially when scores are close."
+            ),
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Stylist photo comparison failed")
+        raise HTTPException(status_code=503, detail="Photo comparison is temporarily unavailable.") from exc
