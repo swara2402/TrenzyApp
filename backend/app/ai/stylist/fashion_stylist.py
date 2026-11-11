@@ -358,7 +358,17 @@ If you don't know something, be honest and ask for more details to better assist
         persona_name, persona_focus = persona_styles.get(persona, persona_styles["everyday"])
         msg_lower = message.strip().lower()
 
-        if wardrobe_items:
+        user_request = message.split("Styling brief:", 1)[0].casefold()
+        outfit_intent = any(
+            phrase in user_request
+            for phrase in (
+                "outfit", "look", "what should i wear", "what do i wear",
+                "style me", "dress me", "pair", "match with", "combine",
+                "wear with", "put together",
+            )
+        )
+
+        if wardrobe_items and outfit_intent:
             import re
 
             def role(item: WardrobeItem) -> str:
@@ -379,17 +389,52 @@ If you don't know something, be honest and ask for more details to better assist
             aesthetic_match = re.search(r"aesthetic=([^;\\.]+)", message, re.IGNORECASE)
             occasion = occasion_match.group(1).strip() if occasion_match else "your occasion"
             aesthetic = aesthetic_match.group(1).strip() if aesthetic_match else persona
-            by_role = {key: [item for item in wardrobe_items if role(item) == key]
-                       for key in ("dress", "top", "bottom", "footwear", "accessory")}
+            palettes = {
+                "minimal": ("black", "white", "grey", "gray", "beige", "cream", "navy", "brown"),
+                "streetwear": ("black", "white", "grey", "gray", "denim", "blue", "red", "green"),
+                "classic": ("navy", "white", "black", "beige", "brown", "cream"),
+                "old money": ("navy", "white", "beige", "cream", "brown", "black"),
+                "boho": ("earth", "rust", "olive", "beige", "brown", "tan"),
+                "y2k": ("pink", "silver", "blue", "purple", "denim"),
+                "sporty": ("black", "white", "grey", "gray", "blue", "red"),
+            }
+            palette = palettes.get(aesthetic.casefold(), ())
+
+            def best(items: List[WardrobeItem]) -> Optional[WardrobeItem]:
+                if not items:
+                    return None
+                return max(
+                    items,
+                    key=lambda item: (
+                        int(bool(palette) and any(
+                            token in (item.color or "").casefold() for token in palette
+                        )),
+                        int(bool(item.is_favorite)),
+                        -int(item.id or 0),
+                    ),
+                )
+
+            by_role = {
+                key: [item for item in wardrobe_items if role(item) == key]
+                for key in ("dress", "top", "bottom", "footwear", "accessory")
+            }
             chosen = []
-            if by_role["dress"]:
-                chosen.append(by_role["dress"][0])
-            elif by_role["top"] and by_role["bottom"]:
-                chosen.extend([by_role["top"][0], by_role["bottom"][0]])
-            if by_role["footwear"]:
-                chosen.append(by_role["footwear"][0])
-            if by_role["accessory"]:
-                chosen.append(by_role["accessory"][0])
+            dress = best(by_role["dress"])
+            if dress:
+                chosen.append(dress)
+            else:
+                top = best(by_role["top"])
+                bottom = best(by_role["bottom"])
+                if top:
+                    chosen.append(top)
+                if bottom:
+                    chosen.append(bottom)
+            footwear = best(by_role["footwear"])
+            accessory = best(by_role["accessory"])
+            if footwear:
+                chosen.append(footwear)
+            if accessory:
+                chosen.append(accessory)
 
             if chosen:
                 lines = [f"Here's a {aesthetic} look for {occasion}, built from pieces you own:"]
@@ -398,16 +443,20 @@ If you don't know something, be honest and ask for more details to better assist
                     lines.append(f"• {item.name}{detail}")
                 colors = [item.color.strip() for item in chosen if item.color and item.color.strip()]
                 if len(colors) >= 2:
-                    lines.append(f"\nYour selected pieces include {', '.join(colors[:3])}; keep the remaining accessories simple so the look feels balanced.")
-                if not by_role["footwear"]:
-                    lines.append("\nWardrobe gap: add a footwear option to complete this look.")
-                if not by_role["accessory"]:
-                    lines.append("\nOptional finishing touch: add jewellery or a bag from your closet.")
-                return "\n".join(lines)
+                    lines.append("\\nThese colours work together as your base; keep any extra accessories simple so the look feels balanced.")
+                if not dress and not by_role["top"]:
+                    lines.append("\\nWardrobe gap: add a top to complete the outfit.")
+                if not dress and not by_role["bottom"]:
+                    lines.append("\\nWardrobe gap: add a bottom to complete the outfit.")
+                if not footwear:
+                    lines.append("\\nWardrobe gap: add a footwear option to finish the look.")
+                if not accessory:
+                    lines.append("\\nOptional finishing touch: add jewellery or a bag from your closet.")
+                return "\\n".join(lines)
             return (
-                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but not enough category detail "
-                "to assemble a complete outfit yet. Add each item's category (top, bottom, dress, footwear, "
-                "or accessory) and I'll combine your actual pieces."
+                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but their categories "
+                "aren't specific enough to build an outfit yet. Label them as tops, bottoms, dresses, "
+                "footwear, or accessories and I'll combine the actual pieces."
             )
 
         # Handle casual greetings warmly
