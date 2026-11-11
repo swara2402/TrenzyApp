@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,6 +30,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
   String _selectedOccasion = 'Everyday';
   String _selectedAesthetic = 'Casual';
   Set<String>? _selectedWardrobeItemIds;
+  final List<XFile> _outfitPhotos = <XFile>[];
 
   static const _personas = <String, String>{
     'everyday': 'Everyday',
@@ -73,6 +77,60 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     if (text.isEmpty || _loading) return;
     if (promptText == null) _controller.clear();
     await _requestStylist(text, addUserMessage: true);
+  }
+
+  Future<void> _pickOutfitPhotos() async {
+    if (_loading) return;
+    final picked = await ImagePicker().pickMultiImage(
+      limit: 4,
+      imageQuality: 85,
+      maxWidth: 1600,
+    );
+    if (!mounted || picked.isEmpty) return;
+    setState(() {
+      _outfitPhotos
+        ..clear()
+        ..addAll(picked.take(4));
+    });
+  }
+
+  Future<void> _compareOutfitPhotos() async {
+    if (_loading || _outfitPhotos.length < 2) return;
+    setState(() => _loading = true);
+    try {
+      final result = await ref.read(apiServiceProvider).compareStylistPhotos(
+        List<XFile>.from(_outfitPhotos),
+        occasion: _selectedOccasion,
+        aesthetic: _selectedAesthetic,
+        prompt: _controller.text.trim(),
+      );
+      final winner = (result['winner_option'] as num?)?.toInt();
+      if (winner == null || winner < 1 || winner > _outfitPhotos.length) {
+        throw StateError('The stylist could not identify a winning photo.');
+      }
+      final confidence = result['confidence'] == 'close_call'
+          ? 'The options were close, so treat this as a gentle recommendation.'
+          : 'This option was the stronger visual match to your brief.';
+      final reason = result['reason']?.toString() ?? confidence;
+      final prompt = 'Compare my uploaded outfit options. The visual comparison selected '
+          'option $winner for $_selectedOccasion and $_selectedAesthetic. $reason '
+          '$confidence Use this as the base outfit, then complete the look using '
+          'matching accessories from my saved wardrobe where available. Be honest '
+          'about anything I do not own. Do not claim details that cannot be seen.';
+      if (!mounted) return;
+      setState(() => _loading = false);
+      await _requestStylist(prompt, addUserMessage: true);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _messages.add({
+          'role': 'assistant',
+          'text': 'I couldn’t compare those photos right now. Please try again with 2–4 clear outfit photos.',
+          'products': <Map<String, dynamic>>[],
+        });
+      });
+    }
   }
 
   Future<void> _retry(String prompt) async {
@@ -347,6 +405,65 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
           ),
 
           _buildStyleBrief(context, wardrobeItems, wardrobeAsync.isLoading),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+            child: Container(
+              padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(
+                color: c.graphite.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: c.glassBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Icon(Icons.photo_library_outlined, size: 16, color: c.primary),
+                    const SizedBox(width: 7),
+                    Expanded(child: Text('Compare outfit photos', style: GlassTypography.meta(fontSize: 11, color: c.foreground))),
+                    Text('${_outfitPhotos.length}/4', style: GlassTypography.meta(fontSize: 10, color: c.mutedFg)),
+                  ]),
+                  const SizedBox(height: 4),
+                  Text('Upload 2–4 options. Photos are compared for this request and are not saved by the comparison service.',
+                    style: GlassTypography.meta(fontSize: 9, color: c.mutedFg)),
+                  if (_outfitPhotos.isNotEmpty) ...[
+                    const SizedBox(height: 9),
+                    SizedBox(
+                      height: 76,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _outfitPhotos.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) => ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            File(_outfitPhotos[index].path),
+                            width: 64,
+                            height: 76,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 7),
+                  Row(children: [
+                    TextButton.icon(
+                      onPressed: _loading ? null : _pickOutfitPhotos,
+                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 16),
+                      label: Text(_outfitPhotos.isEmpty ? 'Add photos' : 'Replace photos'),
+                    ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: _loading || _outfitPhotos.length < 2 ? null : _compareOutfitPhotos,
+                      child: const Text('Choose my look'),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          ),
 
           // Quick prompts bar
           SingleChildScrollView(
