@@ -384,7 +384,7 @@ If you don't know something, be honest and ask for more details to better assist
                     lines.append("\nWardrobe gap: add a footwear option to complete this look.")
                 if not by_role["accessory"]:
                     lines.append("\nOptional finishing touch: add jewellery or a bag from your closet.")
-                return "\\n".join(lines)
+                return "\n".join(lines)
             return (
                 f"I found {len(wardrobe_items)} selected piece(s) in your closet, but not enough category detail "
                 "to assemble a complete outfit yet. Add each item's category (top, bottom, dress, footwear, "
