@@ -24,6 +24,20 @@ from ..personalization.style_dna import StyleDNAExtractor
 logger = logging.getLogger(__name__)
 
 
+def _selected_wardrobe_ids(message: str) -> set[int]:
+    """Read stable item IDs from the authenticated client's styling brief."""
+    import re
+
+    match = re.search(
+        r"owned wardrobe item ids:\s*([0-9,\s]+)",
+        message,
+        re.IGNORECASE,
+    )
+    if not match:
+        return set()
+    return {int(value) for value in re.findall(r"\d+", match.group(1))}
+
+
 class FashionStylistAgent:
     """AI Fashion Stylist with RAG capabilities."""
 
@@ -187,16 +201,7 @@ If you don't know something, be honest and ask for more details to better assist
                     WardrobeItem.user_firebase_uid == user.firebase_uid
                 ).all()
                 if "no owned wardrobe pieces are selected" not in message.casefold():
-                    import re
-                    ids_match = re.search(
-                        r"owned wardrobe item ids:\s*([0-9,\s]+)",
-                        message,
-                        re.IGNORECASE,
-                    )
-                    selected_ids = (
-                        {int(value) for value in re.findall(r"\d+", ids_match.group(1))}
-                        if ids_match else set()
-                    )
+                    selected_ids = _selected_wardrobe_ids(message)
                     if selected_ids:
                         wardrobe_items = [item for item in all_items if item.id in selected_ids]
                     else:
