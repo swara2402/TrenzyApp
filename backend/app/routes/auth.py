@@ -197,6 +197,17 @@ def _default_display_name(firebase_uid: str, email: Optional[str]) -> str:
     return "Trenzy Explorer"
 
 
+def _is_age_verified(date_of_birth) -> bool:
+    if date_of_birth is None:
+        return False
+    from ..age_policy import validate_date_of_birth
+    try:
+        validate_date_of_birth(date_of_birth)
+        return True
+    except ValueError:
+        return False
+
+
 def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[str]) -> dict[str, Any]:
     user = session.query(User).filter(User.firebase_uid == firebase_uid).first()
     is_new = user is None
@@ -244,8 +255,8 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
         "username": user.username,
         "email": user.email,
         "avatarUrl": user.avatar_url or "",
-        "ageVerified": user.date_of_birth is not None,
-        "isMinor": is_minor(user.date_of_birth) if user.date_of_birth is not None else False,
+        "ageVerified": _is_age_verified(user.date_of_birth),
+        "isMinor": is_minor(user.date_of_birth) if _is_age_verified(user.date_of_birth) else False,
     }
 
 
