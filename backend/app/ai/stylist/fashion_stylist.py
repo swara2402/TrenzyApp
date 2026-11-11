@@ -379,26 +379,30 @@ If you don't know something, be honest and ask for more details to better assist
             def role(item: WardrobeItem) -> str:
                 category = (item.category or "").casefold()
                 text = item_text(item)
-                if any(word in text for word in ("saree", "sari", "lehenga", "anarkali")):
+                if any(word in text for word in ("saree", "sari", "lehenga", "anarkali", "kurta set", "ethnic set")):
                     return "ethnic_base"
-                if any(word in category for word in ("dress", "gown", "one-piece", "jumpsuit")):
+                if any(word in category or word in text for word in ("dress", "gown", "one-piece", "jumpsuit", "romper")):
                     return "dress"
-                if any(word in category for word in ("top", "shirt", "tee", "blouse", "upper")):
-                    return "top"
-                if any(word in category for word in ("trouser", "pant", "jean", "skirt", "short", "bottom")):
-                    return "bottom"
-                if any(word in category for word in ("shoe", "sneaker", "boot", "sandal", "footwear", "heel", "flat")):
-                    return "footwear"
                 if any(word in text for word in ("earring", "jhumka", "chandbali", "stud", "hoop")):
                     return "earrings"
                 if any(word in text for word in ("necklace", "neckpiece", "choker", "pendant", "haar")):
                     return "necklace"
                 if any(word in text for word in ("bangle", "bracelet", "kada")):
                     return "wristwear"
-                if any(word in text for word in ("ring", "maang tikka", "mangtikka", "nose pin")):
+                if any(word in text for word in ("maang tikka", "mangtikka", "nose pin", "ring")):
                     return "jewellery_extra"
-                if any(word in text for word in ("jewel", "accessory", "bag", "belt", "watch", "hat")):
-                    return "accessory"
+                if any(word in category or word in text for word in ("shoe", "sneaker", "boot", "sandal", "footwear", "heel", "flat")):
+                    return "footwear"
+                if any(word in category or word in text for word in ("handbag", "purse", "clutch", "tote", "backpack", "bag")):
+                    return "bag"
+                if any(word in text for word in ("watch", "belt", "hat", "scarf", "sunglasses")):
+                    return "finishing_accessory"
+                if any(word in category or word in text for word in ("top", "shirt", "tee", "blouse", "upper")):
+                    return "top"
+                if any(word in category or word in text for word in ("trouser", "pant", "jean", "skirt", "short", "bottom")):
+                    return "bottom"
+                if "jewel" in category or "accessor" in category:
+                    return "finishing_accessory"
                 return "other"
 
             occasion_match = re.search(r"occasion=([^;.]+)", message, re.IGNORECASE)
@@ -422,108 +426,111 @@ If you don't know something, be honest and ask for more details to better assist
                     if token not in {"light", "dark", "the", "and", "with"}
                 }
 
-            def score(item: WardrobeItem, base_color: str = "") -> tuple[int, int, int, int]:
+            request_tokens = tokens(user_request)
+            color_words = {
+                "black", "white", "red", "blue", "green", "pink", "purple",
+                "yellow", "orange", "brown", "beige", "cream", "gold", "silver",
+                "grey", "gray", "navy", "maroon", "wine",
+            }
+            requested_colors = request_tokens & color_words
+
+            def score(item: WardrobeItem, base_color: str = "") -> tuple[int, int, int, int, int]:
                 color = (item.color or "").casefold()
-                base_tokens = tokens(base_color)
                 item_tokens = tokens(color)
-                shared = len(base_tokens & item_tokens)
+                shared = len(tokens(base_color) & item_tokens)
+                requested_match = len(requested_colors & item_tokens)
                 neutral = int(any(word in color for word in (
                     "gold", "silver", "pearl", "black", "white", "cream", "beige", "nude",
                 )))
                 palette_match = int(bool(palette) and any(word in color for word in palette))
-                occasion_match_score = int(
-                    bool(item.season) and occasion.casefold() in item.season.casefold()
-                )
                 return (
-                    shared * 3 + neutral + palette_match + occasion_match_score,
+                    requested_match * 5 + shared * 3 + palette_match + neutral,
                     int(bool(item.is_favorite)),
                     int(bool(item.image_url)),
                     -int(item.id or 0),
+                    len(item_tokens),
                 )
 
             by_role: dict[str, list[WardrobeItem]] = {}
             for item in wardrobe_items:
                 by_role.setdefault(role(item), []).append(item)
 
-            # Ethnic styling is a two-stage decision: pick ONE saree first,
-            # then coordinate every available jewellery/accessory category to it.
-            sarees = by_role.get("ethnic_base", [])
-            if sarees:
-                saree = max(sarees, key=lambda item: score(item))
-                base_color = saree.color or ""
-                chosen = [saree]
-                for accessory_role in (
+            # Compare complete outfit candidates, then style accessories around
+            # the single winning base (or the best top + bottom combination).
+            candidates: list[tuple[tuple[int, ...], list[WardrobeItem]]] = []
+            for base_role in ("ethnic_base", "dress"):
+                for item in by_role.get(base_role, []):
+                    candidates.append((score(item), [item]))
+            for top in by_role.get("top", []):
+                for bottom in by_role.get("bottom", []):
+                    pair_score = score(top) + score(bottom)
+                    candidates.append((pair_score, [top, bottom]))
+
+            if candidates:
+                _, chosen_base = max(candidates, key=lambda candidate: candidate[0])
+                base_color = " ".join(item.color or "" for item in chosen_base)
+                chosen = list(chosen_base)
+                accessory_roles = (
                     "earrings", "necklace", "wristwear", "jewellery_extra",
-                    "footwear", "accessory",
-                ):
+                    "footwear", "bag", "finishing_accessory",
+                )
+                labels = {
+                    "ethnic_base": "Outfit", "dress": "Dress",
+                    "top": "Top", "bottom": "Bottom",
+                    "earrings": "Earrings", "necklace": "Necklace",
+                    "wristwear": "Bangles / bracelet",
+                    "jewellery_extra": "Additional jewellery",
+                    "footwear": "Footwear", "bag": "Bag",
+                    "finishing_accessory": "Finishing accessory",
+                }
+                for accessory_role in accessory_roles:
                     options = by_role.get(accessory_role, [])
                     if options:
                         chosen.append(max(options, key=lambda item: score(item, base_color)))
 
+                is_ethnic = role(chosen_base[0]) == "ethnic_base"
+                title = (
+                    f"My pick: **{chosen_base[0].name}**"
+                    if len(chosen_base) == 1
+                    else "My pick: **" + " + ".join(item.name for item in chosen_base) + "**"
+                )
                 lines = [
-                    f"My pick: **{saree.name}**" + (f" ({base_color})" if base_color else "") + ".",
-                    f"I'd choose this saree for your {occasion} because it is the strongest match among the sarees you selected"
-                    + (" and suits your selected aesthetic." if palette and any(
-                        word in base_color.casefold() for word in palette
-                    ) else "."),
+                    title + (f" ({base_color})" if base_color else "") + ".",
+                    f"I chose this combination for your {occasion} and {aesthetic} aesthetic "
+                    "from the options in your wardrobe.",
                     "",
-                    "Here's how I'd complete the look from your wardrobe:",
+                    "Here's the complete look I'd put together:",
                 ]
-                labels = {
-                    "earrings": "Earrings", "necklace": "Necklace",
-                    "wristwear": "Bangles / bracelet", "jewellery_extra": "Extra jewellery",
-                    "footwear": "Footwear", "accessory": "Finishing accessory",
-                }
-                for item in chosen[1:]:
-                    lines.append(f"• **{labels.get(role(item), 'Accessory')}:** {item.name}"
-                                 + (f" — {item.color}" if item.color else ""))
-                missing = [
-                    label for key, label in (
-                        ("earrings", "earrings"), ("necklace", "a necklace"),
-                        ("wristwear", "bangles or a bracelet"),
-                    ) if not by_role.get(key)
-                ]
+                for item in chosen:
+                    item_role = role(item)
+                    if item in chosen_base:
+                        label = labels.get(item_role, "Outfit")
+                    else:
+                        label = labels.get(item_role, "Accessory")
+                    detail = f" — {item.color}" if item.color else ""
+                    lines.append(f"• **{label}:** {item.name}{detail}")
+
+                missing = []
+                for key, label in (
+                    ("footwear", "footwear"),
+                    ("earrings", "earrings"),
+                    ("necklace", "a necklace"),
+                    ("wristwear", "bangles or a bracelet"),
+                ):
+                    if not by_role.get(key):
+                        missing.append(label)
                 if missing:
-                    lines.extend(["", "Optional pieces to consider: " + ", ".join(missing) + "."])
+                    lines.extend(["", "Not in your selected wardrobe: " + ", ".join(missing) + "."])
                 lines.extend([
                     "",
-                    "This is my best wardrobe-based match; if you tell me the saree's exact shade or share clearer item details, I can refine the jewellery pairing.",
+                    "This is my best match using the pieces and details you've shared. You can swap any item and I'll restyle the look.",
                 ])
-                return "\\n".join(lines)
+                return "\n".join(lines)
 
-            def best(items: List[WardrobeItem]) -> Optional[WardrobeItem]:
-                return max(items, key=lambda item: score(item)) if items else None
-
-            chosen = []
-            dress = best(by_role.get("dress", []))
-            if dress:
-                chosen.append(dress)
-            else:
-                top = best(by_role.get("top", []))
-                bottom = best(by_role.get("bottom", []))
-                if top:
-                    chosen.append(top)
-                if bottom:
-                    chosen.append(bottom)
-            for key in ("footwear", "accessory"):
-                item = best(by_role.get(key, []))
-                if item:
-                    chosen.append(item)
-
-            if chosen:
-                lines = [f"Here's a {aesthetic} look for {occasion}, built from pieces you own:"]
-                for item in chosen:
-                    detail = f" ({item.color})" if item.color else ""
-                    lines.append(f"• {item.name}{detail}")
-                if not by_role.get("footwear"):
-                    lines.append("\\nWardrobe gap: add a footwear option to finish the look.")
-                if not by_role.get("accessory"):
-                    lines.append("\\nOptional finishing touch: add jewellery or a bag from your closet.")
-                return "\\n".join(lines)
             return (
-                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but their categories "
-                "aren't specific enough to build an outfit yet. Label them as tops, bottoms, dresses, "
-                "footwear, or accessories and I'll combine the actual pieces."
+                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but couldn't identify "
+                "a complete outfit base yet. Add or label a dress, saree/ethnic set, or a top and bottom, "
+                "and I'll choose the strongest combination and coordinate the accessories."
             )
 
         # Handle casual greetings warmly
