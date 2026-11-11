@@ -60,7 +60,7 @@ def verify_age(
     user: dict = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """Record DOB after server-side validation of the 13+ launch rule.
+    """Record DOB after server-side validation of the 16+ launch rule.
 
     DOB is private account data. The response exposes only verification state
     and derived minor status.
@@ -83,7 +83,7 @@ def verify_age(
 
     return {
         "ageVerified": True,
-        "isMinor": 13 <= age <= 17,
+        "isMinor": 16 <= age <= 17,
     }
 
 
