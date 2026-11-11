@@ -507,19 +507,27 @@ def _product_reason(prefs, product, persona=None, signal=None) -> str:
         reasons.append(f"your {persona_match} persona")
 
     if signal:
-        for key, label, attr in (
-            ("categories", "a category you have liked", "category"),
-            ("styles", "styles you have liked", "style"),
-            ("colors", "colors you have liked", "color"),
+        for key, attr in (
+            ("categories", "category"),
+            ("styles", "style"),
+            ("colors", "color"),
         ):
             values = signal.get(key) or []
             actual = getattr(product, attr, None)
-            if actual and any(
-                (normalize_color(actual) == normalize_color(value) if key == "colors"
-                 else str(actual).casefold() == str(value).casefold())
-                for value in values
-            ):
-                reasons.append(label)
+            matched = next(
+                (value for value in values if actual and (
+                    normalize_color(actual) == normalize_color(value) if key == "colors"
+                    else str(actual).casefold() == str(value).casefold()
+                )),
+                None,
+            )
+            if matched:
+                if key == "categories":
+                    reasons.append(f"the {actual} category you have liked")
+                elif key == "styles":
+                    reasons.append(f"the {actual} style of items you have liked")
+                else:
+                    reasons.append(f"the {actual} colour you have liked")
                 break
 
     return "Because it matches " + " and ".join(reasons) if reasons else ""
