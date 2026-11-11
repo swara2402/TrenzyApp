@@ -258,7 +258,7 @@ def test_stylist_photo_comparison_ranks_multiple_options_without_persisting(monk
         lambda image_bytes: "navy" if image_bytes == b"best" else "red",
     )
     response = client.post(
-        "/ai/stylist/compare-photos",
+        "/api/ai/stylist/compare-photos",
         headers=auth_headers,
         data={"occasion": "Party", "aesthetic": "Classic"},
         files=[
@@ -279,7 +279,7 @@ def test_stylist_photo_comparison_ranks_multiple_options_without_persisting(monk
 
 def test_stylist_photo_comparison_requires_two_to_four_images(client, auth_headers):
     response = client.post(
-        "/ai/stylist/compare-photos",
+        "/api/ai/stylist/compare-photos",
         headers=auth_headers,
         files=[("images", ("only.jpg", b"image-bytes", "image/jpeg"))],
     )
