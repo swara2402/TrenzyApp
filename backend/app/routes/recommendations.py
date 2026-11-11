@@ -595,6 +595,8 @@ def discover_swipe(
         raise HTTPException(status_code=401, detail="Authentication failed")
 
     products = _build_personalized_query(session, uid, limit=limit, include_budget=False)
+    prefs, persona = _safe_prefs_rec(session, uid)
+    signal = _signal_vector(session, uid)
 
     return {
         "products": [
@@ -607,6 +609,7 @@ def discover_swipe(
                 "rating": p.rating,
                 "category": p.category,
                 "tags": p.tags,
+                "reason": _reason_for_item(prefs, p, persona=persona, signal=signal),
             }
             for p in products
         ],
@@ -733,7 +736,7 @@ def recommend_products(
                 "rating": p.rating,
                 "category": p.category,
                 "tags": p.tags,
-                "reason": _reason_for_item(prefs, p),
+                "reason": _reason_for_item(prefs, p, persona=persona, signal=signal),
             }
             for p in products
         ]
