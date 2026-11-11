@@ -435,49 +435,102 @@ def _build_personalized_query(
     return _diversify_results(results, limit) if diversify else results[:limit]
 
 
-def _product_reason(prefs, product) -> str:
-    """Build a short, human-readable reason explaining why a product was picked.
-
-    Mirrors the plan's example: "Because you like streetwear + neutrals under ₹3000".
-    """
+def _product_reason(prefs, product, persona=None, signal=None) -> str:
+    """Explain a recommendation only when a real user/product match exists."""
     reasons: list[str] = []
-    if prefs:
-        styles = [s for s in (prefs.preferred_styles or []) if s]
-        if styles:
-            style_match = next(
-                (s for s in styles if s.lower() in ((product.style or '').lower())),
-                None,
-            )
-            if style_match is None and product.style_tags:
-                style_match = next(
-                    (s for s in styles if s.lower() in [t.lower() for t in (product.style_tags or [])]),
-                    None,
-                )
-            if style_match:
-                reasons.append(style_match)
-        if prefs.preferred_colors and product.color:
-            norm_product_color = normalize_color(product.color)
-            color_match = next(
-                (c for c in prefs.preferred_colors if norm_product_color and c.lower() == norm_product_color.lower()),
-                None,
-            )
-            if color_match:
-                reasons.append(color_match)
-        if prefs.budget_max and product.price is not None and product.price <= prefs.budget_max:
-            reasons.append(f"under ₹{prefs.budget_max:,}")
-    if reasons:
-        return "Because you like " + " + ".join(reasons)
-    if product.category:
-        return f"Because you're browsing {product.category}"
-    return "Picked just for you"
+    preferred_styles = [
+        str(value).strip() for value in (getattr(prefs, "preferred_styles", None) or [])
+        if value
+    ]
+    product_styles = [
+        str(value).strip().casefold()
+        for value in ([getattr(product, "style", None)] + (getattr(product, "style_tags", None) or []))
+        if value
+    ]
+    style_match = next(
+        (value for value in preferred_styles if value.casefold() in product_styles),
+        None,
+    )
+    if style_match:
+        reasons.append(f"your {style_match} style")
+
+    preferred_colors = [
+        str(value).strip() for value in (getattr(prefs, "preferred_colors", None) or [])
+        if value
+    ]
+    product_color = normalize_color(getattr(product, "color", None))
+    color_match = next(
+        (value for value in preferred_colors
+         if product_color and normalize_color(value) == product_color),
+        None,
+    )
+    if color_match:
+        reasons.append(f"your preference for {color_match}")
+
+    preferred_categories = [
+        str(value).strip() for value in (getattr(prefs, "preferred_categories", None) or [])
+        if value
+    ]
+    category = (getattr(product, "category", None) or "").strip()
+    if category and any(value.casefold() == category.casefold() for value in preferred_categories):
+        reasons.append(f"the {category} category you selected")
+
+    preferred_brands = [
+        str(value).strip() for value in (getattr(prefs, "preferred_brands", None) or [])
+        if value
+    ]
+    brand = (getattr(product, "brand", None) or "").strip()
+    if brand and any(value.casefold() == brand.casefold() for value in preferred_brands):
+        reasons.append(f"a brand you prefer ({brand})")
+
+    budget = getattr(prefs, "budget_max", None)
+    price = getattr(product, "price", None)
+    if budget and price is not None and price <= budget:
+        reasons.append(f"within your ₹{budget:,.0f} budget")
+
+    persona_keywords = [
+        str(value).strip() for value in (getattr(persona, "keywords", None) or [])
+        if isinstance(value, str) and value.strip()
+    ]
+    product_text = " ".join([
+        str(getattr(product, "style", "") or ""),
+        str(getattr(product, "category", "") or ""),
+        str(getattr(product, "subcategory", "") or ""),
+        " ".join(str(value) for value in (getattr(product, "tags", None) or [])),
+        " ".join(str(value) for value in (getattr(product, "style_tags", None) or [])),
+    ]).casefold()
+    persona_match = next(
+        (keyword for keyword in persona_keywords if keyword.casefold() in product_text),
+        None,
+    )
+    if persona_match:
+        reasons.append(f"your {persona_match} persona")
+
+    if signal:
+        for key, label, attr in (
+            ("categories", "a category you have liked", "category"),
+            ("styles", "styles you have liked", "style"),
+            ("colors", "colors you have liked", "color"),
+        ):
+            values = signal.get(key) or []
+            actual = getattr(product, attr, None)
+            if actual and any(
+                (normalize_color(actual) == normalize_color(value) if key == "colors"
+                 else str(actual).casefold() == str(value).casefold())
+                for value in values
+            ):
+                reasons.append(label)
+                break
+
+    return "Because it matches " + " and ".join(reasons) if reasons else ""
 
 
-def _reason_for_item(prefs, product) -> str:
+def _reason_for_item(prefs, product, persona=None, signal=None) -> str:
     try:
-        return _product_reason(prefs, product)
+        return _product_reason(prefs, product, persona=persona, signal=signal)
     except Exception as e:
         logger.warning("Failed to get product reason: %s", e)
-        return "Picked just for you"
+        return ""
 
 
 @router.get("")
@@ -496,7 +549,8 @@ def get_recommendations(
         raise HTTPException(status_code=401, detail="Authentication failed")
 
     products = _build_personalized_query(session, uid, limit=10)
-    prefs, _ = _safe_prefs_rec(session, uid)
+    prefs, persona = _safe_prefs_rec(session, uid)
+    signal = _signal_vector(session, uid)
 
     items = []
     for product in products:
@@ -504,7 +558,7 @@ def get_recommendations(
             items.append(
                 {
                     "type": "product",
-                    "reason": _reason_for_item(prefs, product),
+                    "reason": _reason_for_item(prefs, product, persona=persona, signal=signal),
                     "data": {
                         "id": product.id,
                         "imageUrl": product.image_url,
@@ -666,7 +720,8 @@ def recommend_products(
     products = _build_personalized_query(
         session, uid, limit=limit, include_budget=True, diversify=True
     )
-    prefs, _ = _safe_prefs_rec(session, uid)
+    prefs, persona = _safe_prefs_rec(session, uid)
+    signal = _signal_vector(session, uid)
     return {
         "products": [
             {
