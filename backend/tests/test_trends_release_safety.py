@@ -4,7 +4,7 @@ import pytest
 
 from app import auth_helpers
 from app.models import AffiliateClick, Product, TrendMetric
-from app.routes import trends
+from app.routes import trends, products as products_route
 
 
 @pytest.mark.parametrize(
@@ -138,3 +138,20 @@ def test_affiliate_click_returns_only_https_partner_urls(
 
     assert response.status_code == 200
     assert response.json()["affiliate_link"] == "https://shop.example/product/123"
+
+
+
+def test_affiliate_catalog_visibility_has_its_own_flag(monkeypatch):
+    product = Product(
+        id="affiliate-payload-test",
+        name="Partner Catalog Test",
+        affiliate_links={"partner": "https://shop.example/product/456"},
+    )
+
+    monkeypatch.setattr(products_route, "BETA_AFFILIATE_ENABLED", False)
+    assert products_route._product_payload(product)["affiliate_links"] is None
+
+    monkeypatch.setattr(products_route, "BETA_AFFILIATE_ENABLED", True)
+    assert products_route._product_payload(product)["affiliate_links"] == {
+        "partner": "https://shop.example/product/456"
+    }
