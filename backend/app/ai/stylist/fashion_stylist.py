@@ -364,7 +364,7 @@ If you don't know something, be honest and ask for more details to better assist
             for phrase in (
                 "outfit", "look", "what should i wear", "what do i wear",
                 "style me", "dress me", "pair", "match with", "combine",
-                "wear with", "put together", "choose", "recommend", "saree", "sari", "jewellery", "jewelry",
+                "wear with", "put together", "choose", "pick", "which one", "help me decide", "recommend", "saree", "sari", "jewellery", "jewelry",
             )
         )
 
@@ -496,8 +496,11 @@ If you don't know something, be honest and ask for more details to better assist
                 )
                 lines = [
                     title + (f" ({base_color})" if base_color else "") + ".",
-                    f"I chose this combination for your {occasion} and {aesthetic} aesthetic "
-                    "from the options in your wardrobe.",
+                    (
+                        f"Here's a {aesthetic} look for {occasion}, built from pieces you own."
+                        if not is_ethnic
+                        else f"I chose this combination for your {occasion} and {aesthetic} aesthetic from the options in your wardrobe."
+                    ),
                     "",
                     "Here's the complete look I'd put together:",
                 ]
