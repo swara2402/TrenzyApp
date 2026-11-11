@@ -40,6 +40,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     'Summer party dress',
     'Minimalist office wear',
     'Sneaker pairings',
+    'Choose one outfit and style the complete look',
     'Choose one saree and match my jewellery',
   ];
 
