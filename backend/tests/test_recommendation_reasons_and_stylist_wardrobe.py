@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from app.ai.stylist.fashion_stylist import FashionStylistAgent
+from app.ai.stylist.fashion_stylist import FashionStylistAgent, _selected_wardrobe_ids
 from app.models import WardrobeItem
 from app.routes.recommendations import _product_reason
 
@@ -102,3 +102,19 @@ def test_stylist_builds_outfit_from_owned_wardrobe_items():
     assert "Blue jeans" in response
     assert "White sneakers" in response
     assert "Silver hoops" in response
+
+
+
+def test_stylist_parses_stable_selected_wardrobe_ids():
+    message = (
+        "Styling brief: occasion=College; aesthetic=Streetwear. "
+        "Owned wardrobe item ids: 12, 27, 31. "
+        "Owned wardrobe pieces: Black tee; Blue jeans."
+    )
+
+    assert _selected_wardrobe_ids(message) == {12, 27, 31}
+
+
+def test_stylist_returns_no_selected_ids_for_empty_or_legacy_brief():
+    assert _selected_wardrobe_ids("No owned wardrobe pieces are selected.") == set()
+    assert _selected_wardrobe_ids("Owned wardrobe pieces: Black tee; Blue jeans.") == set()
