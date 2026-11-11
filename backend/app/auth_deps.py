@@ -50,6 +50,11 @@ def _enforce_age_verification(request: Request, uid: str, db) -> None:
         raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
     if user.date_of_birth is None:
         raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED")
+    from .age_policy import validate_date_of_birth
+    try:
+        validate_date_of_birth(user.date_of_birth)
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail="AGE_VERIFICATION_REQUIRED") from exc
 
 
 def get_bearer_token(request: Request) -> str | None:
