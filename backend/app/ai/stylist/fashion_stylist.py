@@ -189,12 +189,12 @@ If you don't know something, be honest and ask for more details to better assist
                 if "no owned wardrobe pieces are selected" not in message.casefold():
                     import re
                     ids_match = re.search(
-                        r"owned wardrobe item ids:\\s*([0-9,\\s]+)",
+                        r"owned wardrobe item ids:\s*([0-9,\s]+)",
                         message,
                         re.IGNORECASE,
                     )
                     selected_ids = (
-                        {int(value) for value in re.findall(r"\\d+", ids_match.group(1))}
+                        {int(value) for value in re.findall(r"\d+", ids_match.group(1))}
                         if ids_match else set()
                     )
                     if selected_ids:
