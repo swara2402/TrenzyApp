@@ -184,3 +184,32 @@ def test_stylist_selects_one_saree_then_coordinates_jewellery():
     assert "Gold bangles" in response
     assert "Nude heels" in response
     assert response.count("saree**") == 1
+
+
+
+def test_stylist_compares_dresses_and_coordinates_accessories_for_any_occasion():
+    agent = FashionStylistAgent()
+    items = [
+        WardrobeItem(id=11, name="Pink party dress", category="Dresses", color="Pink"),
+        WardrobeItem(id=12, name="Black evening dress", category="Dress", color="Black", is_favorite=True),
+        WardrobeItem(id=13, name="Silver hoops", category="Jewellery", color="Silver"),
+        WardrobeItem(id=14, name="Pearl necklace", category="Necklace", color="Pearl"),
+        WardrobeItem(id=15, name="Black heels", category="Footwear", color="Black"),
+        WardrobeItem(id=16, name="Black clutch", category="Bags", color="Black"),
+    ]
+
+    response = agent._fallback_response(
+        "Help me decide which dress to wear and complete the look. "
+        "Styling brief: occasion=Party; aesthetic=Classic. "
+        "Owned wardrobe pieces: selected items.",
+        [],
+        wardrobe_items=items,
+    )
+
+    assert "My pick: **Black evening dress**" in response
+    assert "Pink party dress" not in response
+    assert "Silver hoops" in response
+    assert "Pearl necklace" in response
+    assert "Black heels" in response
+    assert "Black clutch" in response
+    assert "\n" in response
