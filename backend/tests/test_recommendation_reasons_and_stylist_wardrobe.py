@@ -236,3 +236,47 @@ def test_stylist_compares_two_piece_looks_as_a_complete_candidate():
     assert "Black tailored top" in response
     assert "Beige trousers" in response
     assert "White sneakers" in response
+
+
+def test_stylist_photo_comparison_ranks_multiple_options_without_persisting(monkeypatch, client, auth_headers):
+    import numpy as np
+    from app.routes import ai as ai_routes
+
+    class FakeVisualSearch:
+        class ImageModel:
+            def encode_text(self, _query):
+                return np.array([1.0, 0.0])
+
+        image_model = ImageModel()
+
+        def encode_image_bytes(self, image_bytes):
+            return np.array([0.9, 0.1]) if image_bytes == b"best" else np.array([0.1, 0.9])
+
+    monkeypatch.setattr(ai_routes, "get_visual_search", lambda: FakeVisualSearch())
+    response = client.post(
+        "/ai/stylist/compare-photos",
+        headers=auth_headers,
+        data={"occasion": "Party", "aesthetic": "Classic"},
+        files=[
+            ("images", ("option-1.jpg", b"not-persisted-1", "image/jpeg")),
+            ("images", ("option-2.jpg", b"best", "image/jpeg")),
+        ],
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["winner_option"] == 2
+    assert payload["images_stored"] is False
+    assert payload["method"] == "FashionCLIP image-to-text similarity"
+    assert [option["option"] for option in payload["options"]] == [2, 1]
+
+
+def test_stylist_photo_comparison_requires_two_to_four_images(client, auth_headers):
+    response = client.post(
+        "/ai/stylist/compare-photos",
+        headers=auth_headers,
+        files=[("images", ("only.jpg", b"image-bytes", "image/jpeg"))],
+    )
+
+    assert response.status_code == 400
+    assert "between 2 and 4" in response.json()["detail"]
