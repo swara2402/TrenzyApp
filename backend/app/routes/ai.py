@@ -1017,7 +1017,7 @@ async def compare_stylist_outfit_photos(
     occasion: str = Form(default="Everyday", max_length=80),
     aesthetic: str = Form(default="Casual", max_length=80),
     prompt: str = Form(default="", max_length=500),
-    current_user: User = Depends(get_current_db_user),
+    current_user: dict = Depends(get_current_user),
 ):
     """Compare 2–4 temporary outfit photos using visual and palette signals.
 
