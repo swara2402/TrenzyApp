@@ -630,6 +630,28 @@ class MockApiService implements ApiServiceBase {
   }
 
   @override
+  Future<Map<String, dynamic>> compareStylistPhotos(
+    List<XFile> images, {
+    required String occasion,
+    required String aesthetic,
+    String prompt = '',
+  }) async {
+    await _delay(const Duration(milliseconds: 300));
+    return {
+      'winner_option': 1,
+      'winner_score': 0.0,
+      'confidence': 'close_call',
+      'options': List.generate(images.length, (index) => {
+        'option': index + 1,
+        'score': 0.0,
+        'filename': images[index].name,
+      }),
+      'reason': 'Mock photo comparison result for $occasion / $aesthetic.',
+      'images_stored': false,
+    };
+  }
+
+  @override
   Future<Map<String, dynamic>> getNotifications() async {
     await _delay(const Duration(milliseconds: 200));
     return {'notifications': []};
