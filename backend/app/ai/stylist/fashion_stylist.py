@@ -472,10 +472,10 @@ If you don't know something, be honest and ask for more details to better assist
                 for bottom in by_role.get("bottom", []):
                     top_score = score(top)
                     bottom_score = score(bottom)
-                    # Aggregate both pieces so a complete top + bottom look is
-                    # compared fairly with a one-piece dress or ethnic outfit.
+                    # Average both pieces so a two-piece outfit is not
+                    # unfairly favored just because it contains two items.
                     pair_score = tuple(
-                        top_value + bottom_value
+                        (top_value + bottom_value) / 2
                         for top_value, bottom_value in zip(top_score, bottom_score)
                     )
                     candidates.append((pair_score, [top, bottom]))
