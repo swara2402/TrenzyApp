@@ -901,7 +901,6 @@ class _BottomActionBar extends StatelessWidget {
             ),
             SizedBox(width: 10),
             if (product.partnerUrl != null) ...[
-              SizedBox(width: 10),
               Expanded(
                 child: _SecondaryAction(
                   icon: Icons.open_in_new_rounded,
@@ -909,6 +908,7 @@ class _BottomActionBar extends StatelessWidget {
                   onTap: onAffiliateTap,
                 ),
               ),
+              SizedBox(width: 10),
             ],
             Expanded(
               child: _SecondaryAction(
