@@ -286,3 +286,18 @@ def test_stylist_photo_comparison_requires_two_to_four_images(client, auth_heade
 
     assert response.status_code == 400
     assert "between 2 and 4" in response.json()["detail"]
+
+
+def test_dominant_outfit_colour_extracts_palette_and_rejects_invalid_bytes():
+    from io import BytesIO
+    import pytest
+    from PIL import Image
+    from app.routes.ai import _dominant_outfit_color
+
+    image = Image.new("RGB", (40, 40), (45, 70, 165))
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+
+    assert _dominant_outfit_color(buffer.getvalue()) == "blue"
+    with pytest.raises(ValueError, match="readable image"):
+        _dominant_outfit_color(b"not-an-image")
