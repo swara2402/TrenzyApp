@@ -32,7 +32,7 @@ from ..config import (
 from ..db import get_session
 from ..firebase_auth import init_firebase_admin
 from ..auth_deps import get_current_user
-from ..models import User, StylePersona, UserPreference
+from ..models import User, UserPreference
 from ..errors import ValidationError
 from ..network import get_client_ip
 from ..age_policy import is_minor
