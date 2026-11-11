@@ -118,3 +118,38 @@ def test_stylist_parses_stable_selected_wardrobe_ids():
 def test_stylist_returns_no_selected_ids_for_empty_or_legacy_brief():
     assert _selected_wardrobe_ids("No owned wardrobe pieces are selected.") == set()
     assert _selected_wardrobe_ids("Owned wardrobe pieces: Black tee; Blue jeans.") == set()
+
+
+
+def test_stylist_uses_aesthetic_palette_when_choosing_owned_pieces():
+    agent = FashionStylistAgent()
+    items = [
+        WardrobeItem(id=1, name="Pink top", category="Tops", color="Pink"),
+        WardrobeItem(id=2, name="Black top", category="Tops", color="Black"),
+        WardrobeItem(id=3, name="Beige trousers", category="Bottoms", color="Beige"),
+    ]
+
+    response = agent._fallback_response(
+        "Build me an outfit. Styling brief: occasion=College; aesthetic=Minimal. "
+        "Owned wardrobe pieces: Pink top; Black top; Beige trousers.",
+        [],
+        wardrobe_items=items,
+    )
+
+    assert "Black top" in response
+    assert "Pink top" not in response
+    assert "Beige trousers" in response
+
+
+def test_stylist_does_not_force_an_outfit_for_a_general_style_question():
+    agent = FashionStylistAgent()
+    items = [WardrobeItem(name="Black tee", category="Tops", color="Black")]
+
+    response = agent._fallback_response(
+        "What colours go with black? Styling brief: occasion=Everyday; aesthetic=Casual. "
+        "Owned wardrobe pieces: Black tee.",
+        [],
+        wardrobe_items=items,
+    )
+
+    assert "Black tee" not in response
