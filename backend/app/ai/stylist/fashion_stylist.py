@@ -187,10 +187,24 @@ If you don't know something, be honest and ask for more details to better assist
                     WardrobeItem.user_firebase_uid == user.firebase_uid
                 ).all()
                 if "no owned wardrobe pieces are selected" not in message.casefold():
-                    wardrobe_items = [
-                        item for item in all_items
-                        if item.name and item.name.casefold() in message.casefold()
-                    ]
+                    import re
+                    ids_match = re.search(
+                        r"owned wardrobe item ids:\\s*([0-9,\\s]+)",
+                        message,
+                        re.IGNORECASE,
+                    )
+                    selected_ids = (
+                        {int(value) for value in re.findall(r"\\d+", ids_match.group(1))}
+                        if ids_match else set()
+                    )
+                    if selected_ids:
+                        wardrobe_items = [item for item in all_items if item.id in selected_ids]
+                    else:
+                        # Backward-compatible handling for older app clients.
+                        wardrobe_items = [
+                            item for item in all_items
+                            if item.name and item.name.casefold() in message.casefold()
+                        ]
         except Exception as exc:
             logger.warning("Could not load owned wardrobe for stylist: %s", exc)
 
