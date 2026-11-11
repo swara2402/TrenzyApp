@@ -285,7 +285,7 @@ def test_stylist_photo_comparison_requires_two_to_four_images(client, auth_heade
     )
 
     assert response.status_code == 400
-    assert "between 2 and 4" in response.json()["detail"]
+    assert "between 2 and 4" in response.json()["message"]
 
 
 def test_dominant_outfit_colour_extracts_palette_and_rejects_invalid_bytes():
