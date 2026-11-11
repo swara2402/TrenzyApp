@@ -434,7 +434,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _outfitPhotos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (context, index) => ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.file(
