@@ -14,6 +14,7 @@ import 'package:trenzy/providers/wardrobe_provider.dart';
 import 'package:trenzy/router/app_router.dart';
 import 'package:trenzy/analytics/events.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/api_service.dart';
 import 'package:trenzy/theme/glass_theme.dart';
@@ -248,8 +249,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                           ),
                         ),
                         error: (_, _) => const SizedBox.shrink(),
-                        data: (product) =>
-                            _WhyRecommendedSection(product: product),
+                        data: (product) => product.reason.trim().isEmpty
+                            ? const SizedBox.shrink()
+                            : _WhyRecommendedSection(product: product),
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -320,6 +322,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     onToggleWishlist: () => _toggleWishlist(product),
                     onAddToWardrobe: () => _addToWardrobe(product),
                     onAddToBlend: () => _addToBlend(product),
+                    onAffiliateTap: () => _openAffiliatePartner(product),
                   ),
                 ),
                 _TopAppBar(
@@ -441,6 +444,45 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLiked = !_isLiked);
+      }
+    }
+  }
+
+  Future<void> _openAffiliatePartner(ProductModel product) async {
+    final expectedUrl = product.partnerUrl;
+    if (expectedUrl == null) return;
+    try {
+      final returnedUrl = await ref
+          .read(apiServiceProvider)
+          .trackAffiliateClick(product.id);
+      final uri = Uri.tryParse(returnedUrl ?? '');
+      final expectedUri = Uri.tryParse(expectedUrl);
+      if (uri == null ||
+          uri.scheme != 'https' ||
+          uri.host.isEmpty ||
+          expectedUri == null ||
+          uri.host != expectedUri.host) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('This partner link is not available yet.')),
+          );
+        }
+        return;
+      }
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the partner website.')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Partner link unavailable. Please try again later.')),
+        );
       }
     }
   }
@@ -704,13 +746,7 @@ class _WhyRecommendedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use the backend-provided reason if available, otherwise fall back
-    // to a style-based explanation.
-    final reason = product.reason;
-    final styleLabel = product.style.isEmpty ? product.usage : product.style;
-    final displayText = reason.isEmpty
-        ? 'Picked for your $styleLabel style'
-        : reason;
+    final displayText = product.reason;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -774,6 +810,7 @@ class _BottomActionBar extends StatelessWidget {
     required this.onToggleWishlist,
     required this.onAddToWardrobe,
     required this.onAddToBlend,
+    required this.onAffiliateTap,
   });
 
   final ProductModel product;
@@ -782,6 +819,7 @@ class _BottomActionBar extends StatelessWidget {
   final VoidCallback onToggleWishlist;
   final VoidCallback onAddToWardrobe;
   final VoidCallback onAddToBlend;
+  final VoidCallback onAffiliateTap;
 
   @override
   Widget build(BuildContext context) {
@@ -808,8 +846,25 @@ class _BottomActionBar extends StatelessWidget {
             stops: const [0.0, 0.6, 1.0],
           ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            if (product.partnerUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 7),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Opens partner website · Trenzy may earn a commission',
+                    style: GlassTypography.meta(
+                      fontSize: 9,
+                      color: context.trenzyColors.fg40,
+                    ),
+                  ),
+                ),
+              ),
+            Row(
+              children: [
             TapScale(
               onTap: onToggleWishlist,
               child: Container(
@@ -845,12 +900,24 @@ class _BottomActionBar extends StatelessWidget {
               ),
             ),
             SizedBox(width: 10),
+            if (product.partnerUrl != null) ...[
+              SizedBox(width: 10),
+              Expanded(
+                child: _SecondaryAction(
+                  icon: Icons.open_in_new_rounded,
+                  label: 'Partner',
+                  onTap: onAffiliateTap,
+                ),
+              ),
+            ],
             Expanded(
               child: _SecondaryAction(
                 icon: Icons.blender_outlined,
                 label: 'Add to Blend',
                 onTap: onAddToBlend,
               ),
+            ),
+              ],
             ),
           ],
         ),
