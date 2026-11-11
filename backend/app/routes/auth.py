@@ -220,15 +220,6 @@ def _sync_user(session: Session, firebase_uid: str, name: str, email: Optional[s
         session.add(user)
         session.flush()
 
-        persona = StylePersona(
-            user_firebase_uid=firebase_uid,
-            name="Urban Minimalist",
-            description="Clean lines, neutral tones, and effortless sophistication.",
-            keywords=["minimal", "clean", "neutral"],
-            vibe="Sophisticated Minimalist",
-        )
-        session.add(persona)
-
         prefs = UserPreference(user_firebase_uid=firebase_uid)
         session.add(prefs)
         session.commit()
