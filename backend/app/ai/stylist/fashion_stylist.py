@@ -15,7 +15,7 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from ...models import Product, User
+from ...models import Product, User, WardrobeItem
 from ..models_ai import UserStyleProfile, AIConversation, AIMessage
 from ..recommendation.rule_based_recommender import RuleBasedRecommender
 from ..outfits.outfit_generator import AIOutfitBuilder
@@ -177,10 +177,28 @@ If you don't know something, be honest and ask for more details to better assist
         # Retrieve relevant products
         relevant_products = self._retrieve_relevant_products(db, user_id, message)
 
-        # Use the local catalog-backed response path for reliable beta replies.
-        # Remote model calls can stall when an optional provider is unavailable;
-        # the launch configuration requires the stylist to work without them.
-        assistant_message = self._fallback_response(message, relevant_products, persona=persona)
+        # Build outfit suggestions from the signed-in user's actual closet.
+        # Only selected wardrobe names included by the Flutter style brief are used.
+        wardrobe_items = []
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.firebase_uid and "owned wardrobe pieces" in message.casefold():
+                all_items = db.query(WardrobeItem).filter(
+                    WardrobeItem.user_firebase_uid == user.firebase_uid
+                ).all()
+                if "no owned wardrobe pieces are selected" not in message.casefold():
+                    wardrobe_items = [
+                        item for item in all_items
+                        if item.name and item.name.casefold() in message.casefold()
+                    ]
+        except Exception as exc:
+            logger.warning("Could not load owned wardrobe for stylist: %s", exc)
+
+        # Local deterministic styling remains available without a hosted LLM.
+        assistant_message = self._fallback_response(
+            message, relevant_products, persona=persona,
+            wardrobe_items=wardrobe_items,
+        )
 
         # Save assistant message
         assistant_msg = AIMessage(
@@ -301,6 +319,7 @@ If you don't know something, be honest and ask for more details to better assist
         message: str,
         relevant_products: List[Product],
         persona: str = "everyday",
+        wardrobe_items: Optional[List[WardrobeItem]] = None,
     ) -> str:
         """Generate friendly fashion response based on query and catalog.
 
@@ -319,6 +338,58 @@ If you don't know something, be honest and ask for more details to better assist
         }
         persona_name, persona_focus = persona_styles.get(persona, persona_styles["everyday"])
         msg_lower = message.strip().lower()
+
+        if wardrobe_items:
+            import re
+
+            def role(item: WardrobeItem) -> str:
+                category = (item.category or "").casefold()
+                if any(word in category for word in ("dress", "gown", "one-piece", "jumpsuit")):
+                    return "dress"
+                if any(word in category for word in ("top", "shirt", "tee", "blouse", "upper")):
+                    return "top"
+                if any(word in category for word in ("trouser", "pant", "jean", "skirt", "short", "bottom")):
+                    return "bottom"
+                if any(word in category for word in ("shoe", "sneaker", "boot", "sandal", "footwear", "heel", "flat")):
+                    return "footwear"
+                if any(word in category for word in ("jewel", "accessory", "bag", "belt", "watch", "hat")):
+                    return "accessory"
+                return "other"
+
+            occasion_match = re.search(r"occasion=([^;\\.]+)", message, re.IGNORECASE)
+            aesthetic_match = re.search(r"aesthetic=([^;\\.]+)", message, re.IGNORECASE)
+            occasion = occasion_match.group(1).strip() if occasion_match else "your occasion"
+            aesthetic = aesthetic_match.group(1).strip() if aesthetic_match else persona
+            by_role = {key: [item for item in wardrobe_items if role(item) == key]
+                       for key in ("dress", "top", "bottom", "footwear", "accessory")}
+            chosen = []
+            if by_role["dress"]:
+                chosen.append(by_role["dress"][0])
+            elif by_role["top"] and by_role["bottom"]:
+                chosen.extend([by_role["top"][0], by_role["bottom"][0]])
+            if by_role["footwear"]:
+                chosen.append(by_role["footwear"][0])
+            if by_role["accessory"]:
+                chosen.append(by_role["accessory"][0])
+
+            if chosen:
+                lines = [f"Here's a {aesthetic} look for {occasion}, built from pieces you own:"]
+                for item in chosen:
+                    detail = f" ({item.color})" if item.color else ""
+                    lines.append(f"• {item.name}{detail}")
+                colors = [item.color.strip() for item in chosen if item.color and item.color.strip()]
+                if len(colors) >= 2:
+                    lines.append(f"\nYour selected pieces include {', '.join(colors[:3])}; keep the remaining accessories simple so the look feels balanced.")
+                if not by_role["footwear"]:
+                    lines.append("\nWardrobe gap: add a footwear option to complete this look.")
+                if not by_role["accessory"]:
+                    lines.append("\nOptional finishing touch: add jewellery or a bag from your closet.")
+                return "\\n".join(lines)
+            return (
+                f"I found {len(wardrobe_items)} selected piece(s) in your closet, but not enough category detail "
+                "to assemble a complete outfit yet. Add each item's category (top, bottom, dress, footwear, "
+                "or accessory) and I'll combine your actual pieces."
+            )
 
         # Handle casual greetings warmly
         greetings = ["hey", "heyyy", "heyy", "hi", "hello", "hola", "yo", "sup", "good morning", "good evening"]
