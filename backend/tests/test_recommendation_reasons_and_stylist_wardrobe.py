@@ -77,7 +77,7 @@ def test_reason_can_explain_persona_and_positive_behavior():
     })
 
     assert "your minimalist persona" in reason
-    assert "a category you have liked" in reason
+    assert "the Tops category you have liked" in reason
 
 
 def test_stylist_builds_outfit_from_owned_wardrobe_items():
