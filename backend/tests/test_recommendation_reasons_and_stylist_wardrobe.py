@@ -153,3 +153,34 @@ def test_stylist_does_not_force_an_outfit_for_a_general_style_question():
     )
 
     assert "Black tee" not in response
+
+
+
+def test_stylist_selects_one_saree_then_coordinates_jewellery():
+    agent = FashionStylistAgent()
+    items = [
+        WardrobeItem(id=1, name="Blue silk saree", category="Saree", color="Royal blue", is_favorite=False, image_url="blue.jpg"),
+        WardrobeItem(id=2, name="Wine silk saree", category="Sarees", color="Wine", is_favorite=True, image_url="wine.jpg"),
+        WardrobeItem(id=3, name="Gold jhumkas", category="Jewellery", color="Gold", is_favorite=True),
+        WardrobeItem(id=4, name="Silver hoops", category="Earrings", color="Silver"),
+        WardrobeItem(id=5, name="Gold necklace", category="Necklace", color="Gold"),
+        WardrobeItem(id=6, name="Pearl choker", category="Necklace", color="Pearl"),
+        WardrobeItem(id=7, name="Gold bangles", category="Bangles", color="Gold"),
+        WardrobeItem(id=8, name="Nude heels", category="Footwear", color="Nude"),
+    ]
+
+    response = agent._fallback_response(
+        "Choose the best saree from these and style the full look. "
+        "Styling brief: occasion=Party; aesthetic=Classic. "
+        "Owned wardrobe pieces: selected items.",
+        [],
+        wardrobe_items=items,
+    )
+
+    assert "My pick: **Wine silk saree**" in response
+    assert "Blue silk saree" not in response
+    assert "Gold jhumkas" in response
+    assert "Gold necklace" in response
+    assert "Gold bangles" in response
+    assert "Nude heels" in response
+    assert response.count("saree**") == 1
