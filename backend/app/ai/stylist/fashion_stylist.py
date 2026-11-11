@@ -464,10 +464,13 @@ If you don't know something, be honest and ask for more details to better assist
         if any(msg_lower == g for g in greetings) or msg_lower.startswith("hey") or msg_lower.startswith("hi"):
             return f"Hey there! I'm {persona_name}. I focus on {persona_focus}. Tell me the occasion and I'll help you put a look together. 💗"
 
+        # Internal styling metadata and selected closet items are context, not
+        # part of the user's visible question. Never echo that private context.
+        visible_request = user_request.strip() or message.strip()
         if not relevant_products:
-            return f"I'd love to help you style '{message}' with {persona_focus}. Try adding the occasion, colours, or budget and I'll narrow it down for you."
+            return f"I'd love to help you style '{visible_request}' with {persona_focus}. Try adding the occasion, colours, or budget and I'll narrow it down for you."
 
-        response = f"As {persona_name}, I'd style '{message}' around {persona_focus}. Here are some catalog picks:\n\n"
+        response = f"As {persona_name}, I'd style '{visible_request}' around {persona_focus}. Here are some catalog picks:\n\n"
         for product in relevant_products[:3]:
             response += f"• {product.name} — ₹{product.price:.0f}\n"
         response += "\nLet me know if you'd like outfit combinations with these!"
