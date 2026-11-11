@@ -97,7 +97,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     }).join('; ');
     final wardrobeContext = selected.isEmpty
         ? 'No owned wardrobe pieces are selected. Do not claim that a suggested product is already owned.'
-        : 'Owned wardrobe pieces (prioritize these and do not invent ownership): $pieces.';
+        : 'Owned wardrobe item ids: ${selected.map((item) => item.id).join(',')}. Owned wardrobe pieces (prioritize these and do not invent ownership): $pieces.';
     final brief = 'Styling brief: occasion=$_selectedOccasion; aesthetic=$_selectedAesthetic. $wardrobeContext';
     final availablePromptLength = (1900 - brief.length - 2).clamp(200, 1900).toInt();
     final concisePrompt = prompt.length > availablePromptLength
