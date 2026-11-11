@@ -213,3 +213,26 @@ def test_stylist_compares_dresses_and_coordinates_accessories_for_any_occasion()
     assert "Black heels" in response
     assert "Black clutch" in response
     assert "\n" in response
+
+
+
+def test_stylist_compares_two_piece_looks_as_a_complete_candidate():
+    agent = FashionStylistAgent()
+    items = [
+        WardrobeItem(id=21, name="Pink dress", category="Dress", color="Pink"),
+        WardrobeItem(id=22, name="Black tailored top", category="Tops", color="Black", is_favorite=True),
+        WardrobeItem(id=23, name="Beige trousers", category="Bottoms", color="Beige", is_favorite=True),
+        WardrobeItem(id=24, name="White sneakers", category="Footwear", color="White"),
+    ]
+
+    response = agent._fallback_response(
+        "Choose my best outfit and complete the look. "
+        "Styling brief: occasion=College; aesthetic=Minimal. "
+        "Owned wardrobe pieces: selected items.",
+        [],
+        wardrobe_items=items,
+    )
+
+    assert "Black tailored top" in response
+    assert "Beige trousers" in response
+    assert "White sneakers" in response
