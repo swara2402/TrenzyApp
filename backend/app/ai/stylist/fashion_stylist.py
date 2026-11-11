@@ -470,7 +470,14 @@ If you don't know something, be honest and ask for more details to better assist
                     candidates.append((score(item), [item]))
             for top in by_role.get("top", []):
                 for bottom in by_role.get("bottom", []):
-                    pair_score = score(top) + score(bottom)
+                    top_score = score(top)
+                    bottom_score = score(bottom)
+                    # Aggregate both pieces so a complete top + bottom look is
+                    # compared fairly with a one-piece dress or ethnic outfit.
+                    pair_score = tuple(
+                        top_value + bottom_value
+                        for top_value, bottom_value in zip(top_score, bottom_score)
+                    )
                     candidates.append((pair_score, [top, bottom]))
 
             if candidates:
