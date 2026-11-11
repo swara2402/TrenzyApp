@@ -25,6 +25,18 @@ class ProductModel {
   final String usage;
   final String outfitRole;
   final List<String> tags;
+  final Map<String, String> affiliateLinks;
+
+  /// Only API-provided HTTPS partner URLs are eligible to show a shop action.
+  String? get partnerUrl {
+    for (final value in affiliateLinks.values) {
+      final uri = Uri.tryParse(value);
+      if (uri != null && uri.scheme == 'https' && uri.host.isNotEmpty) {
+        return uri.toString();
+      }
+    }
+    return null;
+  }
 
   String get effectiveImageUrl =>
       ApiService.resolveImageUrl(imageUrl) ?? imageUrl;
@@ -59,6 +71,7 @@ class ProductModel {
     String? usage,
     String? outfitRole,
     List<String>? tags,
+    Map<String, String>? affiliateLinks,
   }) : id = id ?? '',
        name = name ?? '',
        description = description ?? '',
@@ -85,7 +98,8 @@ class ProductModel {
        fit = fit ?? '',
        usage = usage ?? '',
        outfitRole = outfitRole ?? '',
-       tags = tags ?? const [];
+       tags = tags ?? const [],
+       affiliateLinks = affiliateLinks ?? const {};
 
   factory ProductModel.fromTrendModel(TrendModel trend) {
     if (trend.products.isNotEmpty) {
@@ -126,6 +140,11 @@ class ProductModel {
       usage: json['usage'] as String?,
       outfitRole: json['outfitRole'] as String?,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>(),
+      affiliateLinks: json['affiliate_links'] is Map
+          ? (json['affiliate_links'] as Map).map(
+              (key, value) => MapEntry(key.toString(), value.toString()),
+            )
+          : const {},
     );
   }
 
@@ -154,6 +173,7 @@ class ProductModel {
       'usage': usage,
       'outfitRole': outfitRole,
       'tags': tags,
+      'affiliate_links': affiliateLinks,
     };
   }
 }
