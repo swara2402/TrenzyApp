@@ -24,6 +24,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal, Optional
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -276,6 +277,24 @@ def track_affiliate_click(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    affiliate_link = None
+    raw_links = product.affiliate_links
+    if isinstance(raw_links, dict):
+        for value in raw_links.values():
+            candidate = str(value or "").strip()
+            parsed = urlparse(candidate)
+            if parsed.scheme == "https" and parsed.netloc:
+                affiliate_link = candidate
+                break
+    elif isinstance(raw_links, str):
+        candidate = raw_links.strip()
+        parsed = urlparse(candidate)
+        if parsed.scheme == "https" and parsed.netloc:
+            affiliate_link = candidate
+
+    if not affiliate_link:
+        raise HTTPException(status_code=404, detail="No active affiliate link for this product")
+
     click = AffiliateClick(
         product_id=data.product_id,
         clicked_by_firebase_uid=uid,
@@ -308,16 +327,6 @@ def track_affiliate_click(
         session.add(metric)
 
     session.commit()
-
-    affiliate_link = None
-    raw_links = product.affiliate_links
-    if isinstance(raw_links, dict):
-        for key, value in raw_links.items():
-            if value and str(value).strip().startswith("https://"):
-                affiliate_link = str(value)
-                break
-    elif isinstance(raw_links, str) and raw_links.strip().startswith("https://"):
-        affiliate_link = raw_links.strip()
 
     return {
         "status": "recorded",
