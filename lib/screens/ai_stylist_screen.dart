@@ -152,7 +152,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
               const SizedBox(width: 6),
               Text('STYLE BRIEF', style: GlassTypography.meta(fontSize: 10, color: c.primary)),
               const Spacer(),
-              Text('${selectedCount}/${items.length} closet pieces', style: GlassTypography.meta(fontSize: 9, color: c.mutedFg)),
+              Text('$selectedCount/${items.length} closet pieces', style: GlassTypography.meta(fontSize: 9, color: c.mutedFg)),
             ]),
             const SizedBox(height: 5),
             Text('Occasion', style: GlassTypography.meta(fontSize: 10, color: c.mutedFg)),
