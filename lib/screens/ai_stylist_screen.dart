@@ -7,6 +7,8 @@ import '../providers/api_service_provider.dart';
 import '../services/api_service.dart';
 import '../router/app_router.dart';
 import '../theme/glass_theme.dart';
+import '../models/wardrobe_model.dart';
+import '../providers/wardrobe_provider.dart';
 
 class AiStylistScreen extends ConsumerStatefulWidget {
   const AiStylistScreen({super.key});
@@ -22,6 +24,9 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
   int? _conversationId;
   bool _loading = false;
   String _selectedPersona = 'everyday';
+  String _selectedOccasion = 'Everyday';
+  String _selectedAesthetic = 'Casual';
+  Set<String>? _selectedWardrobeItemIds;
 
   static const _personas = <String, String>{
     'everyday': 'Everyday',
@@ -78,6 +83,136 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
     await _requestStylist(prompt, addUserMessage: false);
   }
 
+  String _contextualizePrompt(String prompt) {
+    final wardrobe = ref.read(wardrobeProvider).valueOrNull?.items ?? const <WardrobeItem>[];
+    final selected = _selectedWardrobeItemIds == null
+        ? wardrobe
+        : wardrobe.where((item) => _selectedWardrobeItemIds!.contains(item.id)).toList();
+    final pieces = selected.take(14).map((item) {
+      final details = <String>[item.name];
+      if (item.category.trim().isNotEmpty) details.add(item.category.trim());
+      if (item.color.trim().isNotEmpty) details.add(item.color.trim());
+      if (item.brand.trim().isNotEmpty) details.add(item.brand.trim());
+      return details.join(' · ');
+    }).join('; ');
+    final wardrobeContext = selected.isEmpty
+        ? 'No owned wardrobe pieces are selected. Do not claim that a suggested product is already owned.'
+        : 'Owned wardrobe pieces (prioritize these and do not invent ownership): $pieces.';
+    final brief = 'Styling brief: occasion=$_selectedOccasion; aesthetic=$_selectedAesthetic. $wardrobeContext';
+    final availablePromptLength = (1900 - brief.length - 2).clamp(200, 1900);
+    final concisePrompt = prompt.length > availablePromptLength
+        ? prompt.substring(0, availablePromptLength)
+        : prompt;
+    return '$concisePrompt\n\n$brief';
+  }
+
+  Widget _buildStyleBrief(BuildContext context, List<WardrobeItem> items, bool loading) {
+    final c = context.trenzyColors;
+    final selectedCount = _selectedWardrobeItemIds == null
+        ? items.length
+        : items.where((item) => _selectedWardrobeItemIds!.contains(item.id)).length;
+    Widget chipRow(List<String> values, String selected, ValueChanged<String> onSelected) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: values.map((value) => Padding(
+            padding: const EdgeInsets.only(right: 7),
+            child: ChoiceChip(
+              label: Text(value),
+              selected: selected == value,
+              onSelected: _loading ? null : (_) => onSelected(value),
+              selectedColor: c.primary.withValues(alpha: 0.2),
+              labelStyle: GlassTypography.meta(
+                fontSize: 10,
+                color: selected == value ? c.primary : c.mutedFg,
+              ),
+              side: BorderSide(color: selected == value ? c.primary : c.glassBorder),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            ),
+          )).toList(),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+      child: Container(
+        padding: const EdgeInsets.all(11),
+        decoration: BoxDecoration(
+          color: c.graphite.withValues(alpha: 0.65),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.glassBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.tune_rounded, size: 14, color: c.primary),
+              const SizedBox(width: 6),
+              Text('STYLE BRIEF', style: GlassTypography.meta(fontSize: 10, color: c.primary)),
+              const Spacer(),
+              Text('${selectedCount}/${items.length} closet pieces', style: GlassTypography.meta(fontSize: 9, color: c.mutedFg)),
+            ]),
+            const SizedBox(height: 5),
+            Text('Occasion', style: GlassTypography.meta(fontSize: 10, color: c.mutedFg)),
+            chipRow(const ['Everyday', 'College', 'Work', 'Party', 'Travel', 'Date night', 'Formal'], _selectedOccasion,
+              (value) => setState(() => _selectedOccasion = value)),
+            const SizedBox(height: 2),
+            Text('Aesthetic', style: GlassTypography.meta(fontSize: 10, color: c.mutedFg)),
+            chipRow(const ['Casual', 'Minimal', 'Streetwear', 'Classic', 'Y2K', 'Boho', 'Old money', 'Sporty'], _selectedAesthetic,
+              (value) => setState(() => _selectedAesthetic = value)),
+            const SizedBox(height: 4),
+            Row(children: [
+              Icon(Icons.checkroom_rounded, size: 13, color: c.mutedFg),
+              const SizedBox(width: 5),
+              Expanded(child: Text('Use pieces from my wardrobe', style: GlassTypography.meta(fontSize: 10, color: c.foreground))),
+              if (loading)
+                SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: c.primary))
+              else if (items.isEmpty)
+                TextButton(
+                  onPressed: _loading ? null : () => context.push(AppRoutes.addItem),
+                  child: const Text('Add pieces', style: TextStyle(fontSize: 10)),
+                )
+              else
+                TextButton(
+                  onPressed: _loading ? null : () => setState(() => _selectedWardrobeItemIds = null),
+                  child: Text('Select all', style: TextStyle(fontSize: 10, color: c.primary)),
+                ),
+            ]),
+            if (items.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(children: items.map((item) {
+                  final selected = _selectedWardrobeItemIds == null || _selectedWardrobeItemIds!.contains(item.id);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: FilterChip(
+                      label: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      selected: selected,
+                      onSelected: _loading ? null : (value) => setState(() {
+                        final next = _selectedWardrobeItemIds == null
+                            ? items.map((entry) => entry.id).toSet()
+                            : Set<String>.from(_selectedWardrobeItemIds!);
+                        if (value) { next.add(item.id); } else { next.remove(item.id); }
+                        _selectedWardrobeItemIds = next;
+                      }),
+                      selectedColor: c.primary.withValues(alpha: 0.16),
+                      checkmarkColor: c.primary,
+                      labelStyle: GlassTypography.meta(fontSize: 9, color: selected ? c.primary : c.mutedFg),
+                      side: BorderSide(color: selected ? c.primary.withValues(alpha: 0.55) : c.glassBorder),
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                    ),
+                  );
+                }).toList()),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _requestStylist(
     String text, {
     required bool addUserMessage,
@@ -96,7 +231,7 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
       final result = await ref
           .read(apiServiceProvider)
           .aiStylistChat(
-            message: text,
+            message: _contextualizePrompt(text),
             conversationId: _conversationId,
             persona: _selectedPersona,
           );
@@ -151,6 +286,8 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.trenzyColors;
+    final wardrobeAsync = ref.watch(wardrobeProvider);
+    final wardrobeItems = wardrobeAsync.valueOrNull?.items ?? const <WardrobeItem>[];
 
     return Scaffold(
       backgroundColor: c.background,
@@ -206,6 +343,8 @@ class _AiStylistScreenState extends ConsumerState<AiStylistScreen> {
               )).toList(),
             ),
           ),
+
+          _buildStyleBrief(context, wardrobeItems, wardrobeAsync.isLoading),
 
           // Quick prompts bar
           SingleChildScrollView(
