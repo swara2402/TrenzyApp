@@ -196,7 +196,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((
       swipeEvent,
     ) {
-      if (!mounted) return;
+      if (!mounted || swipeEvent['groupId'] != widget.groupId) return;
 
       // Only show toast for other users' swipes, not our own
       final userId = swipeEvent['userId'];
