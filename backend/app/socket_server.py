@@ -67,6 +67,7 @@ from typing import Optional
 
 import socketio
 import redis.asyncio as redis
+from sqlalchemy import func
 
 from .db import SessionLocal
 from .models import Blend, BlendMember, BlendSwipe, Room, BlendMessage, BlendInvitation
