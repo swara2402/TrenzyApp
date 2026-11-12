@@ -39,7 +39,12 @@ from ..color_taxonomy import expand_canonical_to_raw
 from ..json_compat import json_array_contains
 from .products import _product_payload
 from .priority_scorer import priority_score_expr
-from .recommendations import _reason_for_item
+from .recommendations import (
+    _build_personalized_query,
+    _reason_for_item,
+    _safe_prefs_rec,
+    _signal_vector,
+)
 from ..catalog_categories import catalog_category_is_classified as _catalog_category_is_classified
 
 router = APIRouter(prefix="/api/feed", tags=["feed"])
@@ -194,61 +199,31 @@ def get_feed(
         "products": [_product_payload(p) for p in newest],
     })
 
-    # Section 3: For You — personalized based on preferences/persona
-
-    for_you_query = session.query(Product).filter(
-        Product.is_archived.is_(False), _catalog_category_is_classified()
+    # Section 3: For You — use the same progressive, behavior-aware ranking
+    # engine as product recommendations. This keeps onboarding preferences,
+    # persona matches, wishlist signals and positive/negative swipes consistent.
+    for_you = _build_personalized_query(
+        session,
+        uid,
+        limit=limit,
+        offset=offset,
     )
-    if prefs and prefs.preferred_categories:
-        for_you_query = for_you_query.filter(
-            Product.category.in_(prefs.preferred_categories)
-        )
-    if expanded_colors:
-        for_you_query = for_you_query.filter(
-            Product.color.in_(expanded_colors)
-        )
-    if prefs and prefs.preferred_brands:
-        for_you_query = for_you_query.filter(
-            Product.brand.in_(prefs.preferred_brands)
-        )
-    if prefs and prefs.budget_max:
-        for_you_query = for_you_query.filter(
-            Product.price <= prefs.budget_max
-        )
-    if persona and persona.keywords:
-        keyword_conditions = [
-            json_array_contains(Product.tags, kw)
-            for kw in persona.keywords
-            if kw
-        ]
-        if keyword_conditions:
-            for_you_query = for_you_query.filter(or_(*keyword_conditions))
-    if persona and persona.vibe:
-        for_you_query = for_you_query.filter(
-            Product.style.contains(persona.vibe)
-        )
-    # Apply shopping priorities for ranking boost
-    try:
-        priority_expr = priority_score_expr(prefs.shopping_priorities if prefs else [])
-    except Exception as e:
-        logger.warning("Failed to compute priority_score_expr in feed: %s", e)
-        priority_expr = None
-    try:
-        if priority_expr is not None:
-            for_you = for_you_query.order_by(
-                (priority_expr * 0.6 + func.coalesce(Product.rating, 3.0) / 5.0 * 0.4).desc()
-            ).offset(offset).limit(limit).all()
-        else:
-            for_you = for_you_query.order_by(Product.rating.desc().nullslast()).offset(offset).limit(limit).all()
-    except Exception as exc:
-        logger.warning("Feed for_you query failed: %s", exc)
-        for_you = []
+    recommendation_prefs, recommendation_persona = _safe_prefs_rec(session, uid)
+    behavior_signal = _signal_vector(session, uid)
     sections.append({
         "id": "for_you",
         "title": "For You",
         "type": "products",
         "products": [_product_payload(p) for p in for_you],
-        "reasons": {p.id: _reason_for_item(prefs, p) for p in for_you},
+        "reasons": {
+            p.id: _reason_for_item(
+                recommendation_prefs,
+                p,
+                persona=recommendation_persona,
+                signal=behavior_signal,
+            )
+            for p in for_you
+        },
     })
 
     # Section 4: Social Posts (existing algorithm)
