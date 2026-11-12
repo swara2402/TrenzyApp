@@ -284,3 +284,84 @@ def test_blend_member_cap_is_enforced_on_join_and_invite_acceptance(
     )
     assert member_count == 2
 
+def test_token_invitation_acceptance_enforces_friendship_and_member_cap(
+    client, db_session, multi_user_auth, monkeypatch
+):
+    from fastapi import HTTPException
+
+    def fake_invitation_auth(request):
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing authentication token")
+        uid = header[len("Bearer "):].strip()
+        return {"uid": uid, "name": f"User {uid}"}
+
+    monkeypatch.setattr(
+        "app.routes.invitations.verify_firebase_token", fake_invitation_auth
+    )
+
+    group = _create_blend(client, "Token Invite Capacity", maxMembers=2)
+    first_member = _new_uid("token-first")
+    second_member = _new_uid("token-second")
+    _seed_friendship(db_session, first_member, OWNER_UID)
+    _seed_friendship(db_session, second_member, OWNER_UID)
+
+    joined = client.post(
+        "/api/blends/join",
+        json={"groupId": group["id"]},
+        headers=_auth(first_member),
+    )
+    assert joined.status_code == 200, joined.text
+
+    invite = client.post(
+        "/api/invitations",
+        json={"groupId": group["id"]},
+        headers=_auth(OWNER_UID),
+    )
+    assert invite.status_code == 200, invite.text
+
+    accepted = client.post(
+        "/api/invitations/accept",
+        json={"token": invite.json()["token"]},
+        headers=_auth(second_member),
+    )
+    assert accepted.status_code == 409
+    assert "full" in accepted.text.lower()
+
+    member_count = db_session.query(BlendMember).filter(
+        BlendMember.blend_id == group["id"]
+    ).count()
+    assert member_count == 2
+
+
+def test_token_invitation_acceptance_rejects_non_friend(
+    client, db_session, multi_user_auth, monkeypatch
+):
+    from fastapi import HTTPException
+
+    def fake_invitation_auth(request):
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing authentication token")
+        return {"uid": header[len("Bearer "):].strip()}
+
+    monkeypatch.setattr(
+        "app.routes.invitations.verify_firebase_token", fake_invitation_auth
+    )
+    group = _create_blend(client, "Token Invite Friendship")
+    invite = client.post(
+        "/api/invitations",
+        json={"groupId": group["id"]},
+        headers=_auth(OWNER_UID),
+    )
+    assert invite.status_code == 200, invite.text
+
+    non_friend = _new_uid("non-friend")
+    accepted = client.post(
+        "/api/invitations/accept",
+        json={"token": invite.json()["token"]},
+        headers=_auth(non_friend),
+    )
+    assert accepted.status_code == 403
+    assert "friends" in accepted.text.lower()
+
