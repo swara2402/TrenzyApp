@@ -243,6 +243,7 @@ def _build_personalized_query(
     limit: int = 10,
     include_budget: bool = True,
     diversify: bool = True,
+    offset: int = 0,
 ) -> list:
     """Build a personalized product query with filters based on user preferences.
 
@@ -345,7 +346,7 @@ def _build_personalized_query(
         if persona_boost is not None:
             parts.append(persona_boost * 0.2)
         score = sum(parts)
-        return q.order_by(score.desc()).limit(fetch_limit).all()
+        return q.order_by(score.desc()).offset(max(0, offset)).limit(fetch_limit).all()
 
     def _base_query(apply_audience: bool = True):
         q = session.query(Product).filter(
