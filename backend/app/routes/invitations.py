@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from ..db import get_session
 from ..firebase_auth import verify_firebase_token
 from ..auth_helpers import require_blend_member_sync
-from ..models import Blend, BlendInvitation, BlendMember
+from ..models import Blend, BlendInvitation, BlendMember, Friend
 from ..models_moderation import UserBlock
 
 logger = logging.getLogger(__name__)
@@ -122,9 +122,24 @@ def accept_invitation(
         session.commit()
         raise HTTPException(status_code=400, detail="Invitation has expired")
 
-    group = session.query(Blend).filter(Blend.id == inv.blend_id).first()
+    # Serialize acceptance with other joins to enforce max_members under concurrency.
+    group = (
+        session.query(Blend)
+        .filter(Blend.id == inv.blend_id)
+        .with_for_update()
+        .first()
+    )
     if not group:
         raise HTTPException(status_code=404, detail="Blend group not found")
+
+    # Match the friend-only rule enforced by join-by-code and Socket.IO.
+    if group.user_firebase_uid != firebase_uid:
+        friendship = session.query(Friend).filter(
+            ((Friend.user_firebase_uid == firebase_uid) & (Friend.friend_firebase_uid == group.user_firebase_uid))
+            | ((Friend.user_firebase_uid == group.user_firebase_uid) & (Friend.friend_firebase_uid == firebase_uid))
+        ).first()
+        if not friendship:
+            raise HTTPException(status_code=403, detail="Blend participants must be friends with the Blend owner")
 
     blocked = session.query(UserBlock).filter(
         ((UserBlock.blocker_firebase_uid == firebase_uid) & (UserBlock.blocked_firebase_uid == inv.inviter_firebase_uid))
@@ -143,6 +158,12 @@ def accept_invitation(
         .first()
     )
     if not existing:
+        if group.max_members:
+            member_count = session.query(BlendMember).filter(
+                BlendMember.blend_id == inv.blend_id
+            ).count()
+            if member_count >= group.max_members:
+                raise HTTPException(status_code=409, detail="This blend is full")
         session.add(
             BlendMember(
                 blend_id=inv.blend_id,
@@ -150,7 +171,7 @@ def accept_invitation(
                 user_name=decoded.get("name") or inv.inviter_name or "Guest",
             )
         )
-        session.commit()
+        session.flush()
 
     # PRODUCT: Update invitation status and track acceptor
     inv.status = "accepted"
