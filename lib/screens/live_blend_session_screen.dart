@@ -30,6 +30,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
   StreamSubscription<Map<String, dynamic>>? _swipeSub;
   StreamSubscription<bool>? _connectionSub;
   Map<String, dynamic>? _lastSwipeEvent;
+  int _mySwipeCount = 0;
 
   @override
   void didChangeDependencies() {
@@ -75,7 +76,13 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     _stateSub?.cancel();
     _stateSub = BlendSocketService.instance.stateStream.listen((state) {
       if (mounted && state.groupId == _groupId) {
-        setState(() => _liveState = state);
+        final uid = ref.read(auth_p.authProvider).valueOrNull?.id;
+        setState(() {
+          _liveState = state;
+          if (uid != null) {
+            _mySwipeCount = state.swipesByMember[uid] ?? _mySwipeCount;
+          }
+        });
       }
     });
 
@@ -91,8 +98,14 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     _swipeSub = BlendSocketService.instance.swipeAppliedStream.listen((
       swipeEvent,
     ) {
-      if (mounted) {
-        setState(() => _lastSwipeEvent = swipeEvent);
+      final uid = ref.read(auth_p.authProvider).valueOrNull?.id;
+      if (mounted && swipeEvent['groupId'] == _groupId) {
+        setState(() {
+          _lastSwipeEvent = swipeEvent;
+          if (uid != null && swipeEvent['userId'] == uid) {
+            _mySwipeCount++;
+          }
+        });
       }
     });
 
@@ -706,8 +719,7 @@ class _LiveBlendSessionScreenState extends ConsumerState<LiveBlendSessionScreen>
     final blendGroup = ref.read(blendGroupProvider(groupId)).valueOrNull;
     if (blendGroup == null || blendGroup.options.isEmpty == true) return;
 
-    final totalSwipes = _liveState?.totalSwipes ?? 0;
-    final productIndex = totalSwipes % blendGroup.options.length;
+    final productIndex = _mySwipeCount % blendGroup.options.length;
     final product = blendGroup.options[productIndex];
 
     BlendSocketService.instance.sendSwipe(
