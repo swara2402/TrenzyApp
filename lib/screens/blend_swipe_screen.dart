@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trenzy/providers/blend_provider.dart';
+import 'package:trenzy/providers/auth_provider.dart';
 import 'package:trenzy/models/blend_model.dart';
 import 'package:trenzy/models/product_model.dart';
 import '../services/api_service.dart';
@@ -187,7 +188,18 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
   void _listenToLiveState() {
     _stateSub = BlendSocketService.instance.stateStream.listen((state) {
       if (mounted && state.groupId == widget.groupId) {
-        setState(() => _liveState = state);
+        final uid = ref.read(authProvider).valueOrNull?.id;
+        final serverSwipeCount = uid == null
+            ? null
+            : state.swipesByMember[uid];
+        setState(() {
+          _liveState = state;
+          // Restore this member's deck position from authoritative server
+          // progress, including after reopening the screen or reconnecting.
+          if (serverSwipeCount != null) {
+            _currentIndex = serverSwipeCount.clamp(0, _products.length);
+          }
+        });
       }
     });
 
@@ -664,7 +676,7 @@ class _BlendSwipeContentState extends ConsumerState<_BlendSwipeContent>
     final enterScale = _enterAnimation.value;
     final enterOpacity = _enterAnimation.value;
 
-    final mySwipes = _swipeHistory.length;
+    final mySwipes = _currentIndex;
     final groupSwipes =
         _liveState?.totalSwipes ??
         widget.group.members.fold<int>(0, (sum, m) => sum + m.swipeCount);
