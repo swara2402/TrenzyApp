@@ -10,7 +10,7 @@ Trenzy is a cutting-edge fashion discovery platform that combines intelligent pr
 - **Social safety:** reporting and blocking are part of the beta safety boundary. Direct 1:1 chat and Blend participation are friends-only.
 - **AI:** the launch Stylist contract is local-only; no external LLM/API dependency is required for Stylist chat.
 - **Production target:** AWS Mumbai (ap-south-1) with managed PostgreSQL/Redis and demand-driven container scaling.
-- **Age:** 13+ with additional protections for minors.
+- **Age:** 16+; users aged 16–17 receive the additional protections defined by the server-side age policy.
 
 ### Android beta release
 
