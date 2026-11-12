@@ -461,6 +461,13 @@ async def _build_blend_state(db, group_id: str, last_event: Optional[dict] = Non
 
     group = db.query(Blend).filter(Blend.id == group_id).first()
     members = db.query(BlendMember).filter(BlendMember.blend_id == group_id).all()
+    swipe_counts = (
+        db.query(BlendSwipe.user_firebase_uid, func.count(BlendSwipe.id))
+        .filter(BlendSwipe.blend_id == group_id)
+        .group_by(BlendSwipe.user_firebase_uid)
+        .all()
+    )
+    swipes_by_member = {uid: count for uid, count in swipe_counts}
     results = compute_blend_results(db, group_id)
     
     # HARDENING: Get online users from Redis-first (production) or fallback (dev)
@@ -472,8 +479,14 @@ async def _build_blend_state(db, group_id: str, last_event: Optional[dict] = Non
         "groupName": group.name if group else group_id,
         "memberCount": len(members),
         "members": [
-            {"userId": m.user_firebase_uid, "userName": m.user_name} for m in members
+            {
+                "userId": m.user_firebase_uid,
+                "userName": m.user_name,
+                "swipeCount": swipes_by_member.get(m.user_firebase_uid, 0),
+            }
+            for m in members
         ],
+        "swipesByMember": swipes_by_member,
         "onlineUserIds": online_user_ids,  # Presence tracking — who is currently connected (Redis-first)
         "blendRecommendations": results["blendRecommendations"],
         "winners": results["winners"],
@@ -946,6 +959,7 @@ async def blend_swipe(sid, data):
         # (get_blend_state) or at key moments (join, leave).
         swipe_event = {
             "type": "blend_swipe",
+            "groupId": group_id,
             "userId": user_id,
             "userName": user_name,
             "productId": product_id,
