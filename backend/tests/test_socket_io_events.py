@@ -595,6 +595,7 @@ class TestBlendSwipeAndState:
                             emit_calls = mock_sio_obj.emit.call_args_list
                             swipe_applied_calls = [c for c in emit_calls if c[0][0] == "swipe_applied"]
                             assert len(swipe_applied_calls) > 0, "Should emit swipe_applied event"
+                            assert swipe_applied_calls[0][0][1]["groupId"] == "blend-swipe-light"
                         finally:
                             socket_server.sio = original_sio
 
@@ -634,11 +635,32 @@ class TestBlendSwipeAndState:
                             state_calls = [c for c in emit_calls if c[0][0] == "blend_state"]
                             assert len(state_calls) > 0
                             state = state_calls[0][0][1]
-                            
-                            # Verify members and online users
+
+                            # Verify per-member voting progress is part of the
+                            # authoritative live state, not inferred from the
+                            # group's aggregate swipe count.
+                            db_session.add(BlendSwipe(
+                                blend_id="blend-state",
+                                user_firebase_uid="test-user-uid",
+                                product_id="prod-live-progress",
+                                score=1,
+                            ))
+                            db_session.commit()
+                            await get_blend_state(sid, {"groupId": "blend-state"})
+                            state_calls = [
+                                c for c in mock_sio_obj.emit.call_args_list
+                                if c[0][0] == "blend_state"
+                            ]
+                            state = state_calls[-1][0][1]
                             assert len(state["members"]) == 2
                             assert state["memberCount"] == 2
                             assert "test-user-uid" in state["onlineUserIds"]
+                            assert state["swipesByMember"]["test-user-uid"] == 1
+                            assert state["swipesByMember"]["user-2"] == 0
+                            assert next(
+                                m for m in state["members"]
+                                if m["userId"] == "test-user-uid"
+                            )["swipeCount"] == 1
                         finally:
                             socket_server.sio = original_sio
 
